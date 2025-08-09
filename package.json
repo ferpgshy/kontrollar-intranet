@@ -1,0 +1,33 @@
+{
+  "name": "kontrollar-intranet",
+  "version": "1.0.2",
+  "description": "Intranet interativa para gestão de projetos com dashboard, IA de suporte e funcionalidades colaborativas.",
+  "main": "ia/server.js",
+  "scripts": {
+    "start": "node ia/server.js",
+    "dev": "nodemon ia/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "intranet",
+    "dashboard",
+    "gestão-de-projetos",
+    "inteligência-artificial",
+    "controle",
+    "suporte",
+    "openai",
+    "express"
+  ],
+  "author": "PG • Kontrollar",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "node-fetch": "^3.3.2",
+    "openai": "^5.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}

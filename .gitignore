@@ -1,0 +1,52 @@
+# Dependências
+node_modules/
+dist/
+build/
+
+# Logs e cache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Arquivos temporários
+*.tmp
+*.swp
+
+# Ambiente e segredos
+.env
+.env.local
+.env.*.local
+
+# Editor de código
+.vscode/
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Testes
+coverage/
+*.lcov
+
+# Backups
+*.bak
+*.old
+
+# Arquivos do Git filter-repo
+.git-filter-repo/
+
+# Arquivos gerados por IA
+/openai_cache/
+__pycache__/
+*.pyc
+
+# Ignorar arquivos do sistema
+desktop.ini
+
+# Outros
+*.sqlite
+*.sqlite3
+*.pid

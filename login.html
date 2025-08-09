@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Kontrollar</title>
+    <link rel="icon" href="./public/logo2-SF.png">
+    <link rel="stylesheet" href="styles/global.css">
+    <link rel="stylesheet" href="styles/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <a href="index.html" class="back-link">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Voltar ao início
+                </a>
+                <div class="logo">
+                    <div class="logo-icon">K</div>
+                    <span class="logo-text">Kontrollar</span>
+                </div>
+                <p class="auth-subtitle">Entre na sua conta</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h1 class="card-title">Login</h1>
+                    <p class="card-description">Digite suas credenciais para acessar o sistema</p>
+                </div>
+                <div class="card-content">
+                    <form id="loginForm" class="form">
+                        <div id="errorMessage" class="alert alert-error" style="display: none;"></div>
+
+                        <div class="form-group">
+                            <label for="email" class="label">E-mail</label>
+                            <input type="email" id="email" class="input" placeholder="seu@email.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" class="label">Senha</label>
+                            <div class="input-group">
+                                <input type="password" id="password" class="input" placeholder="Digite sua senha" required>
+                                <button type="button" id="togglePassword" class="input-button">
+                                    <svg id="eyeIcon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <a href="recuperar-senha.html" class="link">Esqueceu a senha?</a>
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="btn btn-primary btn-full">
+                            Entrar
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p class="text-center">
+                            Não tem uma conta?
+                            <a href="cadastro.html" class="link font-medium">Cadastre-se</a>
+                        </p>
+                    </div>
+
+                    <div class="demo-info">
+                        <p class="demo-title">Conta demo:</p>
+                        <p class="demo-text"><strong>Admin:</strong> admin@kontrollar.com / admin123</p>
+                        <p class="demo-text"><strong>Usuário:</strong> qualquer email válido + senha</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/auth.js"></script>
+</body>
+</html>

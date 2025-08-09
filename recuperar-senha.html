@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Senha - Kontrollar</title>
+    <link rel="icon" href="./public/logo2-SF.png">
+    <link rel="stylesheet" href="styles/global.css">
+    <link rel="stylesheet" href="styles/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <a href="login.html" class="back-link">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Voltar ao login
+                </a>
+                <div class="logo">
+                    <div class="logo-icon">K</div>
+                    <span class="logo-text">Kontrollar</span>
+                </div>
+                <p class="auth-subtitle">Recuperar senha</p>
+            </div>
+
+            <div class="card" id="recoveryCard">
+                <div class="card-header">
+                    <h1 class="card-title">Esqueceu sua senha?</h1>
+                    <p class="card-description">Digite seu e-mail e enviaremos um link para redefinir sua senha</p>
+                </div>
+                <div class="card-content">
+                    <form id="recoveryForm" class="form">
+                        <div id="errorMessage" class="alert alert-error" style="display: none;"></div>
+
+                        <div class="form-group">
+                            <label for="email" class="label">E-mail</label>
+                            <input type="email" id="email" class="input" placeholder="seu@email.com" required>
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="btn btn-primary btn-full">
+                            Enviar link de recuperação
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p class="text-center">
+                            Lembrou da senha?
+                            <a href="login.html" class="link font-medium">Fazer login</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="successCard" style="display: none;">
+                <div class="card-content">
+                    <div class="success-container">
+                        <div class="success-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9 12l2 2 4-4M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/>
+                            </svg>
+                        </div>
+                        <h2 class="success-title">E-mail enviado!</h2>
+                        <p class="success-description">
+                            Enviamos um link de recuperação para <strong id="sentEmail"></strong>. 
+                            Verifique sua caixa de entrada e spam.
+                        </p>
+                        <a href="login.html" class="btn btn-primary btn-full">Voltar ao login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const recoveryForm = document.getElementById('recoveryForm');
+            const emailInput = document.getElementById('email');
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const recoveryCard = document.getElementById('recoveryCard');
+            const successCard = document.getElementById('successCard');
+            const sentEmail = document.getElementById('sentEmail');
+
+            recoveryForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = emailInput.value.trim();
+                
+                // Clear previous errors
+                errorMessage.style.display = 'none';
+                errorMessage.textContent = '';
+                
+                if (!email) {
+                    showError('E-mail é obrigatório');
+                    return;
+                }
+                
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Enviando...';
+                
+                // Simulate email sending
+                setTimeout(() => {
+                    sentEmail.textContent = email;
+                    recoveryCard.style.display = 'none';
+                    successCard.style.display = 'block';
+                }, 1500);
+            });
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

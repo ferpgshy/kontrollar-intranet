@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Kontrollar</title>
+    <link rel="icon" href="./public/logo2-SF.png" />
+    <link rel="stylesheet" href="styles/global.css" />
+    <link rel="stylesheet" href="styles/dashboard.css" />
+    <link rel="stylesheet" href="ia-premium.css">
+  </head>
+  <body>
+    <div class="dashboard-layout">
+      <!-- Barra Lateral -->
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <div class="logo-icon">K</div>
+            <span class="logo-text">Kontrollar</span>
+          </div>
+          <button id="controleSidebar" class="sidebar-toggle">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path d="M3 12h18M3 6h18M3 18h18" />
+            </svg>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav">
+          <div class="nav-section">
+            <h3 class="nav-title">Menu Principal</h3>
+            <ul class="nav-list">
+              <li>
+                <a
+                  href="#dashboard"
+                  class="nav-link active"
+                  data-page="dashboard"
+                >
+                  <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                  </svg>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a href="#projetos" class="nav-link" data-page="projetos">
+                  <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
+                    />
+                  </svg>
+                  <span>Projetos</span>
+                </a>
+              </li>
+              <li>
+                <a href="#backlog" class="nav-link" data-page="backlog">
+                  <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M9 12l2 2 4-4M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"
+                    />
+                  </svg>
+                  <span>Backlog</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#calendarioio"
+                  class="nav-link"
+                  data-page="calendarioio"
+                >
+                  <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  <span>Calendário</span>
+                </a>
+              </li>
+              <li>
+                <a href="#chat" class="nav-link" data-page="chat">
+                  <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+                    />
+                  </svg>
+                  <span>Chat</span>
+                </a>
+              </li>
+              <li>
+                <a href="#equipes" class="nav-link" data-page="equipes">
+                  <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"
+                    />
+                  </svg>
+                  <span>Equipes</span>
+                </a>
+              </li>
+              <li>
+                <a href="#avisos" class="nav-link" data-page="avisos">
+                  <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"
+                    />
+                  </svg>
+                  <span>Avisos</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="nav-section">
+            <h3 class="nav-title">Configurações</h3>
+            <ul class="nav-list">
+              <li>
+                <a href="#perfil" class="nav-link" data-page="perfil">
+                  <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"
+                    />
+                  </svg>
+                  <span>Perfil</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#configuracoes"
+                  class="nav-link"
+                  data-page="configuracoes"
+                >
+                  <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                      d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"
+                    />
+                  </svg>
+                  <span>Configurações</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="user-menu">
+            <div class="user-info">
+              <div class="user-avatar" id="userAvatar">U</div>
+              <div class="user-details">
+                <div class="user-name" id="userName">Usuário</div>
+                <div class="user-role" id="userRole">Desenvolvedor</div>
+              </div>
+            </div>
+            <button id="logoutBtn" class="logout-btn" title="Sair">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Conteudo Principal  -->
+      <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+          <div class="header-left">
+            <button id="celularcontroleSidebar" class="celular-sidebar-toggle">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path d="M3 12h18M3 6h18M3 18h18" />
+              </svg>
+            </button>
+          </div>
+          <div class="header-right">
+            <button class="btn btn-primary btn-sm">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Novo
+            </button>
+            <button id="botaoNotificacao" class="notification-btn">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"
+                />
+              </svg>
+              <span class="notification-badge">3</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Conteudo -->
+        <div id="conteudoPagina" class="page-content"></div>
+      </main>
+    </div>
+
+    <!-- Painel de eventos do dia -->
+    <div id="painelEventos" style="display: none; margin-top: 1rem">
+      <h3 style="margin-bottom: 0.5rem">Eventos do dia</h3>
+      <div
+        id="listaEventosDia"
+        style="display: flex; flex-direction: column; gap: 0.5rem"
+      ></div>
+    </div>
+
+    <!-- Notificacao -->
+    <div
+      id="painelNotificacao"
+      class="notification-panel"
+      style="display: none"
+    >
+      <div class="notification-header">
+        <h3>Notificações</h3>
+        <button id="fecharNotificacao" class="close-btn">×</button>
+      </div>
+      <div class="notification-list">
+        <div class="notification-item unread">
+          <div class="notification-content">
+            <h4>Nova tarefa atribuída</h4>
+            <p>Você foi atribuído à tarefa "Revisar documentação"</p>
+            <span class="notification-time">5 min atrás</span>
+          </div>
+        </div>
+        <div class="notification-item unread">
+          <div class="notification-content">
+            <h4>Reunião em 30 minutos</h4>
+            <p>Reunião de Sprint Planning às 14:00</p>
+            <span class="notification-time">25 min atrás</span>
+          </div>
+        </div>
+        <div class="notification-item">
+          <div class="notification-content">
+            <h4>Projeto atualizado</h4>
+            <p>O projeto "Sistema de Vendas" foi atualizado</p>
+            <span class="notification-time">1 hora atrás</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="universal-modal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+      "
+    >
+      <div
+        style="
+          background: white;
+          border-radius: 0.5rem;
+          max-width: 400px;
+          width: 100%;
+          padding: 1.5rem;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        "
+      >
+        <h3
+          id="modal-title"
+          style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem"
+        ></h3>
+        <p
+          id="modal-message"
+          style="font-size: 0.95rem; color: #444; margin-bottom: 1.5rem"
+        ></p>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem">
+          <button
+            id="modal-cancel"
+            style="
+              padding: 0.5rem 1rem;
+              background: #e5e7eb;
+              color: #111;
+              border: none;
+              border-radius: 0.375rem;
+            "
+          >
+            Cancelar
+          </button>
+          <button
+            id="modal-ok"
+            style="
+              padding: 0.5rem 1rem;
+              background: #4338ca;
+              color: white;
+              border: none;
+              border-radius: 0.375rem;
+              font-weight: 500;
+            "
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- IA Premium: Botão flutuante -->
+    <div class="ia-premium-btn" aria-label="Abrir Assistente Premium">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M21 5H3C2.44772 5 2 5.44772 2 6V18C2 18.5523 2.44772 19 3 19H21C21.5523 19 22 18.5523 22 18V6C22 5.44772 21.5523 5 21 5Z"
+          stroke="white"
+          stroke-width="2"
+        />
+        <path
+          d="M16 3V7"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <path
+          d="M8 3V7"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <path
+          d="M2 10H22"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <path
+          d="M9 16L11 18L15 14"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+
+    <!-- IA Premium: Janela -->
+    <div
+      class="ia-premium-container ia-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Assistente Avançado"
+    >
+      <div class="ia-premium-header">
+        <div class="ia-header-content">
+          <div class="ia-premium-badge">PRO</div>
+          <div class="ia-header-text">
+            <div class="ia-title">Assistente Avançado</div>
+            <div class="ia-subtitle">Dashboard Kontrollar</div>
+          </div>
+        </div>
+        <button class="ia-close-btn" aria-label="Fechar">×</button>
+      </div>
+
+      <div class="ia-premium-body">
+        <div class="ia-welcome-card">
+          <div class="ia-card-icon">🚀</div>
+          <div class="ia-card-content">
+            <h3>Suporte Premium</h3>
+            <p>Como posso ajudar com sua dashboard hoje?</p>
+            <div class="ia-quick-actions">
+              <button type="button" data-action="tasks">
+                Verificar tarefas
+              </button>
+              <button type="button" data-action="reports">
+                Gerar relatório
+              </button>
+              <button type="button" data-action="settings">
+                Configurações
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="iaChatPagoMessages" aria-live="polite"></div>
+
+        <div class="ia-typing-indicator" aria-hidden="true">
+          <div class="ia-typing-dot"></div>
+          <div class="ia-typing-dot"></div>
+          <div class="ia-typing-dot"></div>
+        </div>
+      </div>
+
+      <div class="ia-premium-footer">
+        <div class="ia-input-container">
+          <input
+            id="iaInputPago"
+            class="ia-premium-input"
+            placeholder="Ex: Como criar um relatório personalizado?"
+            aria-label="Mensagem para o Assistente"
+          />
+          <button
+            id="iaSendPago"
+            class="ia-premium-send"
+            type="button"
+            aria-label="Enviar"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M22 2L11 13"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <path
+                d="M22 2L15 22L11 13L2 9L22 2Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="ia-footer-note">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+            <path
+              d="M12 16V12"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <path
+              d="M12 8H12.01"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+          Respostas técnicas instantâneas para sua dashboard
+        </div>
+      </div>
+    </div>
+
+    <script src="ia/iaAcessoPago.js"></script>
+    <script src="scripts/data.js"></script>
+    <script src="scripts/inicializador.js"></script>
+    <script src="scripts/utils/label.js"></script>
+    <script src="scripts/utils/styles.js"></script>
+    <script src="scripts/utils/modal.js"></script>
+    <script src="scripts/main.js"></script>
+  </body>
+</html>

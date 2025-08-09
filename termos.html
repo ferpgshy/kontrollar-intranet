@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Termos de Serviço da plataforma Kontrollar - Gestão de projetos corporativos"
+    />
+    <meta name="author" content="Kontrollar" />
+    <title>Termos de Serviço - Kontrollar</title>
+    <link rel="icon" href="./public/logo2-SF.png" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles/global.css" />
+    <style>
+      :root {
+        --primary: #000000;
+        --primary-dark: #000000;
+        --secondary: #4b5563;
+        --light: #f9fafb;
+        --border: #e5e7eb;
+        --text: #1f2937;
+        --text-light: #6b7280;
+        --success: #10b981;
+        --danger: #ef4444;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background-color: #f8fafc;
+      }
+
+      .terms-container {
+        min-height: 100vh;
+        background-color: #ffffff;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Header */
+      .header {
+        border-bottom: 1px solid #e5e7eb;
+        background-color: #ffffff;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+      }
+
+      .nav {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      /* Conteúdo principal */
+      .terms-content {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+      }
+
+      .terms-header-content {
+        margin-bottom: 2.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+      }
+
+      .terms-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 0.75rem;
+        line-height: 1.2;
+        background: linear-gradient(90deg, #000000, #000000);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .terms-updated {
+        color: var(--text-light);
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* Seções melhoradas */
+      .terms-section {
+        margin-bottom: 2.5rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+        background-color: #f9fafb;
+        transition: transform 0.3s, box-shadow 0.3s;
+        border-left: 4px solid var(--primary);
+      }
+
+      .terms-section:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      }
+
+      .terms-section h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .terms-section h2 i {
+        color: var(--primary);
+        background: rgba(37, 99, 235, 0.1);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .terms-section p {
+        color: var(--text);
+        line-height: 1.7;
+        margin-bottom: 1.2rem;
+      }
+
+      .terms-section ul {
+        list-style-type: none;
+        color: var(--text);
+        margin-bottom: 1.2rem;
+      }
+
+      .terms-section li {
+        margin-bottom: 0.75rem;
+        padding-left: 1.75rem;
+        position: relative;
+      }
+
+      .terms-section li:before {
+        content: "•";
+        color: var(--primary);
+        font-size: 1.5rem;
+        position: absolute;
+        left: 0;
+        top: -4px;
+      }
+
+      /* Botões melhorados */
+      .terms-actions {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.85rem 1.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        gap: 0.5rem;
+      }
+
+      .btn-primary {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+      }
+
+      .btn-primary:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(37, 99, 235, 0.4);
+      }
+
+      .btn-outline {
+        background-color: transparent;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+      }
+
+      .btn-outline:hover {
+        background-color: rgba(37, 99, 235, 0.05);
+        transform: translateY(-2px);
+      }
+
+      /* Índice de navegação */
+      .terms-nav {
+        position: sticky;
+        top: 100px;
+        margin-left: 2rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+        background: white;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+        max-height: calc(100vh - 140px);
+        overflow-y: auto;
+      }
+
+      .terms-nav h3 {
+        font-size: 1.25rem;
+        margin-bottom: 1.25rem;
+        color: #111827;
+        font-weight: 700;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border);
+      }
+
+      .terms-nav ul {
+        list-style: none;
+      }
+
+      .terms-nav li {
+        margin-bottom: 0.75rem;
+      }
+
+      .terms-nav a {
+        text-decoration: none;
+        color: var(--text-light);
+        font-weight: 500;
+        transition: all 0.2s;
+        display: block;
+        padding: 0.4rem 0.5rem;
+        border-radius: 6px;
+      }
+
+      .terms-nav a:hover {
+        color: var(--primary);
+        background-color: rgba(37, 99, 235, 0.05);
+      }
+
+      .terms-nav a.active {
+        color: var(--primary);
+        background-color: rgba(37, 99, 235, 0.1);
+        font-weight: 600;
+      }
+
+      /* Layout flexível */
+      .terms-wrapper {
+        display: flex;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .terms-main {
+        flex: 1;
+        min-width: 0;
+      }
+
+      /* Footer */
+      .footer {
+        border-top: 1px solid #e5e7eb;
+        padding: 2rem 0;
+        background-color: #ffffff;
+      }
+
+      .footer-content {
+        text-align: center;
+      }
+
+      .footer-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .footer-text {
+        color: #666666;
+        font-size: 0.875rem;
+      }
+
+      .footer-link {
+        color: #666666;
+        transition: color 0.2s ease;
+      }
+
+      .footer-link:hover {
+        color: #000000;
+      }
+
+      /* Botão flutuante */
+      .scroll-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s;
+        opacity: 0;
+        visibility: hidden;
+        z-index: 99;
+      }
+
+      .scroll-top.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .scroll-top:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-5px);
+      }
+
+      /* Responsividade */
+      @media (max-width: 1024px) {
+        .terms-nav {
+          display: none;
+        }
+
+        .terms-content {
+          max-width: 100%;
+          padding: 2rem 1.5rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .terms-title {
+          font-size: 2rem;
+        }
+
+        .terms-section {
+          padding: 1.25rem;
+        }
+
+        .terms-section h2 {
+          font-size: 1.35rem;
+        }
+
+        .terms-actions {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+        }
+
+        .footer-content {
+          flex-direction: column;
+          gap: 2rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .terms-title {
+          font-size: 1.75rem;
+        }
+
+        .terms-content {
+          padding: 1.5rem 1rem;
+        }
+
+        .terms-header-content {
+          margin-bottom: 1.5rem;
+        }
+
+        .terms-section {
+          margin-bottom: 1.5rem;
+          padding: 1rem;
+        }
+      }
+
+      /* Animações */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .terms-section {
+        animation: fadeIn 0.5s ease-out;
+        animation-fill-mode: both;
+      }
+
+      .terms-section:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .terms-section:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .terms-section:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .terms-section:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+      .terms-section:nth-child(5) {
+        animation-delay: 0.5s;
+      }
+      .terms-section:nth-child(6) {
+        animation-delay: 0.6s;
+      }
+      .terms-section:nth-child(7) {
+        animation-delay: 0.7s;
+      }
+      .terms-section:nth-child(8) {
+        animation-delay: 0.8s;
+      }
+      .terms-section:nth-child(9) {
+        animation-delay: 0.9s;
+      }
+      .terms-section:nth-child(10) {
+        animation-delay: 1s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="terms-container">
+      <!-- Header -->
+      <header class="header">
+        <div class="container">
+          <div class="header-content">
+            <div class="logo">
+              <div class="logo-icon">K</div>
+              <span class="logo-text">Kontrollar</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="terms-wrapper">
+        <aside class="terms-nav">
+          <h3><i class="fas fa-bookmark"></i> Índice</h3>
+          <ul>
+            <li>
+              <a href="#section1" class="active">1. Aceitação dos Termos</a>
+            </li>
+            <li><a href="#section2">2. Descrição do Serviço</a></li>
+            <li><a href="#section3">3. Contas de Usuário</a></li>
+            <li><a href="#section4">4. Uso Aceitável</a></li>
+            <li><a href="#section5">5. Privacidade e Dados</a></li>
+            <li><a href="#section6">6. Propriedade Intelectual</a></li>
+            <li><a href="#section7">7. Limitação de Responsabilidade</a></li>
+            <li><a href="#section8">8. Modificações dos Termos</a></li>
+            <li><a href="#section9">9. Rescisão</a></li>
+            <li><a href="#section10">10. Contato</a></li>
+          </ul>
+        </aside>
+
+        <main class="terms-main">
+          <div class="terms-content">
+            <div class="terms-header-content">
+              <h1 class="terms-title">Termos de Serviço</h1>
+              <p class="terms-updated">
+                <i class="fas fa-sync-alt"></i> Última atualização: Agosto de
+                2025
+              </p>
+            </div>
+
+            <section class="terms-section" id="section1">
+              <h2>
+                <i class="fas fa-check-circle"></i> 1. Aceitação dos Termos
+              </h2>
+              <p>
+                Ao acessar e usar o Kontrollar, você concorda em cumprir e estar
+                vinculado a estes Termos de Serviço. Se você não concordar com
+                qualquer parte destes termos, não deve usar nosso serviço.
+              </p>
+              <p>
+                Estes Termos constituem um acordo legal entre você e a
+                Kontrollar e regem o uso de todos os serviços oferecidos através
+                da nossa plataforma.
+              </p>
+            </section>
+
+            <section class="terms-section" id="section2">
+              <h2><i class="fas fa-laptop"></i> 2. Descrição do Serviço</h2>
+              <p>
+                O Kontrollar é uma plataforma de intranet corporativa para
+                gerenciamento de projetos que oferece ferramentas para
+                organização de tarefas, colaboração em equipe, comunicação
+                interna e acompanhamento de projetos.
+              </p>
+              <p>
+                Nossos serviços incluem, mas não se limitam a: quadros de
+                projetos, listas de tarefas, calendários compartilhados,
+                ferramentas de comunicação integradas e relatórios de
+                desempenho.
+              </p>
+            </section>
+
+            <section class="terms-section" id="section3">
+              <h2><i class="fas fa-user-circle"></i> 3. Contas de Usuário</h2>
+              <p>
+                Para usar o Kontrollar, você deve criar uma conta fornecendo
+                informações precisas e completas. Você é responsável por manter
+                a confidencialidade de sua conta e senha.
+              </p>
+              <ul>
+                <li>Você deve ter pelo menos 18 anos para criar uma conta</li>
+                <li>
+                  Uma pessoa ou entidade legal pode manter apenas uma conta
+                </li>
+                <li>
+                  Você é responsável por todas as atividades que ocorrem em sua
+                  conta
+                </li>
+                <li>
+                  Você deve notificar imediatamente a Kontrollar sobre qualquer
+                  uso não autorizado de sua conta
+                </li>
+                <li>
+                  Reservamos o direito de recusar o serviço ou fechar contas a
+                  nosso critério
+                </li>
+              </ul>
+            </section>
+
+            <section class="terms-section" id="section4">
+              <h2><i class="fas fa-shield-alt"></i> 4. Uso Aceitável</h2>
+              <p>
+                Você concorda em usar o Kontrollar apenas para fins legais e de
+                acordo com estes termos. É proibido:
+              </p>
+              <ul>
+                <li>
+                  Usar o serviço para qualquer propósito ilegal ou não
+                  autorizado
+                </li>
+                <li>
+                  Interferir ou interromper o serviço ou servidores conectados
+                  ao serviço
+                </li>
+                <li>
+                  Tentar obter acesso não autorizado a qualquer parte do serviço
+                </li>
+                <li>
+                  Usar o serviço para transmitir vírus ou código malicioso
+                </li>
+                <li>
+                  Realizar atividades de mineração de dados ou scraping sem
+                  permissão
+                </li>
+                <li>Violar direitos de propriedade intelectual de terceiros</li>
+                <li>Publicar conteúdo ofensivo, difamatório ou ilegal</li>
+              </ul>
+            </section>
+
+            <section class="terms-section" id="section5">
+              <h2><i class="fas fa-lock"></i> 5. Privacidade e Dados</h2>
+              <p>
+                Respeitamos sua privacidade e estamos comprometidos em proteger
+                seus dados pessoais. Coletamos e processamos informações de
+                acordo com nossa Política de Privacidade.
+              </p>
+              <p>
+                Ao usar nossos serviços, você concorda com a coleta e uso de
+                informações conforme descrito na nossa
+                <a
+                  href="#"
+                  style="color: var(--primary); text-decoration: underline"
+                  >Política de Privacidade</a
+                >. Tomamos medidas de segurança adequadas para proteger seus
+                dados contra acesso não autorizado.
+              </p>
+            </section>
+
+            <section class="terms-section" id="section6">
+              <h2>
+                <i class="fas fa-copyright"></i> 6. Propriedade Intelectual
+              </h2>
+              <p>
+                O Kontrollar e todo o seu conteúdo, features e funcionalidades
+                são propriedade exclusiva da empresa e são protegidos por
+                direitos autorais, marcas registradas e outras leis de
+                propriedade intelectual.
+              </p>
+              <p>
+                Concedemos a você uma licença limitada, não exclusiva,
+                intransferível e revogável para acessar e usar nosso serviço
+                conforme estes Termos. Todos os direitos não concedidos
+                expressamente são reservados.
+              </p>
+            </section>
+
+            <section class="terms-section" id="section7">
+              <h2>
+                <i class="fas fa-exclamation-triangle"></i> 7. Limitação de
+                Responsabilidade
+              </h2>
+              <p>
+                Em nenhuma circunstância seremos responsáveis por danos
+                indiretos, incidentais, especiais, consequenciais ou punitivos,
+                incluindo, sem limitação, perda de lucros, dados, uso, boa
+                vontade ou outras perdas intangíveis.
+              </p>
+              <p>
+                Nossa responsabilidade total em relação a quaisquer reclamações
+                sob estes Termos não excederá o valor pago por você pelos
+                serviços nos últimos seis meses.
+              </p>
+            </section>
+
+            <section class="terms-section" id="section8">
+              <h2><i class="fas fa-edit"></i> 8. Modificações dos Termos</h2>
+              <p>
+                Reservamos o direito de modificar estes termos a qualquer
+                momento. Notificaremos você sobre mudanças significativas por
+                e-mail ou através de um aviso em nosso serviço.
+              </p>
+              <p>
+                O uso continuado de nossos serviços após tais modificações
+                constitui sua concordância com os Termos revisados. Recomendamos
+                que você revise periodicamente esta página para se manter
+                informado.
+              </p>
+            </section>
+
+            <section class="terms-section" id="section9">
+              <h2><i class="fas fa-ban"></i> 9. Rescisão</h2>
+              <p>
+                Podemos encerrar ou suspender sua conta imediatamente, sem aviso
+                prévio, por qualquer motivo, incluindo, sem limitação, se você
+                violar os Termos de Serviço.
+              </p>
+              <p>
+                Após a rescisão, seu direito de usar o serviço cessará
+                imediatamente. Se você desejar encerrar sua conta, pode fazê-lo
+                a qualquer momento através das configurações da conta.
+              </p>
+            </section>
+
+            <section class="terms-section" id="section10">
+              <h2><i class="fas fa-envelope"></i> 10. Contato</h2>
+              <p>
+                Se você tiver dúvidas sobre estes Termos de Serviço, entre em
+                contato conosco em:
+              </p>
+              <p>
+                <i class="fas fa-envelope"></i> E-mail: legal@kontrollar.com<br />
+                <i class="fas fa-phone"></i> Telefone: (11) 9999-9999<br />
+                <i class="fas fa-map-marker-alt"></i> Endereço: Av. Paulista,
+                1000 - São Paulo, SP
+              </p>
+              <p>
+                Para questões gerais de suporte, visite nosso
+                <a href="#" style="color: var(--primary)">centro de ajuda</a>.
+              </p>
+            </section>
+          </div>
+        </main>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="container">
+          <div class="footer-content">
+            <div class="footer-logo">
+              <div class="logo-icon small">K</div>
+              <span class="logo-text">Kontrollar</span>
+            </div>
+            <p class="footer-text">
+              © 2025 Kontrollar. Todos os direitos reservados. |
+              <a href="termos.html" class="footer-link">Termos de Serviço</a>
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <div class="scroll-top" id="scrollTop">
+      <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script>
+      // Índice de navegação
+      document.querySelectorAll(".terms-nav a").forEach((link) => {
+        link.addEventListener("click", function (e) {
+          document
+            .querySelectorAll(".terms-nav a")
+            .forEach((a) => a.classList.remove("active"));
+          this.classList.add("active");
+        });
+      });
+
+      // Scroll para seções
+      window.addEventListener("scroll", function () {
+        const sections = document.querySelectorAll(".terms-section");
+        const navLinks = document.querySelectorAll(".terms-nav a");
+
+        let current = "";
+
+        sections.forEach((section) => {
+          const sectionTop = section.offsetTop;
+          if (scrollY >= sectionTop - 200) {
+            current = section.getAttribute("id");
+          }
+        });
+
+        navLinks.forEach((link) => {
+          link.classList.remove("active");
+          if (link.getAttribute("href") === `#${current}`) {
+            link.classList.add("active");
+          }
+        });
+
+        // Botão de voltar ao topo
+        const scrollTopBtn = document.getElementById("scrollTop");
+        if (window.scrollY > 300) {
+          scrollTopBtn.classList.add("show");
+        } else {
+          scrollTopBtn.classList.remove("show");
+        }
+      });
+
+      // Botão de voltar ao topo
+      document
+        .getElementById("scrollTop")
+        .addEventListener("click", function () {
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+          });
+        });
+
+      // Animações ao rolar
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.style.opacity = 1;
+              entry.target.style.transform = "translateY(0)";
+            }
+          });
+        },
+        {
+          threshold: 0.1,
+        }
+      );
+
+      document.querySelectorAll(".terms-section").forEach((section) => {
+        section.style.opacity = 0;
+        section.style.transform = "translateY(20px)";
+        section.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+        observer.observe(section);
+      });
+    </script>
+  </body>
+</html>
