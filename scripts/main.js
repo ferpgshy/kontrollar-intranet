@@ -2481,22 +2481,6 @@ function atualizarListaChats() {
     container.innerHTML = gerarListaChats();
   }
 }
-
-// Carregar último chat aberto ao iniciar
-window.addEventListener("DOMContentLoaded", () => {
-  // Primeiro monta a interface do chat
-  carregarConteudoChat();
-
-  // Depois tenta carregar o último chat aberto
-  const ultimoChat = localStorage.getItem("ultimoChat");
-  if (ultimoChat) {
-    setTimeout(() => {
-      const roomExists = chatGrupos.some((r) => r.id === parseInt(ultimoChat));
-      if (roomExists) chatSelecionado(parseInt(ultimoChat));
-    }, 100);
-  }
-});
-
 // FIM CHAT /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // EQUIPES /////////////////////////////////////////////////////////////////////////////////////////////////////////
