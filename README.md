@@ -65,7 +65,7 @@ cd kontrollar-intranet
 npm install
 
 # Inicie o servidor da IA
-node ia/server.js
+node ia/serveria.js
 
 # Abra o index.html com Live Server ou navegador
 ````
@@ -80,7 +80,7 @@ KONTROLLAR-INTRANET-1.0.2/
 ├── ia/
 │   ├── iaAcessoGratuito.js
 │   ├── iaAcessoPago.js
-│   └── server.js
+│   └── serveria.js
 │
 ├── node_modules/
 │   └── ... (dependências do Node.js)

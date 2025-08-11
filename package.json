@@ -2,10 +2,10 @@
   "name": "kontrollar-intranet",
   "version": "1.0.2",
   "description": "Intranet interativa para gestão de projetos com dashboard, IA de suporte e funcionalidades colaborativas.",
-  "main": "ia/server.js",
+  "main": "ia/serveria.js",
   "scripts": {
-    "start": "node ia/server.js",
-    "dev": "nodemon ia/server.js",
+    "start": "node ia/serveria.js",
+    "dev": "nodemon ia/serveria.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
