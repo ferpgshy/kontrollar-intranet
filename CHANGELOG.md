@@ -1,111 +1,57 @@
-# Changelog Detalhado das Atualizações
+# Changelog — Chat
 
-## 1. Seção Shop na Landing Page (Plans & Pricing)
-- **Implementação completa da nova seção "Shop"**
-  - Layout responsivo com cards de planos
-  - Comparativo de features entre planos
-  - Botões de seleção com destaque visual
-  - Toggle para alternar entre mensal/anual
+**Data:** 2025-08-11
 
-- **Planos implementados:**
-  - Básico: $29/mês - 5 projetos, 10 usuários
-  - Profissional: $79/mês - 20 projetos, 50 usuários
-  - Enterprise: $199/mês - Projetos ilimitados, usuários ilimitados
+## Adicionado
 
-- **Features destacadas:**
-  - Armazenamento (50GB, 250GB, Ilimitado)
-  - Suporte (Básico, Prioritário, 24/7)
-  - Relatórios avançados
-  - Integrações com ferramentas externas
+* **Seleção de participantes na criação do chat**
 
-## 2. Dashboard - Reestruturação de Configurações
-- **Remoção das divs redundantes do sistema antigo**
-  - Exclusão de 3 containers redundantes
-  - Simplificação da hierarquia de componentes
+  * Busca por nome e **adição manual** de usuários.
+  * Checkboxes por usuário: **Participa** e **Adm**.
+  * O criador entra **automaticamente** e fica **travado como administrador**.
+* **Política de envio (“apenas leitura”)**
 
-- **Redesign completo da aba Configurações**
-  - Novo layout com navegação lateral
-  - Agrupamento lógico de funcionalidades:
-    - Perfil do Usuário
-    - Preferências do Sistema
-    - Configurações de Segurança
-    - Integrações
+  * Opção **Apenas administradores podem enviar** (modo leitura) no modal de criação.
+  * Envio é bloqueado para não-admins quando ativo.
+* **Helpers**
 
-- **Melhorias de UX:**
-  - Formulários reorganizados com validação em tempo real
-  - Toggle switches modernos para ativação/desativação
-  - Feedback visual aprimorado nas ações
+  * `getAllKnownUsers()` — consolida nomes de `localStorage.users`, dos chats existentes e do usuário atual.
+  * `canUserPost(chat, userName)` — checa permissão de envio conforme a política.
+  * `showToast(msg)` — placeholder para feedback (substituível pelo seu sistema de toast).
 
-## 3. Correção no Sistema de Chat das IAs
-- **Problema identificado:**
-  - Sobreposição de funcionalidades no render
-  - Conflito entre threads de mensagens
-  - Perda de contexto em conversas longas
+## Alterado
 
-- **Soluções implementadas:**
-  - Reestruturação do sistema de renderização:
-    ```javascript
-    // Antes
-    function renderChat() {
-      messages.forEach(msg => appendToDOM(msg));
-    }
+* **UI do input de mensagens**
 
-    // Depois
-    function renderChat() {
-      clearChatContainer();
-      messages.forEach(msg => {
-        const element = createMessageElement(msg);
-        chatContainer.appendChild(element);
-      });
-      scrollToLatest();
-    }
-    ```
+  * Desativa **input** e **botão Enviar** quando o chat está em modo somente admins, com placeholder explicativo.
+* **Criação de chat**
 
-- **Melhorias adicionais:**
-  - Sistema de identificação único para cada mensagem
-  - Gerenciamento de estado otimizado
-  - Separação clara entre:
-    - Mensagens do usuário
-    - Respostas das IAs
-    - Comandos do sistema
+  * Persistência dos novos campos no objeto do chat: `admins` e `policies.posting`.
+  * Persistência de `chatGrupos` no `localStorage` após criar.
+* **Indicador de tipo**
 
-## 4. Otimizações de Performance
-- **Redução de 40% no tempo de carregamento:**
-  - Lazy loading implementado em imagens
-  - Minificação de recursos estáticos
-  - Cache estratégico para assets frequentes
+  * Badge do tipo do chat agora possui **tooltip** (“Público” / “Privado”).
 
-- **Melhorias no consumo de memória:**
-  - Gerenciamento eficiente de event listeners
-  - Limpeza automática de objetos não utilizados
-  - Otimização de algoritmos de renderização
+## Corrigido / Robustez
 
-## 5. Ajustes de Design e UI/UX
-- **Consistência visual em todo o sistema:**
-  - Padronização de espaçamentos e cores
-  - Sistema de ícones unificado
-  - Tipografia consistente
+* **Prevenção de nulidade no DOM**
 
-- **Melhorias específicas:**
-  - Feedback visual em interações
-  - Estados hover/focus/active padronizados
-  - Animações sutis para transições
+  * Guards adicionados em elementos como `currentChatName`, `chatMessages`, `chatInput`, `leaveChatBtn`, evitando erros do tipo “Cannot set properties of null”.
 
-## 6. Correções de Bugs
-- **Principais problemas resolvidos:**
-  - Sincronização de dados entre componentes
-  - Vazamento de memória na navegação
-  - Responsividade em dispositivos móveis
-  - Acessibilidade (contraste, labels ARIA)
-  - Formatação de datas em diferentes fusos horários
+## Modelo de Dados (compatível)
 
-## Resumo das Principais Alterações
+* Objeto `chat` agora inclui:
 
-| Área | Alterações | Impacto |
-|------|------------|---------|
-| **Landing Page** | Nova seção Shop com planos | +Conversões |
-| **Dashboard** | Redesign completo da área de configurações | +Usabilidade |
-| **Chat IA** | Correção de render e funcionalidades | +Estabilidade |
-| **Performance** | Otimizações de carregamento | +40% velocidade |
-| **Design** | Consistência visual e interações | +Experiência |
-| **Bugs** | 15 correções críticas | +Confiança |
+  * `admins: string[]`
+  * `policies: { posting: "all" | "admins" }`
+* Campos existentes (`id`, `name`, `type`, `members`, `messages`) **inalterados**.
+
+## Notas de Implementação
+
+* **Fonte de usuários**: `getAllKnownUsers()` usa `localStorage.users` (string\[] ou `{name:string}[]`) + membros/admins dos grupos existentes + usuário atual.
+* **Bloqueio de envio**: aplicado em `setupMessageSending()` usando `canUserPost()`.
+* **UX**: Em `chatSelecionado()`, input/Enviar são (des)ativados de acordo com a política do chat.
+
+## Quebra de Compatibilidade
+
+* **Nenhuma.** Funciona com dados antigos após a migração acima (ou com defaults implícitos).

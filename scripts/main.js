@@ -2102,6 +2102,44 @@ function mostrarNovoEventoModal() {
 }
 
 // CHAT /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function getAllKnownUsers() {
+  const current = JSON.parse(localStorage.getItem("user") || "{}");
+  const fromLocal = JSON.parse(localStorage.getItem("users") || "[]");
+  const list = [];
+
+  if (Array.isArray(fromLocal)) {
+    for (const u of fromLocal) {
+      if (typeof u === "string") list.push(u);
+      else if (u && typeof u === "object" && u.name) list.push(u.name);
+    }
+  }
+
+  if (Array.isArray(window.chatGrupos)) {
+    for (const g of chatGrupos) {
+      if (Array.isArray(g.members)) list.push(...g.members);
+      if (Array.isArray(g.admins)) list.push(...g.admins);
+    }
+  }
+
+  if (current && current.name) list.push(current.name);
+
+  return Array.from(new Set(list.filter(Boolean))).sort((a, b) => a.localeCompare(b));
+}
+
+function canUserPost(chat, userName) {
+  const posting = chat?.policies?.posting || "all"; // "all" | "admins"
+  if (posting === "admins") {
+    return Array.isArray(chat.admins) && chat.admins.includes(userName);
+  }
+  return true;
+}
+
+function showToast(msg) {
+  // troque por seu sistema de toast/snackbar, se tiver
+  console.log(msg);
+}
+
 function carregarConteudoChat() {
   const conteudoPagina = document.getElementById("conteudoPagina");
 
@@ -2428,6 +2466,10 @@ function setupMessageSending(roomId) {
 }
 
 function showNewChatModal() {
+  const knownUsers = getAllKnownUsers();
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const currentName = currentUser?.name || "Você";
+
   const modal = createModal(
     "Nova Conversa",
     `
@@ -2436,14 +2478,43 @@ function showNewChatModal() {
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nome da Conversa</label>
         <input type="text" id="chatName" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
       </div>
-      <div style="margin-bottom: 1rem;">
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Tipo</label>
-        <select id="chatType" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-          <option value="public">Público</option>
-          <option value="private">Privado</option>
-        </select>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div>
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tipo</label>
+          <select id="chatType" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+            <option value="public">Público</option>
+            <option value="private">Privado</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Envio de mensagens</label>
+          <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;padding:0.5rem;">
+            <input type="checkbox" id="onlyAdminsPost">
+            <label for="onlyAdminsPost" title="Se ativado, somente administradores podem enviar mensagens">
+              Apenas administradores podem enviar
+            </label>
+          </div>
+        </div>
       </div>
-      <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+
+      <div style="margin-bottom:0.5rem;font-weight:600;">Participantes & Administradores</div>
+
+      <div style="display:flex;gap:1rem;margin-bottom:0.75rem;">
+        <input type="text" id="userSearch" placeholder="Buscar usuários..."
+               style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        <div style="display:flex;gap:0.5rem;">
+          <input type="text" id="manualUser" placeholder="Adicionar manualmente"
+                 style="padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <button type="button" id="addManualUserBtn" class="btn btn-outline">Adicionar</button>
+        </div>
+      </div>
+
+      <div id="userList" style="max-height:220px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+        <!-- linhas de usuários -->
+      </div>
+
+      <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
         <button type="button" onclick="fecharModal()" class="btn btn-outline">Cancelar</button>
         <button type="submit" class="btn btn-primary">Criar Conversa</button>
       </div>
@@ -2451,25 +2522,152 @@ function showNewChatModal() {
     `
   );
 
+  // estado interno
+  const selected = new Map(); // name -> { included, admin, locked? }
+
+  function ensureCreator() {
+    selected.set(currentName, { included: true, admin: true, locked: true });
+  }
+
+  function upsertRow(name) {
+    const list = document.getElementById("userList");
+    if (!list || list.querySelector(`[data-row="${CSS.escape(name)}"]`)) return;
+
+    const row = document.createElement("div");
+    row.setAttribute("data-row", name);
+    row.style.display = "grid";
+    row.style.gridTemplateColumns = "1fr auto auto";
+    row.style.alignItems = "center";
+    row.style.gap = "0.5rem";
+    row.style.padding = "0.4rem 0.25rem";
+    row.style.borderBottom = "1px dashed #eee";
+
+    row.innerHTML = `
+      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${name}">
+        ${name}
+      </div>
+      <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
+        <input type="checkbox" class="incChk" data-user="${name}">
+        <span>Participa</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
+        <input type="checkbox" class="admChk" data-user="${name}">
+        <span>Adm</span>
+      </label>
+    `;
+    list.appendChild(row);
+
+    const inc = row.querySelector(".incChk");
+    const adm = row.querySelector(".admChk");
+    const st = selected.get(name) || { included: false, admin: false };
+
+    inc.checked = st.included;
+    adm.checked = st.admin;
+    adm.disabled = !st.included;
+
+    if (st.locked) {
+      inc.checked = true;
+      inc.disabled = true;
+      adm.checked = true;
+      adm.disabled = true;
+    }
+
+    inc.addEventListener("change", () => {
+      const cur = selected.get(name) || { included: false, admin: false };
+      cur.included = inc.checked;
+      if (!cur.included) cur.admin = false;
+      selected.set(name, cur);
+      adm.disabled = !cur.included || cur.locked;
+      adm.checked = cur.admin;
+    });
+
+    adm.addEventListener("change", () => {
+      const cur = selected.get(name) || { included: false, admin: false };
+      if (!cur.included) {
+        cur.included = true;
+        inc.checked = true;
+      }
+      cur.admin = adm.checked;
+      selected.set(name, cur);
+    });
+  }
+
+  ensureCreator();
+  for (const u of getAllKnownUsers()) {
+    if (!selected.has(u)) selected.set(u, { included: false, admin: false });
+    if (u === currentName) selected.set(u, { included: true, admin: true, locked: true });
+    upsertRow(u);
+  }
+
+  document.getElementById("userSearch")?.addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll("#userList [data-row]").forEach((r) => {
+      const name = r.getAttribute("data-row") || "";
+      r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+    });
+  });
+
+  document.getElementById("addManualUserBtn")?.addEventListener("click", () => {
+    const input = document.getElementById("manualUser");
+    const name = (input.value || "").trim();
+    if (!name) return;
+    if (!selected.has(name)) selected.set(name, { included: true, admin: false });
+    upsertRow(name);
+    const row = document.querySelector(`#userList [data-row="${CSS.escape(name)}"]`);
+    row?.querySelector(".incChk")?.click?.();
+    input.value = "";
+  });
+
   document.getElementById("newChatForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const chatName = document.getElementById("chatName").value.trim();
+    const chatType = document.getElementById("chatType").value;
+    const onlyAdminsPost = document.getElementById("onlyAdminsPost").checked;
+
+    if (!chatName) {
+      showToast("Defina um nome para a conversa.");
+      return;
+    }
+
+    const members = [];
+    const admins = [];
+    for (const [name, st] of selected.entries()) {
+      if (st.included) {
+        members.push(name);
+        if (st.admin) admins.push(name);
+      }
+    }
+
+    if (!members.length) {
+      showToast("Selecione pelo menos um participante.");
+      return;
+    }
+    if (!admins.length) {
+      showToast("Defina pelo menos um administrador.");
+      return;
+    }
+    if (!members.includes(currentName)) members.push(currentName);
+    if (!admins.includes(currentName)) admins.push(currentName);
+
     const newChat = {
       id: Date.now(),
-      name: document.getElementById("chatName").value,
-      type: document.getElementById("chatType").value,
-      members: [user.name],
+      name: chatName,
+      type: chatType, // "public" | "private"
+      members,        // array de strings
+      admins,         // array de strings
+      policies: {
+        posting: onlyAdminsPost ? "admins" : "all",
+      },
       messages: [],
     };
 
+    window.chatGrupos = Array.isArray(window.chatGrupos) ? window.chatGrupos : [];
     chatGrupos.push(newChat);
+    try { localStorage.setItem("chatGrupos", JSON.stringify(chatGrupos)); } catch (_) {}
+
     fecharModal();
-
-    // Atualizar apenas a lista de chats
     atualizarListaChats();
-
-    // Selecionar o novo chat automaticamente
     setTimeout(() => chatSelecionado(newChat.id), 100);
   });
 }
