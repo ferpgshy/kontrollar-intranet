@@ -86,8 +86,7 @@ KONTROLLAR-INTRANET-1.0.2/
 │   └── ... (dependências do Node.js)
 │
 ├── public/
-│   ├── placeholder-logo.png
-│   ├── placeholder-logo.svg
+│   ├── logo2-SF.png
 │   ├── placeholder-user.jpg
 │   ├── placeholder.jpg
 │   └── placeholder.svg
