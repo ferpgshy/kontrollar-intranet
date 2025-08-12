@@ -1,8 +1,6 @@
 
 # Changelog
 
-**Data:** 2025-08-11
-
 # Avisos
 
 * Corrigido “data -1 dia”: `publishedAt` agora usa `getDataBrasiliaFormatada()` (yyyy-mm-dd) e exibição via `formatarDataPtBR()`.
@@ -77,7 +75,7 @@
 
   * `deleteNotice()` e outros handlers agora usam `confirmarModal({ title, message })` antes de executar, como no exemplo de projetos/equipes.
 
-# Ordem de scripts (recomendada)
+# Ordem de scripts
 
 1. `scripts/utils/date-utils.js`
 2. (outros utils) `label.js`, `styles.js`, `modal.js`

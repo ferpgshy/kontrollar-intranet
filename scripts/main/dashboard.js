@@ -1,27 +1,63 @@
+const DS = {
+  get projetos() {
+    return Array.isArray(window.projetos)
+      ? window.projetos
+      : JSON.parse(localStorage.getItem("projetos") || "[]");
+  },
+  get tarefas() {
+    return Array.isArray(window.tarefas)
+      ? window.tarefas
+      : JSON.parse(localStorage.getItem("tarefas") || "[]");
+  },
+  get eventos() {
+    return Array.isArray(window.eventos)
+      ? window.eventos
+      : JSON.parse(localStorage.getItem("eventos") || "[]");
+  },
+  get equipes() {
+    return Array.isArray(window.equipes)
+      ? window.equipes
+      : JSON.parse(localStorage.getItem("equipes") || "[]");
+  },
+};
+
+const S = typeof sanitizeHTML === "function"
+  ? sanitizeHTML
+  : (s) => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+// Mapeadores rápidos
+function maps() {
+  const projMap = new Map(DS.projetos.map(p => [Number(p.id), p]));
+  const teamMap = new Map(DS.equipes.map(t => [Number(t.id), t]));
+  return { projMap, teamMap };
+}
+
+// ---------- UI principal ----------
 function carregarConteudoDashboard() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const conteudoPagina = document.getElementById("conteudoPagina");
+  const projetos = DS.projetos;
+  const tarefas = DS.tarefas;
+  const eventos = DS.eventos;
 
   const totalProjetos = projetos.length;
 
   const hoje = new Date();
   const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
   const projetosEsteMes = projetos.filter(
-    (p) => new Date(p.createdAt) >= inicioMes
+    (p) => new Date(p.createdAt || p.updatedAt || p.deadline || Date.now()) >= inicioMes
   ).length;
 
   const prazoProximos7Dias = projetos.filter((p) => {
-    const prazo = new Date(p.deadline);
-    return (
-      prazo >= hoje &&
-      prazo <= new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 7)
-    );
+    const prazo = new Date(p.deadline || "2999-12-31");
+    return (prazo >= hoje &&
+      prazo <= new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 7));
   }).length;
 
   conteudoPagina.innerHTML = `
     <div class="welcome-section">
-        <h1 class="welcome-title">Bem-vindo de volta, ${user.name}! 👋</h1>
-        <p class="welcome-description">Aqui está um resumo do que está acontecendo em seus projetos hoje.</p>
+      <h1 class="welcome-title">Bem-vindo de volta, ${S(user.name || "Usuário")}! 👋</h1>
+      <p class="welcome-description">Aqui está um resumo do que está acontecendo em seus projetos hoje.</p>
     </div>
 
     <div class="stats-grid">
@@ -55,7 +91,6 @@ function carregarConteudoDashboard() {
         </div>
       </div>
 
-      <!-- Stat: Equipes & Parceiros -->
       <div class="stat-card" id="teamsStatCard" style="border:1px solid #e5e7eb;border-radius:0.75rem;padding:1rem;background:#fff">
         <div class="stat-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.75rem">
           <div class="stat-info" style="display:flex;flex-direction:column;gap:0.25rem">
@@ -76,13 +111,8 @@ function carregarConteudoDashboard() {
             </svg>
           </button>
         </div>
-
-        <!-- Breakdown por equipe -->
-        <div id="teamPartnerBreakdown" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.75rem">
-          <!-- chips injetados via JS -->
-        </div>
+        <div id="teamPartnerBreakdown" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.75rem"></div>
       </div>
-
 
       <div class="stat-card">
         <div class="stat-header">
@@ -169,30 +199,14 @@ function carregarConteudoDashboard() {
     </div>
   `;
 
-  // 🔁 Atualiza os dados do card de tarefas com dados reais
   atualizarCardTarefasConcluidas();
   requestAnimationFrame(updateTeamsStatCard);
 }
 
-// Util: usa seu sanitizeHTML se existir (mantém igual)
-const _sanitize = typeof sanitizeHTML === "function"
-  ? sanitizeHTML
-  : (s) => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-
-/**
- * Retorna estatísticas de equipes/parceiros.
- * Tenta ler de window.equipes; se não tiver, usa o 'equipes' global (let/const).
- */
+// --------- Equipes & Parceiros ----------
 function getTeamsPartnersStats(equipesArr) {
-  // resolve fonte de dados
-  if (!Array.isArray(equipesArr)) {
-    const fromWindow = Array.isArray(window.equipes) ? window.equipes : null;
-    const fromGlobal = (typeof equipes !== "undefined" && Array.isArray(equipes)) ? equipes : null;
-    equipesArr = fromWindow || fromGlobal || [];
-  }
-
-  let totalTeams = 0;
-  let totalPartners = 0;
+  if (!Array.isArray(equipesArr)) equipesArr = DS.equipes;
+  let totalTeams = 0, totalPartners = 0;
   const byTeam = [];
 
   for (const eq of equipesArr) {
@@ -201,14 +215,10 @@ function getTeamsPartnersStats(equipesArr) {
     totalTeams += 1;
     totalPartners += count;
   }
-
   byTeam.sort((a, b) => (b.count - a.count) || a.name.localeCompare(b.name, "pt-BR"));
   return { totalTeams, totalPartners, byTeam };
 }
 
-/**
- * Atualiza o card "Equipes & Parceiros"
- */
 function updateTeamsStatCard() {
   const totalsEl = document.getElementById("totalTeams");
   const partnersEl = document.getElementById("totalPartners");
@@ -220,168 +230,138 @@ function updateTeamsStatCard() {
   totalsEl.textContent = totalTeams;
   partnersEl.textContent = totalPartners;
 
-  if (!byTeam.length) {
-    listEl.innerHTML = `<div style="font-size:0.85rem;color:#6b7280;">Nenhuma equipe cadastrada.</div>`;
-    return;
-  }
-
-  listEl.innerHTML = byTeam.map(t => `
-    <span title="${_sanitize(t.name)}"
-          style="display:inline-flex;align-items:center;gap:0.35rem;background:#f3f4f6;color:#374151;border-radius:999px;padding:0.25rem 0.6rem;font-size:0.75rem;">
-      <span style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_sanitize(t.name)}</span>
-      <strong style="color:#111827;">${t.count}</strong>
-    </span>
-  `).join("");
+  listEl.innerHTML = byTeam.length
+    ? byTeam.map(t => `
+      <span title="${S(t.name)}"
+            style="display:inline-flex;align-items:center;gap:0.35rem;background:#f3f4f6;color:#374151;border-radius:999px;padding:0.25rem 0.6rem;font-size:0.75rem;">
+        <span style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${S(t.name)}</span>
+        <strong style="color:#111827;">${t.count}</strong>
+      </span>`).join("")
+    : `<div style="font-size:0.85rem;color:#6b7280;">Nenhuma equipe cadastrada.</div>`;
 }
 
-
+// --------- Blocos de conteúdo ----------
 function gerarProjetosRecentes() {
-  const recentes = projetos
+  const { teamMap } = maps();
+  const recentes = DS.projetos
     .slice()
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 3); // pega os 3 mais recentes
+    .sort((a, b) => new Date(b.createdAt || b.updatedAt || b.deadline || 0) - new Date(a.createdAt || a.updatedAt || a.deadline || 0))
+    .slice(0, 3);
 
-  return recentes
-    .map(
-      (projeto) => `
-        <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <h3 style="font-weight: 600; color: #000000;">${
-                  projeto.name
-                }</h3>
-                <span style="padding: 0.25rem 0.5rem; background-color: #f3f4f6; color: #374151; border-radius: 0.25rem; font-size: 0.75rem;">
-                    ${projeto.status}
-                </span>
-            </div>
-            <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem; font-size: 0.875rem; color: #666666;">
-                <span>${projeto.equipe.length} membros</span>
-                <span>${formatarDataPtBR(projeto.deadline)}</span>
-            </div>
-            <div style="margin-bottom: 0.5rem;">
-                <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.25rem;">
-                    <span>Progresso</span>
-                    <span>${projeto.progress}%</span>
-                </div>
-                <div style="width: 100%; background-color: #e5e7eb; border-radius: 0.25rem; height: 0.5rem;">
-                    <div style="background-color: #000000; height: 100%; border-radius: 0.25rem; width: ${
-                      projeto.progress
-                    }%;"></div>
-                </div>
-            </div>
+  return recentes.map((projeto) => {
+    const equipeObj = projeto.equipeId ? teamMap.get(Number(projeto.equipeId)) : null;
+    const membersCount =
+      Array.isArray(equipeObj?.members) ? equipeObj.members.length :
+      Array.isArray(projeto.members) ? projeto.members.length :
+      Array.isArray(projeto.equipe) ? projeto.equipe.length : 0;
+
+    const progress = Number(projeto.progress || 0);
+    const status = projeto.status || "Em andamento";
+    const deadline = projeto.deadline ? formatarDataPtBR(String(projeto.deadline)) : "—";
+
+    return `
+      <div style="padding:1rem;border:1px solid #e5e7eb;border-radius:0.5rem;margin-bottom:1rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+          <h3 style="font-weight:600;color:#000;">${S(projeto.name || "Sem nome")}</h3>
+          <span style="padding:0.25rem 0.5rem;background:#f3f4f6;color:#374151;border-radius:0.25rem;font-size:0.75rem;">${S(status)}</span>
         </div>
-    `
-    )
-    .join("");
+        <div style="display:flex;gap:1rem;margin-bottom:0.75rem;font-size:0.875rem;color:#666;">
+          <span>${membersCount} membros</span>
+          <span>${deadline}</span>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.875rem;margin-bottom:0.25rem;">
+            <span>Progresso</span>
+            <span>${progress}%</span>
+          </div>
+          <div style="width:100%;background:#e5e7eb;border-radius:0.25rem;height:0.5rem;">
+            <div style="background:#000;height:100%;border-radius:0.25rem;width:${Math.max(0, Math.min(100, progress))}%;"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("") || `<p style="color:#9ca3af;">Nenhum projeto encontrado.</p>`;
 }
 
 function gerarTarefasRecentes() {
-  // Se o array global tarefas não existir ou estiver vazio, retorna mensagem
-  if (!tarefas || tarefas.length === 0) {
-    return `<p style="color: #9ca3af;">Nenhuma tarefa encontrada.</p>`;
-  }
+  const tarefas = DS.tarefas;
+  if (!tarefas.length) return `<p style="color:#9ca3af;">Nenhuma tarefa encontrada.</p>`;
 
-  // Ordena por deadline mais próxima (ou pelo ID como fallback)
-  const tarefasOrdenadas = [...tarefas]
-    .sort((a, b) => {
-      const dateA = new Date(a.deadline);
-      const dateB = new Date(b.deadline);
-      return dateA - dateB;
-    })
-    .slice(0, 5); // Mostra as 5 mais recentes
+  const { projMap, teamMap } = maps();
+  const ord = [...tarefas].sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0)).slice(0, 5);
 
-  return tarefasOrdenadas
-    .map(
-      (task) => `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin-bottom: 1rem;">
-        <div style="flex: 1;">
-          <h4 style="font-weight: 500; color: #000000; margin-bottom: 0.25rem;">${
-            task.title
-          }</h4>
-          <p style="font-size: 0.875rem; color: #666666; margin-bottom: 0.25rem;">${
-            task.projetos
-          }</p>
-          <p style="font-size: 0.75rem; color: #9ca3af;">Atribuído a: ${
-            task.assignee
-          }</p>
+  return ord.map((t) => {
+    const projNome =
+      (t.projetoId && projMap.get(Number(t.projetoId))?.name) ||
+      t.projetos || "—";
+
+    const equipeNome =
+      (t.equipeId && teamMap.get(Number(t.equipeId))?.name) ||
+      t.equipe || "";
+
+    const who = S(t.assignee || t.responsavel || "—");
+    const prioridade = String(t.priority || "média").toLowerCase();
+
+    const prioStyle = typeof getPriorityStyle === "function"
+      ? getPriorityStyle(prioridade)
+      : "background:#f3f4f6;color:#111827;";
+
+    const extra = equipeNome ? ` • ${S(equipeNome)}` : "";
+
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;border:1px solid #e5e7eb;border-radius:0.5rem;margin-bottom:1rem;">
+        <div style="flex:1;">
+          <h4 style="font-weight:500;color:#000;margin-bottom:0.25rem;">${S(t.title || "Sem título")}</h4>
+          <p style="font-size:0.875rem;color:#666;margin-bottom:0.25rem;">${S(projNome)}${extra}</p>
+          <p style="font-size:0.75rem;color:#9ca3af;">Atribuído a: ${who}</p>
         </div>
-        <span style="padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500; ${getPriorityStyle(
-          task.priority
-        )}">${task.priority}</span>
+        <span style="padding:0.25rem 0.5rem;border-radius:0.25rem;font-size:0.75rem;font-weight:500;${prioStyle}">${S(prioridade)}</span>
       </div>
-    `
-    )
-    .join("");
+    `;
+  }).join("");
 }
 
 function atualizarCardTarefasConcluidas() {
-  const concluidas = tarefas.filter((t) => t.status === "concluida");
-
-  const concluidasSemana = concluidas.filter((t) => {
-    const data = new Date(t.updatedAt || t.createdAt || t.deadline);
+  const t = DS.tarefas;
+  const concluidas = t.filter((x) => String(x.status || "").toLowerCase().includes("concl"));
+  const concluidasSemana = concluidas.filter((x) => {
+    const data = new Date(x.updatedAt || x.createdAt || x.deadline || Date.now());
     const hoje = new Date();
-    const seteDiasAtras = new Date();
-    seteDiasAtras.setDate(hoje.getDate() - 7);
-    return data >= seteDiasAtras && data <= hoje;
+    const sete = new Date(); sete.setDate(hoje.getDate() - 7);
+    return data >= sete && data <= hoje;
   });
 
   const card = document.querySelector("#card-tarefas-concluidas");
   if (!card) return;
-
-  card.querySelector(".stat-value").textContent = concluidas.length;
-  card.querySelector(
-    ".stat-change"
-  ).textContent = `+${concluidasSemana.length} esta semana`;
+  card.querySelector(".stat-value").textContent = String(concluidas.length);
+  card.querySelector(".stat-change").textContent = `+${concluidasSemana.length} esta semana`;
 }
 
 function gerarEventosFuturos() {
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-
-  const proximosEventos = eventos
-    .map((evento) => {
-      const [ano, mes, dia] = evento.date.split("-").map(Number);
-      const data = new Date(ano, mes - 1, dia);
-      data.setHours(0, 0, 0, 0);
-
-      const diff = Math.floor((data - hoje) / (1000 * 60 * 60 * 24));
-      let dataLabel = "";
-
-      if (diff === 0) dataLabel = "Hoje";
-      else if (diff === 1) dataLabel = "Amanhã";
-      else
-        dataLabel = data.toLocaleDateString("pt-BR", {
-          weekday: "short",
-          day: "2-digit",
-          month: "short",
-        });
-
-      return {
-        ...evento,
-        dataLabel,
-        dataObj: data,
-      };
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const proximos = DS.eventos
+    .map((ev) => {
+      const [ano, mes, dia] = String(ev.date || "").split("-").map(Number);
+      const data = new Date(ano, (mes || 1) - 1, dia || 1); data.setHours(0,0,0,0);
+      const diff = Math.floor((data - hoje) / (1000*60*60*24));
+      let dataLabel = diff === 0 ? "Hoje" : diff === 1 ? "Amanhã" : data.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
+      return { ...ev, dataLabel, dataObj: data };
     })
-    .filter((e) => e.dataObj >= hoje)
-    .sort((a, b) => a.dataObj - b.dataObj)
-    .slice(0, 5); // Máximo de 5 eventos
+    .filter(e => e.dataObj >= hoje)
+    .sort((a,b) => a.dataObj - b.dataObj)
+    .slice(0,5);
 
-  if (proximosEventos.length === 0) {
-    return `<p style="color: #666;">Nenhum evento futuro agendado.</p>`;
-  }
+  if (!proximos.length) return `<p style="color:#666;">Nenhum evento futuro agendado.</p>`;
 
-  return proximosEventos
-    .map(
-      (event) => `
-        <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <div style="width: 0.5rem; height: 0.5rem; background-color: #3b82f6; border-radius: 50%;"></div>
-            <div style="flex: 1;">
-                <h4 style="font-weight: 500; color: #000000; margin-bottom: 0.25rem;">${sanitizeHTML(event.title)}</h4>
-                <p style="font-size: 0.875rem; color: #666666;">${event.dataLabel} às ${event.time}</p>
-            </div>
-        </div>
-      `
-    )
-    .join("");
+  return proximos.map((ev) => `
+    <div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;border:1px solid #e5e7eb;border-radius:0.5rem;margin-bottom:1rem;">
+      <div style="width:0.5rem;height:0.5rem;background:#3b82f6;border-radius:50%;"></div>
+      <div style="flex:1;">
+        <h4 style="font-weight:500;color:#000;margin-bottom:0.25rem;">${S(ev.title || "Evento")}</h4>
+        <p style="font-size:0.875rem;color:#666;">${ev.dataLabel} às ${S(ev.time || "--:--")}</p>
+      </div>
+    </div>
+  `).join("");
 }
 
 function gerarCalendario() {
@@ -391,80 +371,57 @@ function gerarCalendario() {
   const primeiroDia = new Date(anoAtual, mesAtual, 1).getDay();
   const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
 
-  const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
+  const monthNames = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
-  let calendario = `
-    <div style="text-align: center; margin-bottom: 1rem;">
-      <h3 style="font-weight: 600; color: #000000;">${monthNames[mesAtual]} ${anoAtual}</h3>
+  let cal = `
+    <div style="text-align:center;margin-bottom:1rem;">
+      <h3 style="font-weight:600;color:#000;">${monthNames[mesAtual]} ${anoAtual}</h3>
     </div>
-    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; text-align: center;">
-      <div style="font-weight: 500; color: #666666; padding: 0.5rem; font-size: 0.75rem;">Dom</div>
-      <div style="font-weight: 500; color: #666666; padding: 0.5rem; font-size: 0.75rem;">Seg</div>
-      <div style="font-weight: 500; color: #666666; padding: 0.5rem; font-size: 0.75rem;">Ter</div>
-      <div style="font-weight: 500; color: #666666; padding: 0.5rem; font-size: 0.75rem;">Qua</div>
-      <div style="font-weight: 500; color: #666666; padding: 0.5rem; font-size: 0.75rem;">Qui</div>
-      <div style="font-weight: 500; color: #666666; padding: 0.5rem; font-size: 0.75rem;">Sex</div>
-      <div style="font-weight: 500; color: #666666; padding: 0.5rem; font-size: 0.75rem;">Sáb</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:0.25rem;text-align:center;">
+      ${["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(d => `<div style="font-weight:500;color:#666;padding:0.5rem;font-size:0.75rem;">${d}</div>`).join("")}
   `;
 
-  // Preenche os dias vazios antes do primeiro dia do mês
-  for (let i = 0; i < primeiroDia; i++) {
-    calendario += '<div style="padding: 0.5rem;"></div>';
-  }
+  for (let i = 0; i < primeiroDia; i++) cal += '<div style="padding:0.5rem;"></div>';
 
   for (let dia = 1; dia <= diasNoMes; dia++) {
     const eHoje = dia === hoje.getDate();
-    const temEvento = eventos.some((event) => {
-      const [ano, mes, d] = event.date.split("-").map(Number);
+    const temEvento = DS.eventos.some((ev) => {
+      const [ano, mes, d] = String(ev.date || "").split("-").map(Number);
       return d === dia && mes === mesAtual + 1 && ano === anoAtual;
     });
 
     let style = `
-      padding: 0.5rem; 
-      ${
-        eHoje
-          ? "background-color: #000000; color: #ffffff;"
-          : "color: #000000; cursor: pointer;"
-      } 
-      border-radius: 0.25rem; 
-      font-weight: 500;
-      transition: background-color 0.2s ease;
-      position: relative;
-    `;
+      padding:0.5rem;
+      ${eHoje ? "background:#000;color:#fff;" : "color:#000;cursor:pointer;"} 
+      border-radius:0.25rem;
+      font-weight:500;
+      transition:background-color .2s ease;
+      position:relative;`;
 
-    if (temEvento) {
-      style += `
-        border-bottom: 3px solid #2563eb; /* azul */
-      `;
-    }
+    if (temEvento) style += `border-bottom:3px solid #2563eb;`;
 
-    calendario += `
-      <div style="${style}" 
-        onclick="diaSelecionado(${dia}, ${mesAtual}, ${anoAtual})"
-        ${
-          !eHoje
-            ? "onmouseover=\"this.style.backgroundColor='#f3f4f6'\" onmouseout=\"this.style.backgroundColor='transparent'\""
-            : ""
-        }
-      >
+    cal += `
+      <div style="${style}"
+           onclick="diaSelecionado && diaSelecionado(${dia}, ${mesAtual}, ${anoAtual})"
+           ${!eHoje ? "onmouseover=\"this.style.backgroundColor='#f3f4f6'\" onmouseout=\"this.style.backgroundColor='transparent'\"" : ""}>
         ${dia}
-      </div>
-    `;
+      </div>`;
   }
-
-  calendario += "</div>";
-  return calendario;
+  cal += "</div>";
+  return cal;
 }
+
+// ---------- auto-refresh quando outros módulos mexem nos dados ----------
+const _refreshDashboard = () => {
+  try { carregarConteudoDashboard(); } catch (e) { console.warn("Refresh dashboard falhou:", e); }
+};
+
+// eventos customizados disparados pelas outras abas (projetos/backlogs/equipes/calendário)
+["projetos","tarefas","equipes","eventos"].forEach(k => {
+  document.addEventListener(`data:${k}:changed`, _refreshDashboard);
+});
+
+// sincroniza quando localStorage muda (outra aba/janela)
+window.addEventListener("storage", (e) => {
+  if (["projetos","tarefas","equipes","eventos"].includes(e.key)) _refreshDashboard();
+});

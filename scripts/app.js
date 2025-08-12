@@ -1,3 +1,11 @@
+
+function atualizarDashboardSeVisivel() {
+  if (window.paginaAtiva === "dashboard" && typeof carregarConteudoPagina === "function") {
+    carregarConteudoPagina("dashboard");
+  }
+}
+window.atualizarDashboardSeVisivel = atualizarDashboardSeVisivel;
+
 // Inicializa a UI de notificações quando o DOM estiver pronto
 (function bootNotifs() {
   const start = () => {
@@ -203,6 +211,7 @@ function definirPaginaAtiva(page) {
       link.classList.add("active");
     }
   });
+  window.paginaAtiva = page;
 }
 
 window.fecharModal = fecharModal;

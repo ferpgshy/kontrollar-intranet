@@ -1,5 +1,30 @@
+function persistTarefasENotificar() {
+  try {
+    localStorage.setItem("tarefas", JSON.stringify(tarefas));
+  } catch (e) {}
+  document.dispatchEvent(new CustomEvent("data:tarefas:changed"));
+}
+
+function getTeamOptions() {
+  return (window.equipes || []).map((e) => ({
+    id: Number(e.id),
+    name: e.name || e.nome || `Equipe ${e.id}`,
+  }));
+}
+function resolveTeamNameById(id) {
+  const t = getTeamOptions().find((t) => t.id === Number(id));
+  return t ? t.name : "";
+}
+
 function carregarConteudoBacklog() {
   const conteudoPagina = document.getElementById("conteudoPagina");
+
+  const teamFilterOptions =
+    `<option value="todas">Todas as Equipes</option>` +
+    getTeamOptions()
+      .map((t) => `<option value="${t.id}">${t.name}</option>`)
+      .join("");
+
   conteudoPagina.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <div>
@@ -36,6 +61,9 @@ function carregarConteudoBacklog() {
                 <option value="media">Média</option>
                 <option value="baixa">Baixa</option>
             </select>
+            <select id="taskTeamFilter" style="padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+              ${teamFilterOptions}
+            </select>
         </div>
         
         <div id="tarefasContainer" style="display: flex; flex-direction: column; gap: 1rem;">
@@ -50,50 +78,54 @@ function carregarConteudoBacklog() {
 function configPaginaBacklog() {
   // New task button
   const newTaskBtn = document.getElementById("newTaskBtn");
-  if (newTaskBtn) {
-    newTaskBtn.addEventListener("click", showNewTaskModal);
-  }
+  if (newTaskBtn) newTaskBtn.addEventListener("click", showNewTaskModal);
 
-  // Search functionality
+  // Search/filter
   const taskSearch = document.getElementById("taskSearch");
-  if (taskSearch) {
-    taskSearch.addEventListener("input", filterTasks);
-  }
+  if (taskSearch) taskSearch.addEventListener("input", filterTasks);
 
-  // Status filter
   const taskStatusFilter = document.getElementById("taskStatusFilter");
-  if (taskStatusFilter) {
+  if (taskStatusFilter)
     taskStatusFilter.addEventListener("change", filterTasks);
-  }
 
-  // Priority filter
   const taskPriorityFilter = document.getElementById("taskPriorityFilter");
-  if (taskPriorityFilter) {
+  if (taskPriorityFilter)
     taskPriorityFilter.addEventListener("change", filterTasks);
-  }
+
+  const taskTeamFilter = document.getElementById("taskTeamFilter"); // <—
+  if (taskTeamFilter) taskTeamFilter.addEventListener("change", filterTasks); // <—
 
   // Task status change functionality
   setupTaskStatusChanges();
 }
 
 function filterTasks() {
-  const searchTerm =
-    document.getElementById("taskSearch")?.value.toLowerCase() || "";
+  const searchTerm = (
+    document.getElementById("taskSearch")?.value || ""
+  ).toLowerCase();
   const statusFilter =
     document.getElementById("taskStatusFilter")?.value || "todas";
   const priorityFilter =
     document.getElementById("taskPriorityFilter")?.value || "todas";
+  const teamFilter =
+    document.getElementById("taskTeamFilter")?.value || "todas";
 
   const filteredTasks = tarefas.filter((task) => {
+    const teamName = resolveTeamNameById(task.teamId) || "";
     const matchesSearch =
-      task.title.toLowerCase().includes(searchTerm) ||
-      task.description.toLowerCase().includes(searchTerm) ||
-      task.projetos.toLowerCase().includes(searchTerm);
+      (task.title || "").toLowerCase().includes(searchTerm) ||
+      (task.description || "").toLowerCase().includes(searchTerm) ||
+      (task.projetos || "").toLowerCase().includes(searchTerm) ||
+      teamName.toLowerCase().includes(searchTerm);
+
     const matchesStatus =
       statusFilter === "todas" || task.status === statusFilter;
     const matchesPriority =
       priorityFilter === "todas" || task.priority === priorityFilter;
-    return matchesSearch && matchesStatus && matchesPriority;
+    const matchesTeam =
+      teamFilter === "todas" || String(task.teamId) === String(teamFilter);
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesTeam;
   });
 
   const tarefasContainer = document.getElementById("tarefasContainer");
@@ -142,6 +174,8 @@ function updateTaskStatus(taskId, newStatus) {
   const task = tarefas.find((t) => t.id === taskId);
   if (task) {
     task.status = newStatus;
+    task.updatedAt = new Date().toISOString();
+    persistTarefasENotificar();
 
     if (window.Notifs && newStatus === "concluida") {
       Notifs.push({
@@ -173,8 +207,12 @@ function updateProjectProgress(projectName) {
 }
 
 function showNewTaskModal() {
-  const projectOptions = projetos
+  const projectOptions = (window.projetos || [])
     .map((p) => `<option value="${p.name}">${p.name}</option>`)
+    .join("");
+
+  const teamOptions = getTeamOptions()
+    .map((t) => `<option value="${t.id}">${t.name}</option>`)
     .join("");
 
   const modal = createModal(
@@ -189,6 +227,7 @@ function showNewTaskModal() {
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Descrição</label>
         <textarea id="taskDescription" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; min-height: 80px; resize: vertical;"></textarea>
       </div>
+
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
         <div>
           <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Prioridade</label>
@@ -207,6 +246,7 @@ function showNewTaskModal() {
           </select>
         </div>
       </div>
+
       <div style="margin-bottom: 1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Projeto</label>
         <select id="taskProject" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
@@ -214,14 +254,25 @@ function showNewTaskModal() {
           ${projectOptions}
         </select>
       </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Equipe responsável</label>
+        <select id="taskTeam" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+          <option value="">(Opcional) Selecione uma equipe</option>
+          ${teamOptions}
+        </select>
+      </div>
+
       <div style="margin-bottom: 1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Responsável</label>
         <input type="text" id="taskAssignee" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" placeholder="Nome do responsável">
       </div>
+
       <div style="margin-bottom: 1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Prazo</label>
         <input type="date" id="taskDeadline" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
       </div>
+
       <div style="display: flex; gap: 1rem; justify-content: flex-end;">
         <button type="button" onclick="fecharModal()" class="btn btn-outline">Cancelar</button>
         <button type="submit" class="btn btn-primary">Criar Tarefa</button>
@@ -233,6 +284,8 @@ function showNewTaskModal() {
   document.getElementById("newTaskForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
+    const teamIdVal = document.getElementById("taskTeam").value;
+
     const newTask = {
       id: Date.now(),
       title: document.getElementById("taskTitle").value,
@@ -240,6 +293,7 @@ function showNewTaskModal() {
       priority: document.getElementById("taskPriority").value,
       status: document.getElementById("taskStatus").value,
       projetos: document.getElementById("taskProject").value,
+      teamId: teamIdVal ? Number(teamIdVal) : null, // << novo campo
       assignee: document.getElementById("taskAssignee").value,
       deadline:
         document.getElementById("taskDeadline").value ||
@@ -250,22 +304,22 @@ function showNewTaskModal() {
     tarefas.push(newTask);
     try {
       localStorage.setItem("tarefas", JSON.stringify(tarefas));
+      persistTarefasENotificar();
     } catch (e) {}
 
     // 🔔 Notificação de nova tarefa
     if (window.Notifs) {
+      const teamName = resolveTeamNameById(newTask.teamId) || "—";
       Notifs.push({
         type: "task",
         title: `Nova tarefa: ${newTask.title}`,
-        body: `Resp.: ${newTask.assignee} • Projeto: ${newTask.projetos} • Prioridade: ${newTask.priority}`,
+        body: `Resp.: ${newTask.assignee} • Projeto: ${newTask.projetos} • Equipe: ${teamName} • Prioridade: ${newTask.priority}`,
         page: "backlog",
       });
-    } else {
-      console.warn("Notifs não está carregado; notificação não enviada.");
     }
 
     fecharModal();
-    filterTasks(); // Refresh the tarefas display
+    filterTasks();
   });
 }
 
@@ -273,12 +327,21 @@ function editTask(taskId) {
   const task = tarefas.find((t) => t.id === taskId);
   if (!task) return;
 
-  const projectOptions = projetos
+  const projectOptions = (window.projetos || [])
     .map(
       (p) =>
         `<option value="${p.name}" ${
           p.name === task.projetos ? "selected" : ""
         }>${p.name}</option>`
+    )
+    .join("");
+
+  const teamOptions = getTeamOptions()
+    .map(
+      (t) =>
+        `<option value="${t.id}" ${
+          Number(t.id) === Number(task.teamId) ? "selected" : ""
+        }>${t.name}</option>`
     )
     .join("");
 
@@ -298,6 +361,7 @@ function editTask(taskId) {
           task.description
         }</textarea>
       </div>
+
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
         <div>
           <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Prioridade</label>
@@ -334,24 +398,36 @@ function editTask(taskId) {
           </select>
         </div>
       </div>
+
       <div style="margin-bottom: 1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Projeto</label>
         <select id="editTaskProject" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
           ${projectOptions}
         </select>
       </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Equipe responsável</label>
+        <select id="editTaskTeam" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+          <option value="">(Opcional) Selecione uma equipe</option>
+          ${teamOptions}
+        </select>
+      </div>
+
       <div style="margin-bottom: 1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Responsável</label>
         <input type="text" id="editTaskAssignee" value="${
           task.assignee
         }" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
       </div>
+
       <div style="margin-bottom: 1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Prazo</label>
         <input type="date" id="editTaskDeadline" value="${
           task.deadline
         }" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
       </div>
+
       <div style="display: flex; gap: 1rem; justify-content: flex-end;">
         <button type="button" onclick="fecharModal()" class="btn btn-outline">Cancelar</button>
         <button type="submit" class="btn btn-primary">Salvar Alterações</button>
@@ -368,12 +444,22 @@ function editTask(taskId) {
     task.priority = document.getElementById("editTaskPriority").value;
     task.status = document.getElementById("editTaskStatus").value;
     task.projetos = document.getElementById("editTaskProject").value;
+    task.teamId =
+      document.getElementById("editTaskTeam").value || ""
+        ? Number(document.getElementById("editTaskTeam").value)
+        : null;
     task.assignee = document.getElementById("editTaskAssignee").value;
     task.deadline =
       document.getElementById("editTaskDeadline").value ||
       getDataBrasiliaFormatada();
+
+    try {
+      localStorage.setItem("tarefas", JSON.stringify(tarefas));
+      persistTarefasENotificar();
+    } catch (e) {}
+
     fecharModal();
-    filterTasks(); // Atualiza a lista de tarefas
+    filterTasks();
   });
 }
 
