@@ -386,20 +386,34 @@ function carregarConteudoDashboard() {
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-header">
-          <div class="stat-info">
-            <h3>Membros da Equipe</h3>
-            <div class="stat-value">24</div>
-            <div class="stat-change">+3 novos</div>
+      <!-- Stat: Equipes & Parceiros -->
+      <div class="stat-card" id="teamsStatCard" style="border:1px solid #e5e7eb;border-radius:0.75rem;padding:1rem;background:#fff">
+        <div class="stat-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.75rem">
+          <div class="stat-info" style="display:flex;flex-direction:column;gap:0.25rem">
+            <h3 style="margin:0;font-size:0.95rem;color:#111827;">Equipes & Parceiros</h3>
+            <div class="stat-value" style="font-weight:700;font-size:1.35rem;color:#111827;">
+              <span id="totalTeams">0</span> equipes
+            </div>
+            <div class="stat-sub" style="font-size:0.875rem;color:#6b7280;">
+              Total de parceiros: <strong id="totalPartners">0</strong>
+            </div>
           </div>
-          <div class="stat-icon purple">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+
+          <button type="button" title="Atualizar" onclick="updateTeamsStatCard()"
+            class="stat-icon purple"
+            style="border:none;background:#f5f3ff;color:#6d28d9;border-radius:0.75rem;padding:0.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:20px;height:20px">
               <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
             </svg>
-          </div>
+          </button>
+        </div>
+
+        <!-- Breakdown por equipe -->
+        <div id="teamPartnerBreakdown" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.75rem">
+          <!-- chips injetados via JS -->
         </div>
       </div>
+
 
       <div class="stat-card">
         <div class="stat-header">
@@ -488,7 +502,69 @@ function carregarConteudoDashboard() {
 
   // 🔁 Atualiza os dados do card de tarefas com dados reais
   atualizarCardTarefasConcluidas();
+  requestAnimationFrame(updateTeamsStatCard);
 }
+
+// Util: usa seu sanitizeHTML se existir (mantém igual)
+const _sanitize = typeof sanitizeHTML === "function"
+  ? sanitizeHTML
+  : (s) => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+/**
+ * Retorna estatísticas de equipes/parceiros.
+ * Tenta ler de window.equipes; se não tiver, usa o 'equipes' global (let/const).
+ */
+function getTeamsPartnersStats(equipesArr) {
+  // resolve fonte de dados
+  if (!Array.isArray(equipesArr)) {
+    const fromWindow = Array.isArray(window.equipes) ? window.equipes : null;
+    const fromGlobal = (typeof equipes !== "undefined" && Array.isArray(equipes)) ? equipes : null;
+    equipesArr = fromWindow || fromGlobal || [];
+  }
+
+  let totalTeams = 0;
+  let totalPartners = 0;
+  const byTeam = [];
+
+  for (const eq of equipesArr) {
+    const count = Array.isArray(eq?.members) ? eq.members.filter(Boolean).length : 0;
+    byTeam.push({ id: eq?.id, name: eq?.name ?? "Sem nome", count });
+    totalTeams += 1;
+    totalPartners += count;
+  }
+
+  byTeam.sort((a, b) => (b.count - a.count) || a.name.localeCompare(b.name, "pt-BR"));
+  return { totalTeams, totalPartners, byTeam };
+}
+
+/**
+ * Atualiza o card "Equipes & Parceiros"
+ */
+function updateTeamsStatCard() {
+  const totalsEl = document.getElementById("totalTeams");
+  const partnersEl = document.getElementById("totalPartners");
+  const listEl = document.getElementById("teamPartnerBreakdown");
+  if (!totalsEl || !partnersEl || !listEl) return;
+
+  const { totalTeams, totalPartners, byTeam } = getTeamsPartnersStats();
+
+  totalsEl.textContent = totalTeams;
+  partnersEl.textContent = totalPartners;
+
+  if (!byTeam.length) {
+    listEl.innerHTML = `<div style="font-size:0.85rem;color:#6b7280;">Nenhuma equipe cadastrada.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = byTeam.map(t => `
+    <span title="${_sanitize(t.name)}"
+          style="display:inline-flex;align-items:center;gap:0.35rem;background:#f3f4f6;color:#374151;border-radius:999px;padding:0.25rem 0.6rem;font-size:0.75rem;">
+      <span style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_sanitize(t.name)}</span>
+      <strong style="color:#111827;">${t.count}</strong>
+    </span>
+  `).join("");
+}
+
 
 function gerarProjetosRecentes() {
   const recentes = projetos
@@ -630,7 +706,7 @@ function gerarEventosFuturos() {
         <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin-bottom: 1rem;">
             <div style="width: 0.5rem; height: 0.5rem; background-color: #3b82f6; border-radius: 50%;"></div>
             <div style="flex: 1;">
-                <h4 style="font-weight: 500; color: #000000; margin-bottom: 0.25rem;">${event.title}</h4>
+                <h4 style="font-weight: 500; color: #000000; margin-bottom: 0.25rem;">${sanitizeHTML(event.title)}</h4>
                 <p style="font-size: 0.875rem; color: #666666;">${event.dataLabel} às ${event.time}</p>
             </div>
         </div>
@@ -1563,17 +1639,29 @@ function deleteTask(taskId) {
 
 window.abrirMenuTarefas = (taskId) => {
   const card = document.querySelector(`[data-task-id="${taskId}"]`);
+  if (!card) return;
+
   let menu = card.querySelector(".tarefas-menu-dropdown");
 
-  // Fecha outros menus abertos
+  // Fecha outros menus abertos (com limpeza de listeners)
   document.querySelectorAll(".tarefas-menu-dropdown").forEach((el) => {
-    if (el !== menu) el.remove();
+    if (el !== menu) {
+      if (typeof el._close === "function") el._close();
+      else el.remove();
+    }
   });
 
+  // Se já existe esse menu aberto, fecha e sai
   if (menu) {
-    menu.remove();
+    if (typeof menu._close === "function") menu._close();
+    else menu.remove();
     return;
   }
+
+  // Contêiner onde o menu vai ficar
+  const menuContainer = card.querySelector(".task-menu") || card;
+  const cs = getComputedStyle(menuContainer);
+  if (cs.position === "static") menuContainer.style.position = "relative";
 
   // Cria o menu
   menu = document.createElement("div");
@@ -1587,9 +1675,30 @@ window.abrirMenuTarefas = (taskId) => {
   menu.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
   menu.style.zIndex = "999";
 
+  // Helpers de fechar
+  const onClickOutside = (ev) => {
+    if (!menu) return;
+    if (!menu.contains(ev.target)) closeMenu();
+  };
+  const onEsc = (ev) => {
+    if (ev.key === "Escape") closeMenu();
+  };
+  function closeMenu() {
+    if (!menu) return;
+    document.removeEventListener("click", onClickOutside);
+    document.removeEventListener("keydown", onEsc);
+    if (menu.parentNode) menu.parentNode.removeChild(menu);
+    menu = null;
+  }
+  menu._close = closeMenu;
+
+  // Evita propagar clique dentro do menu
+  menu.addEventListener("click", (e) => e.stopPropagation());
+
+  // Ação: Apagar
   const apagarBtn = document.createElement("div");
   apagarBtn.innerHTML = `
-    <span style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.875rem;">
+    <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;">
       🗑 <span>Apagar</span>
     </span>`;
   apagarBtn.style.padding = "0.5rem";
@@ -1597,23 +1706,27 @@ window.abrirMenuTarefas = (taskId) => {
   apagarBtn.style.color = "#b91c1c";
 
   apagarBtn.addEventListener("click", async () => {
-    menu.remove(); // Fecha o menu antes
-
+    closeMenu(); // fecha antes de abrir o modal
     const confirmar = await confirmarModal({
       title: "Excluir tarefa?",
-      message:
-        "Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.",
+      message: "Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.",
     });
-
     if (confirmar) {
-      deleteTask(taskId); // Isso já chama o showToast
+      if (typeof deleteTask === "function") deleteTask(taskId);
+      else console.warn("deleteTask(taskId) não encontrado.");
     }
   });
 
   menu.appendChild(apagarBtn);
-  const menuContainer = card.querySelector(".task-menu");
   menuContainer.appendChild(menu);
+
+  // Listeners globais (adicionados após o clique atual)
+  setTimeout(() => {
+    document.addEventListener("click", onClickOutside);
+    document.addEventListener("keydown", onEsc);
+  }, 0);
 };
+
 
 function gerarArrayCardsTarefas(tarefasArray) {
   return tarefasArray
@@ -1717,19 +1830,31 @@ window.editarProjetos = editarProjetos;
 
 window.abrirMenuProjeto = (projectId) => {
   const card = document.querySelector(`[data-projetos-id="${projectId}"]`);
+  if (!card) return;
+
   let menu = card.querySelector(".projetos-menu-dropdown");
 
-  // Fecha outros menus abertos
+  // Fecha outros menus abertos com limpeza de listeners
   document.querySelectorAll(".projetos-menu-dropdown").forEach((el) => {
-    if (el !== menu) el.remove();
+    if (el !== menu) {
+      if (typeof el._close === "function") el._close();
+      else el.remove();
+    }
   });
 
+  // Se já está aberto, fecha e sai
   if (menu) {
-    menu.remove(); // Fecha se já estiver aberto
+    if (typeof menu._close === "function") menu._close();
+    else menu.remove();
     return;
   }
 
-  // Cria o menu com apenas "Apagar"
+  // Container do menu (o card tem .projetos-menu envolvendo o botão)
+  const menuContainer = card.querySelector(".projetos-menu") || card;
+  const cs = getComputedStyle(menuContainer);
+  if (cs.position === "static") menuContainer.style.position = "relative";
+
+  // Cria menu
   menu = document.createElement("div");
   menu.className = "projetos-menu-dropdown";
   menu.style.position = "absolute";
@@ -1741,34 +1866,95 @@ window.abrirMenuProjeto = (projectId) => {
   menu.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
   menu.style.zIndex = "999";
 
+  // Helpers de fechar
+  const onClickOutside = (ev) => {
+    if (!menu.contains(ev.target)) closeMenu();
+  };
+  const onEsc = (ev) => {
+    if (ev.key === "Escape") closeMenu();
+  };
+  function closeMenu() {
+    if (!menu) return;
+    // remove listeners globais
+    document.removeEventListener("click", onClickOutside);
+    document.removeEventListener("keydown", onEsc);
+    if (menu.parentNode) menu.parentNode.removeChild(menu);
+    menu = null;
+  }
+  // expõe para terceiros/fechamento programático
+  menu._close = closeMenu;
+
+  // Evita que cliques dentro do menu disparem o "fora"
+  menu.addEventListener("click", (e) => e.stopPropagation());
+
+  // Botão Apagar
   const apagarBtn = document.createElement("div");
-  apagarBtn.innerHTML = `<span style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.875rem;">
-  🗑 <span>Apagar</span></span>`;
+  apagarBtn.innerHTML = `
+    <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;">
+      🗑 <span>Apagar</span>
+    </span>`;
   apagarBtn.style.padding = "0.5rem";
   apagarBtn.style.cursor = "pointer";
   apagarBtn.style.color = "#b91c1c";
 
   apagarBtn.addEventListener("click", async () => {
+    closeMenu(); // fecha antes do modal
     const confirmar = await confirmarModal({
       title: "Excluir projeto?",
-      message:
-        "Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.",
+      message: "Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.",
     });
-
     if (confirmar) {
-      deletarProjeto(projectId);
+      if (typeof deletarProjeto === "function") deletarProjeto(projectId);
+      else console.warn("deletarProjeto(projectId) não encontrado.");
     }
-
-    menu.remove(); // fecha o menu de qualquer forma
   });
 
   menu.appendChild(apagarBtn);
-
-  const menuContainer = card.querySelector(".projetos-menu");
   menuContainer.appendChild(menu);
+
+  // listeners globais (adicionados após o clique atual)
+  setTimeout(() => {
+    document.addEventListener("click", onClickOutside);
+    document.addEventListener("keydown", onEsc);
+  }, 0);
 };
 
+
 // CALENDARIO /////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Helper global para montar a lista de usuários conhecida pelo app
+if (typeof window.getKnownUsersForEvents !== "function") {
+  window.getKnownUsersForEvents = function () {
+    try {
+      // Reaproveita do chat, se existir
+      const base = typeof window.getAllKnownUsers === "function" ? window.getAllKnownUsers() : [];
+
+      // users do localStorage (string[] ou {name:string}[])
+      const fromLocalRaw = JSON.parse(localStorage.getItem("users") || "[]");
+      const fromLocal = Array.isArray(fromLocalRaw)
+        ? fromLocalRaw.map(u => (typeof u === "string" ? u : u?.name)).filter(Boolean)
+        : [];
+
+      // usuário atual
+      const currentName = (JSON.parse(localStorage.getItem("user") || "{}") || {}).name;
+
+      // membros conhecidos de chats e equipes
+      const chatUsers = Array.isArray(window.chatGrupos)
+        ? window.chatGrupos.flatMap(g => [...(g.members || []), ...(g.admins || [])])
+        : [];
+      const teamUsers = Array.isArray(window.equipes)
+        ? window.equipes.flatMap(e => e.members || [])
+        : [];
+
+      const all = [ ...base, ...fromLocal, currentName, ...chatUsers, ...teamUsers ]
+        .filter(Boolean);
+
+      return Array.from(new Set(all)).sort((a, b) => a.localeCompare(b));
+    } catch {
+      return [];
+    }
+  };
+}
+
 function carregarConteudoCalendario() {
   const conteudoPagina = document.getElementById("conteudoPagina");
   const mesAtual = dataAtualCalendario.getMonth();
@@ -1790,7 +1976,7 @@ function carregarConteudoCalendario() {
   
       <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
         <div style="background-color: #ffffff; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1.5rem;">
-          <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <button id="prevMonth" style="background: none; border: none; cursor: pointer; padding: 0.5rem;">
               <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M15 18l-6-6 6-6"/>
@@ -1914,8 +2100,8 @@ function gerarGridCalendario(mes, ano) {
           ${diaEventos
             .map(
               (event) => `
-            <div style="background-color: #3b82f6; color: white; font-size: 0.75rem; padding: 0.125rem 0.25rem; border-radius: 0.25rem; margin-bottom: 0.125rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${event.title}">
-              ${event.title}
+            <div style="background-color: #3b82f6; color: white; font-size: 0.75rem; padding: 0.125rem 0.25rem; border-radius: 0.25rem; margin-bottom: 0.125rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${sanitizeHTML(event.title || '')}">
+              ${sanitizeHTML(event.title || '')}
             </div>
           `
             )
@@ -1929,17 +2115,12 @@ function gerarGridCalendario(mes, ano) {
 
 function diaSelecionado(dia, mes, ano) {
   const dataSelecionada = new Date(ano, mes, dia);
-  dataSelecionada.setHours(0, 0, 0, 0); // Zera hora
+  dataSelecionada.setHours(0, 0, 0, 0);
 
   const eventosDoDia = eventos.filter((evento) => {
     const [anoEvt, mesEvt, diaEvt] = evento.date.split("-");
-    const dataEvento = new Date(
-      parseInt(anoEvt),
-      parseInt(mesEvt) - 1,
-      parseInt(diaEvt)
-    );
+    const dataEvento = new Date(parseInt(anoEvt), parseInt(mesEvt) - 1, parseInt(diaEvt));
     dataEvento.setHours(0, 0, 0, 0);
-
     return dataEvento.getTime() === dataSelecionada.getTime();
   });
 
@@ -1947,118 +2128,130 @@ function diaSelecionado(dia, mes, ano) {
     const conteudoModal = eventosDoDia
       .map((evento) => {
         const [anoEvt, mesEvt, diaEvt] = evento.date.split("-");
-        const dataFormatada = new Date(
-          parseInt(anoEvt),
-          parseInt(mesEvt) - 1,
-          parseInt(diaEvt)
-        ).toLocaleDateString("pt-BR");
+        const dataFormatada = new Date(parseInt(anoEvt), parseInt(mesEvt) - 1, parseInt(diaEvt))
+          .toLocaleDateString("pt-BR");
 
         return `
-        <div style="padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; margin-bottom: 0.5rem;">
-          <h4 style="font-weight: 500; margin-bottom: 0.25rem;">${
-            evento.title
-          }</h4>
-          <p style="font-size: 0.875rem; color: #666666; margin-bottom: 0.25rem;">
+        <div style="padding:0.75rem;border:1px solid #e5e7eb;border-radius:0.375rem;margin-bottom:0.5rem;">
+          <h4 style="font-weight:500;margin-bottom:0.25rem;">${sanitizeHTML(evento.title)}</h4>
+          <p style="font-size:0.875rem;color:#666;margin-bottom:0.25rem;">
             ${dataFormatada} às ${evento.time}
           </p>
-          <p style="font-size: 0.75rem; color: #9ca3af;">
+          ${ (evento.description || "").trim() ? `
+            <p style="font-size:0.875rem;color:#4b5563;white-space:pre-wrap;margin-bottom:0.25rem;">
+              ${sanitizeHTML(evento.description)}</p>` : ``}
+          <p style="font-size:0.75rem;color:#9ca3af;margin-bottom:0.5rem;">
             ${evento.participants?.length || 0} participantes
           </p>
+
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+          <button type="button" class="btn btn-outline" onclick="showEventParticipantsModal(${evento.id})">
+            Ver participantes
+          </button>
+          <button type="button" class="btn btn-outline" onclick="showEditEventModal(${evento.id})">
+            Editar
+          </button>
         </div>
-      `;
+
+        </div>`;
       })
       .join("");
 
-    createModal(
-      `Eventos em ${dataSelecionada.toLocaleDateString("pt-BR")}`,
-      conteudoModal
-    );
+    createModal(`Eventos em ${dataSelecionada.toLocaleDateString("pt-BR")}`, conteudoModal);
   } else {
     createModal(
       `Sem eventos em ${dataSelecionada.toLocaleDateString("pt-BR")}`,
-      `<p style="color: #666666;">Nenhum evento agendado para esta data.</p>`
+      `<p style="color:#666;">Nenhum evento agendado para esta data.</p>`
     );
   }
 }
 
+
 function gerarProximoEvento() {
   const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0); // zera a hora
+  hoje.setHours(0, 0, 0, 0);
 
   const eventosFuturos = eventos
     .filter((event) => {
       const [ano, mes, dia] = event.date.split("-");
-      const dataEvento = new Date(
-        parseInt(ano),
-        parseInt(mes) - 1,
-        parseInt(dia)
-      );
-      dataEvento.setHours(0, 0, 0, 0); // também zera a hora
-
+      const dataEvento = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+      dataEvento.setHours(0, 0, 0, 0);
       return dataEvento >= hoje;
     })
     .sort((a, b) => {
       const [ay, am, ad] = a.date.split("-");
       const [by, bm, bd] = b.date.split("-");
-      return (
-        new Date(parseInt(ay), parseInt(am) - 1, parseInt(ad)) -
-        new Date(parseInt(by), parseInt(bm) - 1, parseInt(bd))
-      );
+      return new Date(parseInt(ay), parseInt(am) - 1, parseInt(ad)) -
+             new Date(parseInt(by), parseInt(bm) - 1, parseInt(bd));
     })
     .slice(0, 5);
 
   return eventosFuturos
     .map((event) => {
       const [ano, mes, dia] = event.date.split("-");
-      const dataFormatada = new Date(
-        parseInt(ano),
-        parseInt(mes) - 1,
-        parseInt(dia)
-      ).toLocaleDateString("pt-BR");
+      const dataFormatada = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia))
+        .toLocaleDateString("pt-BR");
 
-      return `
-        <div style="padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; margin-bottom: 0.5rem;">
-          <h4 style="font-weight: 500; margin-bottom: 0.25rem;">${
-            event.title
-          }</h4>
-          <p style="font-size: 0.875rem; color: #666666; margin-bottom: 0.25rem;">
-            ${dataFormatada} às ${event.time}
-          </p>
-          <p style="font-size: 0.75rem; color: #9ca3af;">
-            ${event.participants?.length || 0} participantes
-          </p>
-        </div>
-      `;
+      const desc = (event.description || "").trim();
+      const preview = desc.length > 160 ? desc.slice(0, 160) + "…" : desc;
+
+return `
+  <div style="padding:0.75rem;border:1px solid #e5e7eb;border-radius:0.375rem;margin-bottom:0.5rem;">
+    <h4 style="font-weight:500;margin-bottom:0.25rem;">${sanitizeHTML(event.title || '')}</h4>
+    <p style="font-size:0.875rem;color:#666;margin-bottom:0.25rem;">
+      ${dataFormatada} às ${event.time}
+    </p>
+    ${preview ? `
+      <p style="font-size:0.75rem;color:#4b5563;margin-bottom:0.25rem;white-space:pre-wrap;overflow:hidden;">
+        ${sanitizeHTML(preview)}</p>` : ``}
+    <p style="font-size:0.75rem;color:#9ca3af;">
+      ${event.participants?.length || 0} participantes
+    </p>
+    <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.5rem;">
+      <button type="button" class="btn btn-outline" onclick="showEventParticipantsModal(${event.id})">
+        Ver participantes
+      </button>
+    </div>
+  </div>
+`;
+
     })
     .join("");
 }
 
+
 function mostrarNovoEventoModal() {
-  const modal = createModal(
+  const knownUsers = getKnownUsersForEvents();
+  const selected = new Map(); // name -> { included: boolean }
+
+  createModal(
     "Criar Novo Evento",
     `
       <form id="newEventForm">
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Título do Evento</label>
-          <input type="text" id="eventTitle" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Título do Evento</label>
+          <input type="text" id="eventTitle" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Descrição</label>
-          <textarea id="eventDescription" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; min-height: 80px; resize: vertical;"></textarea>
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Descrição</label>
+          <textarea id="eventDescription" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:80px;resize:vertical;"></textarea>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Data</label>
-            <input type="date" id="eventDate" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Data</label>
+            <input type="date" id="eventDate" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
           </div>
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Horário</label>
-            <input type="time" id="eventTime" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Horário</label>
+            <input type="time" id="eventTime" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
           </div>
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Tipo</label>
-          <select id="eventType" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tipo</label>
+          <select id="eventType" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
             <option value="meeting">Reunião</option>
             <option value="review">Revisão</option>
             <option value="presentation">Apresentação</option>
@@ -2066,7 +2259,23 @@ function mostrarNovoEventoModal() {
             <option value="other">Outro</option>
           </select>
         </div>
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+
+        <div style="margin-bottom:0.5rem;font-weight:600;">Participantes</div>
+
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+          <input type="text" id="eventUserSearch" placeholder="Buscar usuários..."
+                 style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <input type="text" id="eventManualUser" placeholder="Adicionar manualmente"
+                 style="padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <button type="button" id="eventAddManualBtn" class="btn btn-outline">Adicionar</button>
+        </div>
+
+        <div id="eventUserList"
+             style="max-height:220px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+          <!-- linhas de usuários -->
+        </div>
+
+        <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
           <button type="button" onclick="fecharModal()" class="btn btn-outline">Cancelar</button>
           <button type="submit" class="btn btn-primary">Criar Evento</button>
         </div>
@@ -2074,16 +2283,82 @@ function mostrarNovoEventoModal() {
     `
   );
 
+  function upsertRow(name) {
+    const list = document.getElementById("eventUserList");
+    if (!list || list.querySelector(`[data-row="${CSS.escape(name)}"]`)) return;
+
+    const row = document.createElement("div");
+    row.setAttribute("data-row", name);
+    row.style.display = "grid";
+    row.style.gridTemplateColumns = "1fr auto";
+    row.style.alignItems = "center";
+    row.style.gap = "0.5rem";
+    row.style.padding = "0.4rem 0.25rem";
+    row.style.borderBottom = "1px dashed #eee";
+    row.innerHTML = `
+      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(name)}">
+        ${sanitizeHTML(name)}
+      </div>
+      <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
+        <input type="checkbox" class="evIncChk" data-user="${sanitizeHTML(name)}">
+        <span>Participa</span>
+      </label>
+    `;
+    list.appendChild(row);
+
+    const inc = row.querySelector(".evIncChk");
+    const st = selected.get(name) || { included: false };
+    inc.checked = st.included;
+
+    inc.addEventListener("change", () => {
+      const cur = selected.get(name) || { included: false };
+      cur.included = inc.checked;
+      selected.set(name, cur);
+    });
+  }
+
+  // popular lista
+  for (const u of knownUsers) {
+    if (!selected.has(u)) selected.set(u, { included: false });
+    upsertRow(u);
+  }
+
+  // busca
+  document.getElementById("eventUserSearch").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll("#eventUserList [data-row]").forEach((r) => {
+      const name = r.getAttribute("data-row") || "";
+      r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+    });
+  });
+
+  // adicionar manualmente
+  document.getElementById("eventAddManualBtn").addEventListener("click", () => {
+    const input = document.getElementById("eventManualUser");
+    const name = (input.value || "").trim();
+    if (!name) return;
+    if (!selected.has(name)) selected.set(name, { included: true });
+    upsertRow(name);
+    const row = document.querySelector(`#eventUserList [data-row="${CSS.escape(name)}"]`);
+    const inc = row?.querySelector(".evIncChk");
+    if (inc) inc.checked = true;
+    selected.set(name, { included: true });
+    input.value = "";
+    input.focus();
+  });
+
+  // submit
   document.getElementById("newEventForm").addEventListener("submit", (e) => {
     e.preventDefault();
+
     const dateInput = document.getElementById("eventDate").value;
     const [ano, mes, dia] = dateInput.split("-");
-
-    const localDate = new Date();
-    localDate.setFullYear(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
-    localDate.setHours(12, 0, 0, 0);
-
     const dateOnly = `${ano}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
+
+    const participants = [];
+    for (const [name, st] of selected.entries()) {
+      if (st.included) participants.push(name);
+    }
 
     const novoEvento = {
       id: Date.now(),
@@ -2092,13 +2367,212 @@ function mostrarNovoEventoModal() {
       date: dateOnly,
       time: document.getElementById("eventTime").value,
       type: document.getElementById("eventType").value,
-      participants: [],
+      participants,
     };
 
     eventos.push(novoEvento);
     fecharModal();
-    carregarConteudoCalendario(); // Refresh calendario
+    carregarConteudoCalendario();
   });
+}
+
+
+function showEditEventModal(eventId) {
+  const ev = eventos.find(e => e.id === eventId);
+  if (!ev) return;
+
+  const knownUsers = getKnownUsersForEvents();
+  const selected = new Map(); // name -> { included: boolean }
+  (Array.isArray(ev.participants) ? ev.participants : []).forEach(p => {
+    selected.set(p, { included: true });
+  });
+  // garante que todos os conhecidos existam no map
+  for (const u of knownUsers) if (!selected.has(u)) selected.set(u, { included: false });
+
+  createModal(
+    "Editar Evento",
+    `
+    <form id="editEventForm">
+      <div style="margin-bottom:1rem;">
+        <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Título</label>
+        <input type="text" id="editEventTitle" value="" required
+               style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+      </div>
+
+      <div style="margin-bottom:1rem;">
+        <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Descrição</label>
+        <textarea id="editEventDescription"
+        style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:80px;resize:vertical;"></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div>
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Data</label>
+          <input type="date" id="editEventDate" value="${ev.date}"
+                 style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        </div>
+        <div>
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Horário</label>
+          <input type="time" id="editEventTime" value="${ev.time}"
+                 style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        </div>
+      </div>
+
+      <div style="margin-bottom:1rem;">
+        <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tipo</label>
+        <select id="editEventType"
+                style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <option value="meeting" ${ev.type==="meeting"?"selected":""}>Reunião</option>
+          <option value="review" ${ev.type==="review"?"selected":""}>Revisão</option>
+          <option value="presentation" ${ev.type==="presentation"?"selected":""}>Apresentação</option>
+          <option value="deadline" ${ev.type==="deadline"?"selected":""}>Prazo</option>
+          <option value="other" ${ev.type==="other"?"selected":""}>Outro</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:0.5rem;font-weight:600;">Participantes</div>
+
+      <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+        <input type="text" id="editEventUserSearch" placeholder="Buscar usuários..."
+               style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        <input type="text" id="editEventManualUser" placeholder="Adicionar manualmente"
+               style="padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        <button type="button" id="editEventAddManualBtn" class="btn btn-outline">Adicionar</button>
+      </div>
+
+      <div id="editEventUserList"
+           style="max-height:220px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+        <!-- linhas -->
+      </div>
+
+      <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
+        <button type="button" onclick="fecharModal()" class="btn btn-outline">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+    `
+  );
+
+  document.getElementById("editEventTitle").value = ev.title || "";
+  document.getElementById("editEventDescription").value = ev.description || "";
+
+  function upsertRow(name) {
+    const list = document.getElementById("editEventUserList");
+    if (!list || list.querySelector(`[data-row="${CSS.escape(name)}"]`)) return;
+
+    const row = document.createElement("div");
+    row.setAttribute("data-row", name);
+    row.style.display = "grid";
+    row.style.gridTemplateColumns = "1fr auto";
+    row.style.alignItems = "center";
+    row.style.gap = "0.5rem";
+    row.style.padding = "0.4rem 0.25rem";
+    row.style.borderBottom = "1px dashed #eee";
+    row.innerHTML = `
+      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(name)}">
+        ${sanitizeHTML(name)}
+      </div>
+      <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
+        <input type="checkbox" class="evIncChk" data-user="${sanitizeHTML(name)}">
+        <span>Participa</span>
+      </label>
+    `;
+    list.appendChild(row);
+
+    const inc = row.querySelector(".evIncChk");
+    const st = selected.get(name) || { included: false };
+    inc.checked = st.included;
+
+    inc.addEventListener("change", () => {
+      const cur = selected.get(name) || { included: false };
+      cur.included = inc.checked;
+      selected.set(name, cur);
+    });
+  }
+
+  for (const u of Array.from(new Set([...knownUsers, ...selected.keys()]))) {
+    if (!selected.has(u)) selected.set(u, { included: false });
+    upsertRow(u);
+  }
+
+  document.getElementById("editEventUserSearch").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll("#editEventUserList [data-row]").forEach((r) => {
+      const name = r.getAttribute("data-row") || "";
+      r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+    });
+  });
+
+  document.getElementById("editEventAddManualBtn").addEventListener("click", () => {
+    const input = document.getElementById("editEventManualUser");
+    const name = (input.value || "").trim();
+    if (!name) return;
+    if (!selected.has(name)) selected.set(name, { included: true });
+    upsertRow(name);
+    const row = document.querySelector(`#editEventUserList [data-row="${CSS.escape(name)}"]`);
+    const inc = row?.querySelector(".evIncChk");
+    if (inc) inc.checked = true;
+    selected.set(name, { included: true });
+    input.value = "";
+    input.focus();
+  });
+
+  document.getElementById("editEventForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const parts = [];
+    for (const [name, st] of selected.entries()) {
+      if (st.included) parts.push(name);
+    }
+
+    ev.title = document.getElementById("editEventTitle").value;
+    ev.description = document.getElementById("editEventDescription").value;
+    ev.date = document.getElementById("editEventDate").value || ev.date;
+    ev.time = document.getElementById("editEventTime").value || ev.time;
+    ev.type = document.getElementById("editEventType").value;
+    ev.participants = parts;
+
+    fecharModal();
+    carregarConteudoCalendario();
+  });
+}
+
+function showEventParticipantsModal(eventId) {
+  const ev = eventos.find(e => e.id === eventId);
+  if (!ev) return;
+
+  const parts = Array.isArray(ev.participants) ? ev.participants.filter(Boolean) : [];
+  const listHtml = parts.length
+    ? parts.map(p => `<li style="padding:0.25rem 0;border-bottom:1px dashed #eee;">${sanitizeHTML(p)}</li>`).join("")
+    : '<p style="color:#666;">Nenhum participante adicionado.</p>';
+
+  createModal(
+    `Participantes — ${sanitizeHTML(ev.title || "")}`,
+    `
+      <div style="max-height:320px;overflow:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+          <span style="font-size:0.875rem;color:#6b7280">${parts.length} participante(s)</span>
+          ${parts.length ? '<button type="button" class="btn btn-outline" id="copyParticipantsBtn">Copiar lista</button>' : ''}
+        </div>
+        ${parts.length ? `<ul id="participantsList" style="list-style:none;padding:0;margin:0;">${listHtml}</ul>` : listHtml}
+      </div>
+      <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
+        <button type="button" onclick="fecharModal()" class="btn btn-primary">Fechar</button>
+      </div>
+    `
+  );
+
+  const copyBtn = document.getElementById("copyParticipantsBtn");
+  if (copyBtn && parts.length) {
+    copyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(parts.join(", "));
+        if (typeof showToast === "function") showToast("Lista copiada.");
+      } catch (err) {
+        console.warn("Falha ao copiar participantes:", err);
+      }
+    });
+  }
 }
 
 // CHAT /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2682,6 +3156,7 @@ function atualizarListaChats() {
 // FIM CHAT /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // EQUIPES /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 function loadEquipesContent() {
   const conteudoPagina = document.getElementById("conteudoPagina");
 
@@ -2699,21 +3174,108 @@ function loadEquipesContent() {
         </button>
       </div>
   
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+      <div id="equipesStats" class="stat-card" style="margin-bottom:1rem;">
+        <div class="stat-header" style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="stat-info">
+            <h3>Membros da Equipe</h3>
+            <div class="stat-value">–</div>
+            <div class="stat-change">–</div>
+          </div>
+          <div class="stat-icon purple">
+            <!-- seu ícone -->
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:1.5rem;">
         ${generateTeamCards()}
       </div>
     `;
 
   setupTeamsFunctionality();
+  renderEquipesStats();
 }
+
+/* ===================== Helpers de fallback (usados pelos pickers) ===================== */
+if (typeof window.sanitizeHTML !== "function") {
+  window.sanitizeHTML = function (str) {
+    const div = document.createElement("div");
+    div.textContent = String(str ?? "");
+    return div.innerHTML;
+  };
+}
+
+if (typeof window.getKnownUsersForEvents !== "function") {
+  window.getKnownUsersForEvents = function () {
+    try {
+      const me = (JSON.parse(localStorage.getItem("user") || "{}") || {}).name;
+      const localUsers = JSON.parse(localStorage.getItem("users") || "[]")
+        .map(u => typeof u === "string" ? u : u?.name).filter(Boolean);
+      const chatUsers = Array.isArray(window.chatGrupos)
+        ? window.chatGrupos.flatMap(g => [...(g.members||[]), ...(g.admins||[])])
+        : [];
+      const teamUsers = Array.isArray(window.equipes)
+        ? window.equipes.flatMap(e => e.members || [])
+        : [];
+      const all = [me, ...localUsers, ...chatUsers, ...teamUsers].filter(Boolean);
+      return Array.from(new Set(all)).sort((a,b)=>a.localeCompare(b));
+    } catch { return []; }
+  };
+}
+
+if (typeof window.getKnownProjects !== "function") {
+  window.getKnownProjects = function () {
+    try {
+      // garante que pega global mesmo se não estiver em window
+      const globProjetos = Array.isArray(window.projetos)
+        ? window.projetos
+        : (typeof projetos !== "undefined" && Array.isArray(projetos) ? projetos : []);
+
+      const fromProjetos = globProjetos.map(p => p?.name).filter(Boolean);
+      const fromTeams = Array.isArray(window.equipes)
+        ? window.equipes.flatMap(e => Array.isArray(e.projetos) ? e.projetos : [])
+        : [];
+      const fromTasks = Array.isArray(window.tarefas)
+        ? window.tarefas.map(t => t?.projetos).filter(Boolean)
+        : [];
+      const fromLocal = JSON.parse(localStorage.getItem("projects") || "[]");
+
+      const all = [
+        ...fromProjetos,
+        ...fromTeams,
+        ...fromTasks,
+        ...(Array.isArray(fromLocal) ? fromLocal : [])
+      ].map(s => String(s).trim()).filter(Boolean);
+
+      return Array.from(new Set(all)).sort((a, b) => a.localeCompare(b));
+    } catch {
+      return [];
+    }
+  };
+}
+
+function renderEquipesStats() {
+  const totalEquipes = Array.isArray(equipes) ? equipes.length : 0;
+  const totalMembros = Array.isArray(equipes)
+    ? equipes.reduce((acc, e) => acc + ((e.members && e.members.length) || 0), 0)
+    : 0;
+
+  const wrap = document.getElementById('equipesStats');
+  if (!wrap) return;
+  const valueEl = wrap.querySelector('.stat-value');
+  const changeEl = wrap.querySelector('.stat-change');
+
+  if (valueEl) valueEl.textContent = `${totalMembros}`;
+  if (changeEl) changeEl.textContent = `${totalEquipes} equipe(s)`;
+}
+
+/* ===================================================================================== */
 
 function setupTeamsFunctionality() {
   const newTeamBtn = document.getElementById("newTeamBtn");
   if (newTeamBtn) {
     newTeamBtn.addEventListener("click", showNewTeamModal);
   }
-
-  // Setup equipe card actions
   setupTeamCardActions();
 }
 
@@ -2721,21 +3283,13 @@ function generateTeamCards() {
   return equipes
     .map(
       (equipe) => `
-      <div data-equipe-id="${
-        equipe.id
-      }" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); transition: box-shadow 0.2s ease;" onmouseover="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)'" onmouseout="this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1)'">
+      <div data-equipe-id="${equipe.id}" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); transition: box-shadow 0.2s ease;" onmouseover="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)'" onmouseout="this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1)'">
         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
           <div style="flex: 1;">
-            <h3 style="font-size: 1.25rem; font-weight: 600; color: #000000; margin-bottom: 0.5rem;">${
-              equipe.name
-            }</h3>
-            <p style="color: #666666; font-size: 0.875rem; margin-bottom: 0.75rem;">${
-              equipe.description
-            }</p>
+            <h3 style="font-size: 1.25rem; font-weight: 600; color: #000000; margin-bottom: 0.5rem;">${sanitizeHTML(equipe.name)}</h3>
+            <p style="color: #666666; font-size: 0.875rem; margin-bottom: 0.75rem;">${sanitizeHTML(equipe.description)}</p>
           </div>
-          <button onclick="toggleTeamMenu(${
-            equipe.id
-          })" style="background: none; border: none; cursor: pointer; padding: 0.25rem; color: #666666;">
+          <button onclick="toggleTeamMenu(${equipe.id})" style="background: none; border: none; cursor: pointer; padding: 0.25rem; color: #666666;">
             <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="12" cy="12" r="1"/>
               <circle cx="19" cy="12" r="1"/>
@@ -2747,9 +3301,7 @@ function generateTeamCards() {
         <div style="margin-bottom: 1rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
             <span style="font-weight: 500; font-size: 0.875rem;">Líder:</span>
-            <span style="color: #3b82f6; font-weight: 500;">${
-              equipe.leader
-            }</span>
+            <span style="color: #3b82f6; font-weight: 500;">${sanitizeHTML(equipe.leader)}</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
             <span style="font-weight: 500; font-size: 0.875rem;">Membros:</span>
@@ -2764,30 +3316,22 @@ function generateTeamCards() {
         <div style="margin-bottom: 1rem;">
           <h4 style="font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem;">Membros da Equipe:</h4>
           <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-            ${equipe.members
-              .map(
-                (member) => `
+            ${(equipe.members || []).map(member => `
               <span style="background-color: #f3f4f6; color: #374151; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
-                ${member}
+                ${sanitizeHTML(member)}
               </span>
-            `
-              )
-              .join("")}
+            `).join("")}
           </div>
         </div>
   
         <div style="margin-bottom: 1rem;">
           <h4 style="font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem;">Projetos:</h4>
           <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-            ${equipe.projetos
-              .map(
-                (projetos) => `
+            ${(equipe.projetos || []).map(p => `
               <span style="background-color: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
-                ${projetos}
+                ${sanitizeHTML(p)}
               </span>
-            `
-              )
-              .join("")}
+            `).join("")}
           </div>
         </div>
   
@@ -2808,7 +3352,6 @@ function generateTeamCards() {
 }
 
 function setupTeamCardActions() {
-  // Edit equipe buttons
   document.querySelectorAll(".edit-equipe-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const teamId = Number.parseInt(
@@ -2818,7 +3361,6 @@ function setupTeamCardActions() {
     });
   });
 
-  // View details buttons
   document.querySelectorAll(".view-equipe-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const teamId = Number.parseInt(
@@ -2829,28 +3371,54 @@ function setupTeamCardActions() {
   });
 }
 
+/* ===================== MODAL: NOVA EQUIPE (com pickers) ===================== */
 function showNewTeamModal() {
-  const modal = createModal(
+  const knownUsers = getKnownUsersForEvents();
+  const knownProjects = getKnownProjects();
+
+  const selectedMembers = new Map(); // name -> boolean
+  let selectedLeader = "";           // string (um só)
+  const selectedProjects = new Set();
+
+  createModal(
     "Criar Nova Equipe",
     `
       <form id="newTeamForm">
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nome da Equipe</label>
-          <input type="text" id="teamName" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Nome da Equipe</label>
+          <input type="text" id="teamName" required
+                 style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Descrição</label>
-          <textarea id="teamDescription" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; min-height: 80px; resize: vertical;"></textarea>
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Descrição</label>
+          <textarea id="teamDescription" required
+            style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:80px;resize:vertical;"></textarea>
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Líder da Equipe</label>
-          <input type="text" id="teamLeader" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" placeholder="Nome do líder">
+
+        <div style="margin:0.5rem 0;font-weight:600;">Membros e Líder</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+          <input type="text" id="teamUserSearch" placeholder="Buscar usuários..."
+                 style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <input type="text" id="teamManualUser" placeholder="Adicionar manualmente"
+                 style="padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <button type="button" id="teamAddManualBtn" class="btn btn-outline">Adicionar</button>
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Membros (separados por vírgula)</label>
-          <textarea id="teamMembers" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; min-height: 60px; resize: vertical;" placeholder="João Silva, Maria Santos, Pedro Costa"></textarea>
+        <div id="teamUserList"
+             style="max-height:240px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;"></div>
+
+        <div style="margin:1rem 0 0.5rem;font-weight:600;">Projetos</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+          <input type="text" id="teamProjectSearch" placeholder="Buscar projetos..."
+                 style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <input type="text" id="teamManualProject" placeholder="Adicionar projeto manualmente"
+                 style="padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <button type="button" id="teamAddManualProjectBtn" class="btn btn-outline">Adicionar</button>
         </div>
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <div id="teamProjectList"
+             style="max-height:200px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;"></div>
+
+        <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
           <button type="button" onclick="fecharModal()" class="btn btn-outline">Cancelar</button>
           <button type="submit" class="btn btn-primary">Criar Equipe</button>
         </div>
@@ -2858,72 +3426,229 @@ function showNewTeamModal() {
     `
   );
 
+  // ----- Membros/Líder -----
+  function upsertUserRow(name) {
+    const list = document.getElementById("teamUserList");
+    if (!list || list.querySelector(`[data-row-user="${CSS.escape(name)}"]`)) return;
+
+    const row = document.createElement("div");
+    row.setAttribute("data-row-user", name);
+    row.style.display = "grid";
+    row.style.gridTemplateColumns = "1fr auto auto";
+    row.style.alignItems = "center";
+    row.style.gap = "0.5rem";
+    row.style.padding = "0.4rem 0.25rem";
+    row.style.borderBottom = "1px dashed #eee";
+    row.innerHTML = `
+      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(name)}">
+        ${sanitizeHTML(name)}
+      </div>
+      <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
+        <input type="checkbox" class="tmIncChk" data-user="${sanitizeHTML(name)}">
+        <span>Membro</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
+        <input type="radio" name="tmLeader" class="tmLeaderRadio" data-user="${sanitizeHTML(name)}">
+        <span>Líder</span>
+      </label>
+    `;
+    list.appendChild(row);
+
+    const chk = row.querySelector(".tmIncChk");
+    const radio = row.querySelector(".tmLeaderRadio");
+
+    chk.checked = !!selectedMembers.get(name);
+    radio.checked = selectedLeader === name;
+
+    chk.addEventListener("change", () => {
+      selectedMembers.set(name, chk.checked);
+      if (!chk.checked && selectedLeader === name) {
+        selectedLeader = "";
+        radio.checked = false;
+      }
+    });
+
+    radio.addEventListener("change", () => {
+      if (radio.checked) {
+        selectedLeader = name;
+        selectedMembers.set(name, true);
+        chk.checked = true;
+        document.querySelectorAll('#teamUserList .tmLeaderRadio').forEach((r) => {
+          if (r !== radio) r.checked = false;
+        });
+      }
+    });
+  }
+
+  for (const u of knownUsers) {
+    selectedMembers.set(u, false);
+    upsertUserRow(u);
+  }
+
+  document.getElementById("teamUserSearch").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll("#teamUserList [data-row-user]").forEach((r) => {
+      const name = r.getAttribute("data-row-user") || "";
+      r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+    });
+  });
+
+  document.getElementById("teamAddManualBtn").addEventListener("click", () => {
+    const input = document.getElementById("teamManualUser");
+    const name = (input.value || "").trim();
+    if (!name) return;
+    if (!selectedMembers.has(name)) {
+      selectedMembers.set(name, true);
+      upsertUserRow(name);
+      const row = document.querySelector(`#teamUserList [data-row-user="${CSS.escape(name)}"]`);
+      row?.querySelector(".tmIncChk")?.setAttribute("checked", "checked");
+      row?.querySelector(".tmIncChk")?.dispatchEvent(new Event("change"));
+    }
+    input.value = "";
+    input.focus();
+  });
+
+  // ----- Projetos -----
+  function upsertProjectRow(p) {
+    const list = document.getElementById("teamProjectList");
+    if (!list || list.querySelector(`[data-row-project="${CSS.escape(p)}"]`)) return;
+
+    const row = document.createElement("div");
+    row.setAttribute("data-row-project", p);
+    row.style.display = "grid";
+    row.style.gridTemplateColumns = "1fr auto";
+    row.style.alignItems = "center";
+    row.style.gap = "0.5rem";
+    row.style.padding = "0.4rem 0.25rem";
+    row.style.borderBottom = "1px dashed #eee";
+    row.innerHTML = `
+      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(p)}">
+        ${sanitizeHTML(p)}
+      </div>
+      <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
+        <input type="checkbox" class="tpChk" data-project="${sanitizeHTML(p)}">
+        <span>Selecionar</span>
+      </label>
+    `;
+    list.appendChild(row);
+
+    const chk = row.querySelector(".tpChk");
+    chk.checked = selectedProjects.has(p);
+    chk.addEventListener("change", () => {
+      if (chk.checked) selectedProjects.add(p);
+      else selectedProjects.delete(p);
+    });
+  }
+
+  for (const p of getKnownProjects()) upsertProjectRow(p);
+
+  document.getElementById("teamProjectSearch").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll("#teamProjectList [data-row-project]").forEach((r) => {
+      const name = r.getAttribute("data-row-project") || "";
+      r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+    });
+  });
+
+  document.getElementById("teamAddManualProjectBtn").addEventListener("click", () => {
+    const input = document.getElementById("teamManualProject");
+    const name = (input.value || "").trim();
+    if (!name) return;
+    if (!selectedProjects.has(name)) selectedProjects.add(name);
+    upsertProjectRow(name);
+    const row = document.querySelector(`#teamProjectList [data-row-project="${CSS.escape(name)}"]`);
+    row?.querySelector(".tpChk")?.setAttribute("checked", "checked");
+    row?.querySelector(".tpChk")?.dispatchEvent(new Event("change"));
+    input.value = "";
+    input.focus();
+  });
+
+  // ----- submit -----
   document.getElementById("newTeamForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const membersText = document.getElementById("teamMembers").value;
-    const members = membersText
-      ? membersText
-          .split(",")
-          .map((m) => m.trim())
-          .filter((m) => m)
-      : [];
-    const leader = document.getElementById("teamLeader").value;
+    const name = document.getElementById("teamName").value.trim();
+    const description = document.getElementById("teamDescription").value.trim();
 
-    // Add leader to members if not already included
-    if (!members.includes(leader)) {
-      members.unshift(leader);
-    }
+    const members = Array.from(selectedMembers.entries())
+      .filter(([, inc]) => inc)
+      .map(([n]) => n);
+
+    let leader = selectedLeader;
+    if (!leader && members.length) leader = members[0];
 
     const newTeam = {
       id: Date.now(),
-      name: document.getElementById("teamName").value,
-      description: document.getElementById("teamDescription").value,
-      leader: leader,
-      members: members,
-      projetos: [],
-      createdAt: getDataBrasiliaISO(),
+      name,
+      description,
+      leader: leader || "",
+      members: leader ? Array.from(new Set([leader, ...members])) : members,
+      projetos: Array.from(selectedProjects),
+      // armazena "YYYY-MM-DD" — compatível com seu helper e evita o bug do UTC ao exibir:
+      createdAt: getDataBrasiliaFormatada(),
     };
 
     equipes.push(newTeam);
     fecharModal();
-    loadEquipesContent(); // Refresh equipes
+    loadEquipesContent();
   });
 }
+/* ========================================================================== */
 
+/* ===================== MODAL: EDITAR EQUIPE (com pickers) ===================== */
 function editTeam(teamId) {
   const equipe = equipes.find((t) => t.id === teamId);
   if (!equipe) return;
 
-  const modal = createModal(
+  const knownUsers = getKnownUsersForEvents();
+  const knownProjects = getKnownProjects();
+
+  const selectedMembers = new Map();
+  let selectedLeader = equipe.leader || "";
+  const selectedProjects = new Set(equipe.projetos || []);
+
+  (equipe.members || []).forEach(m => selectedMembers.set(m, true));
+  knownUsers.forEach(u => { if (!selectedMembers.has(u)) selectedMembers.set(u, false); });
+
+  createModal(
     "Editar Equipe",
     `
       <form id="editTeamForm">
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nome da Equipe</label>
-          <input type="text" id="editTeamName" value="${
-            equipe.name
-          }" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Nome da Equipe</label>
+          <input type="text" id="editTeamName" required
+                 style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Descrição</label>
-          <textarea id="editTeamDescription" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; min-height: 80px; resize: vertical;">${
-            equipe.description
-          }</textarea>
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Descrição</label>
+          <textarea id="editTeamDescription" required
+            style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:80px;resize:vertical;"></textarea>
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Líder da Equipe</label>
-          <input type="text" id="editTeamLeader" value="${
-            equipe.leader
-          }" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+
+        <div style="margin:0.5rem 0;font-weight:600;">Membros e Líder</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+          <input type="text" id="editTeamUserSearch" placeholder="Buscar usuários..."
+                 style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <input type="text" id="editTeamManualUser" placeholder="Adicionar manualmente"
+                 style="padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <button type="button" id="editTeamAddManualBtn" class="btn btn-outline">Adicionar</button>
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Membros (separados por vírgula)</label>
-          <textarea id="editTeamMembers" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; min-height: 60px; resize: vertical;">${equipe.members.join(
-            ", "
-          )}</textarea>
+        <div id="editTeamUserList"
+             style="max-height:240px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;"></div>
+
+        <div style="margin:1rem 0 0.5rem;font-weight:600;">Projetos</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+          <input type="text" id="editTeamProjectSearch" placeholder="Buscar projetos..."
+                 style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <input type="text" id="editTeamManualProject" placeholder="Adicionar projeto manualmente"
+                 style="padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+          <button type="button" id="editTeamAddManualProjectBtn" class="btn btn-outline">Adicionar</button>
         </div>
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <div id="editTeamProjectList"
+             style="max-height:200px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;"></div>
+
+        <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
           <button type="button" onclick="fecharModal()" class="btn btn-outline">Cancelar</button>
           <button type="submit" class="btn btn-primary">Salvar Alterações</button>
         </div>
@@ -2931,76 +3656,212 @@ function editTeam(teamId) {
     `
   );
 
+  // set valores simples
+  document.getElementById("editTeamName").value = equipe.name || "";
+  document.getElementById("editTeamDescription").value = equipe.description || "";
+
+  // ----- Membros/Líder -----
+  function upsertUserRow(name, listId) {
+    const list = document.getElementById(listId);
+    if (!list || list.querySelector(`[data-row-user="${CSS.escape(name)}"]`)) return;
+
+    const row = document.createElement("div");
+    row.setAttribute("data-row-user", name);
+    row.style.display = "grid";
+    row.style.gridTemplateColumns = "1fr auto auto";
+    row.style.alignItems = "center";
+    row.style.gap = "0.5rem";
+    row.style.padding = "0.4rem 0.25rem";
+    row.style.borderBottom = "1px dashed #eee";
+    row.innerHTML = `
+      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(name)}">
+        ${sanitizeHTML(name)}
+      </div>
+      <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
+        <input type="checkbox" class="tmIncChk" data-user="${sanitizeHTML(name)}">
+        <span>Membro</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
+        <input type="radio" name="tmLeaderEdit" class="tmLeaderRadio" data-user="${sanitizeHTML(name)}">
+        <span>Líder</span>
+      </label>
+    `;
+    list.appendChild(row);
+
+    const chk = row.querySelector(".tmIncChk");
+    const radio = row.querySelector(".tmLeaderRadio");
+
+    chk.checked = !!selectedMembers.get(name);
+    radio.checked = selectedLeader === name;
+
+    chk.addEventListener("change", () => {
+      selectedMembers.set(name, chk.checked);
+      if (!chk.checked && selectedLeader === name) {
+        selectedLeader = "";
+        radio.checked = false;
+      }
+    });
+
+    radio.addEventListener("change", () => {
+      if (radio.checked) {
+        selectedLeader = name;
+        selectedMembers.set(name, true);
+        chk.checked = true;
+        document.querySelectorAll('#editTeamUserList .tmLeaderRadio').forEach((r) => {
+          if (r !== radio) r.checked = false;
+        });
+      }
+    });
+  }
+
+  // popula lista
+  for (const u of selectedMembers.keys()) upsertUserRow(u, "editTeamUserList");
+  for (const u of knownUsers) if (!selectedMembers.has(u)) {
+    selectedMembers.set(u, false);
+    upsertUserRow(u, "editTeamUserList");
+  }
+
+  document.getElementById("editTeamUserSearch").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll("#editTeamUserList [data-row-user]").forEach((r) => {
+      const name = r.getAttribute("data-row-user") || "";
+      r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+    });
+  });
+
+  document.getElementById("editTeamAddManualBtn").addEventListener("click", () => {
+    const input = document.getElementById("editTeamManualUser");
+    const name = (input.value || "").trim();
+    if (!name) return;
+    if (!selectedMembers.has(name)) {
+      selectedMembers.set(name, true);
+      upsertUserRow(name, "editTeamUserList");
+      const row = document.querySelector(`#editTeamUserList [data-row-user="${CSS.escape(name)}"]`);
+      row?.querySelector(".tmIncChk")?.setAttribute("checked", "checked");
+      row?.querySelector(".tmIncChk")?.dispatchEvent(new Event("change"));
+    }
+    input.value = "";
+    input.focus();
+  });
+
+  // ----- Projetos -----
+  function upsertProjectRow(p, listId) {
+    const list = document.getElementById(listId);
+    if (!list || list.querySelector(`[data-row-project="${CSS.escape(p)}"]`)) return;
+
+    const row = document.createElement("div");
+    row.setAttribute("data-row-project", p);
+    row.style.display = "grid";
+    row.style.gridTemplateColumns = "1fr auto";
+    row.style.alignItems = "center";
+    row.style.gap = "0.5rem";
+    row.style.padding = "0.4rem 0.25rem";
+    row.style.borderBottom = "1px dashed #eee";
+    row.innerHTML = `
+      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(p)}">
+        ${sanitizeHTML(p)}
+      </div>
+      <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
+        <input type="checkbox" class="tpChk" data-project="${sanitizeHTML(p)}">
+        <span>Selecionar</span>
+      </label>
+    `;
+    list.appendChild(row);
+
+    const chk = row.querySelector(".tpChk");
+    chk.checked = selectedProjects.has(p);
+    chk.addEventListener("change", () => {
+      if (chk.checked) selectedProjects.add(p);
+      else selectedProjects.delete(p);
+    });
+  }
+
+  const projListId = "editTeamProjectList";
+  getKnownProjects().forEach(p => upsertProjectRow(p, projListId));
+  (equipe.projetos || []).forEach(p => upsertProjectRow(p, projListId)); // garante presença
+
+  document.getElementById("editTeamProjectSearch").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll(`#${projListId} [data-row-project]`).forEach((r) => {
+      const name = r.getAttribute("data-row-project") || "";
+      r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+    });
+  });
+
+  document.getElementById("editTeamAddManualProjectBtn").addEventListener("click", () => {
+    const input = document.getElementById("editTeamManualProject");
+    const name = (input.value || "").trim();
+    if (!name) return;
+    if (!selectedProjects.has(name)) selectedProjects.add(name);
+    upsertProjectRow(name, projListId);
+    const row = document.querySelector(`#${projListId} [data-row-project="${CSS.escape(name)}"]`);
+    row?.querySelector(".tpChk")?.setAttribute("checked", "checked");
+    row?.querySelector(".tpChk")?.dispatchEvent(new Event("change"));
+    input.value = "";
+    input.focus();
+  });
+
+  // ----- submit -----
   document.getElementById("editTeamForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const membersText = document.getElementById("editTeamMembers").value;
-    const members = membersText
-      ? membersText
-          .split(",")
-          .map((m) => m.trim())
-          .filter((m) => m)
-      : [];
-    const leader = document.getElementById("editTeamLeader").value;
+    const name = document.getElementById("editTeamName").value.trim();
+    const description = document.getElementById("editTeamDescription").value.trim();
 
-    // Add leader to members if not already included
-    if (!members.includes(leader)) {
-      members.unshift(leader);
-    }
+    const members = Array.from(selectedMembers.entries())
+      .filter(([, inc]) => inc)
+      .map(([n]) => n);
 
-    equipe.name = document.getElementById("editTeamName").value;
-    equipe.description = document.getElementById("editTeamDescription").value;
-    equipe.leader = leader;
-    equipe.members = members;
+    let leader = selectedLeader;
+    if (!leader && members.length) leader = members[0];
+
+    equipe.name = name;
+    equipe.description = description;
+    equipe.leader = leader || "";
+    equipe.members = leader ? Array.from(new Set([leader, ...members])) : members;
+    equipe.projetos = Array.from(selectedProjects);
 
     fecharModal();
-    loadEquipesContent(); // Refresh equipes
+    loadEquipesContent();
   });
 }
+/* =========================================================================== */
 
 function viewTeamDetails(teamId) {
   const equipe = equipes.find((t) => t.id === teamId);
   if (!equipe) return;
 
-  const modal = createModal(
-    `Detalhes da Equipe: ${equipe.name}`,
+  // Corrige exibição da data (sem "voltar um dia")
+  const criadaEm = typeof equipe.createdAt === "string"
+    ? formatarDataPtBR(equipe.createdAt) // "YYYY-MM-DD" -> dd/mm/yyyy
+    : new Date(equipe.createdAt).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+
+  createModal(
+    `Detalhes da Equipe: ${sanitizeHTML(equipe.name)}`,
     `
       <div style="max-height: 400px; overflow-y: auto;">
         <div style="margin-bottom: 1.5rem;">
           <h3 style="font-weight: 600; margin-bottom: 0.5rem;">Informações Gerais</h3>
-          <p style="margin-bottom: 0.5rem;"><strong>Descrição:</strong> ${
-            equipe.description
-          }</p>
-          <p style="margin-bottom: 0.5rem;"><strong>Líder:</strong> ${
-            equipe.leader
-          }</p>
-          <p style="margin-bottom: 0.5rem;"><strong>Total de Membros:</strong> ${
-            equipe.members.length
-          }</p>
-          <p style="margin-bottom: 0.5rem;"><strong>Projetos Ativos:</strong> ${
-            equipe.projetos.length
-          }</p>
-          <p style="margin-bottom: 0.5rem;"><strong>Criada em:</strong> ${new Date(
-            equipe.createdAt
-          ).toLocaleDateString("pt-BR")}</p>
+          <p style="margin-bottom: 0.5rem;"><strong>Descrição:</strong> ${sanitizeHTML(equipe.description)}</p>
+          <p style="margin-bottom: 0.5rem;"><strong>Líder:</strong> ${sanitizeHTML(equipe.leader)}</p>
+          <p style="margin-bottom: 0.5rem;"><strong>Total de Membros:</strong> ${equipe.members.length}</p>
+          <p style="margin-bottom: 0.5rem;"><strong>Projetos Ativos:</strong> ${equipe.projetos.length}</p>
+          <p style="margin-bottom: 0.5rem;"><strong>Criada em:</strong> ${criadaEm}</p>
         </div>
         
         <div style="margin-bottom: 1.5rem;">
           <h3 style="font-weight: 600; margin-bottom: 0.5rem;">Membros da Equipe</h3>
           <div style="display: grid; gap: 0.5rem;">
             ${equipe.members
-              .map(
-                (member) => `
+              .map((member) => `
               <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background-color: #f9fafb; border-radius: 0.375rem;">
-                <span>${member}</span>
-                ${
-                  member === equipe.leader
+                <span>${sanitizeHTML(member)}</span>
+                ${member === equipe.leader
                     ? '<span style="background-color: #3b82f6; color: white; padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">Líder</span>'
                     : ""
                 }
               </div>
-            `
-              )
+            `)
               .join("")}
           </div>
         </div>
@@ -3010,29 +3871,196 @@ function viewTeamDetails(teamId) {
           ${
             equipe.projetos.length > 0
               ? equipe.projetos
-                  .map(
-                    (projetos) => `
+                  .map((p) => `
               <div style="padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; margin-bottom: 0.5rem;">
-                <h4 style="font-weight: 500;">${projetos}</h4>
+                <h4 style="font-weight: 500;">${sanitizeHTML(p)}</h4>
               </div>
-            `
-                  )
+            `)
                   .join("")
               : '<p style="color: #666666; text-align: center; padding: 1rem;">Nenhum projeto atribuído</p>'
           }
         </div>
       </div>
       <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-        <button type="button" onclick="editTeam(${
-          equipe.id
-        })" class="btn btn-outline">Editar</button>
+        <button type="button" onclick="editTeam(${equipe.id})" class="btn btn-outline">Editar</button>
         <button type="button" onclick="fecharModal()" class="btn btn-primary">Fechar</button>
       </div>
     `
   );
 }
 
-// Notices functionality
+// Remove equipe por ID, atualiza UI e dashboard
+function deleteTeam(teamId) {
+  const id = Number(teamId);
+  if (!Array.isArray(equipes)) {
+    console.warn("Array 'equipes' não está definido.");
+    return;
+  }
+
+  const idx = equipes.findIndex(e => Number(e?.id) === id);
+  if (idx === -1) {
+    console.warn("Equipe não encontrada:", id);
+    if (typeof showToast === "function") showToast("Equipe não encontrada.");
+    return;
+  }
+
+  const [removida] = equipes.splice(idx, 1);
+
+  // Atualiza a tela se estiver na página de equipes
+  if (typeof loadEquipesContent === "function") {
+    // Se quiser manter o filtro/scroll, pode chamar algo mais fino aqui
+    loadEquipesContent();
+  }
+
+  // Atualiza card do dashboard (se estiver visível)
+  if (typeof updateTeamsStatCard === "function" && document.getElementById("teamsStatCard")) {
+    updateTeamsStatCard();
+  }
+
+  if (typeof showToast === "function") {
+    showToast(`Equipe "${removida?.name || id}" excluída com sucesso!`);
+  }
+}
+
+// (Opcional) compatibilidade se você tinha outra função com nome diferente
+if (typeof window.deletarEquipe === "function" && typeof window.deleteTeam !== "function") {
+  window.deleteTeam = window.deletarEquipe;
+}
+
+window.toggleTeamMenu = (teamId) => {
+  const card =
+    document.querySelector(`[data-team-id="${teamId}"]`) ||
+    document.querySelector(`[data-equipe-id="${teamId}"]`);
+  if (!card) return;
+
+  let menu = card.querySelector(".team-menu-dropdown");
+
+  // Fecha outros menus (chamando o _close se existir)
+  document.querySelectorAll(".team-menu-dropdown").forEach((el) => {
+    if (el !== menu) {
+      if (typeof el._close === "function") el._close();
+      else el.remove();
+    }
+  });
+
+  // Se já existe esse menu aberto, fecha e sai
+  if (menu) {
+    if (typeof menu._close === "function") menu._close();
+    else menu.remove();
+    return;
+  }
+
+  // Contêiner onde o menu vai ficar
+  const menuContainer =
+    card.querySelector(".team-menu") ||
+    card.querySelector(".task-menu") || // fallback
+    card;
+
+  const cs = getComputedStyle(menuContainer);
+  if (cs.position === "static") menuContainer.style.position = "relative";
+
+  // Cria o menu
+  menu = document.createElement("div");
+  menu.className = "team-menu-dropdown";
+  menu.style.position = "absolute";
+  menu.style.top = "30px";
+  menu.style.right = "0";
+  menu.style.background = "#fff";
+  menu.style.border = "1px solid #e5e7eb";
+  menu.style.borderRadius = "0.375rem";
+  menu.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
+  menu.style.zIndex = "999";
+
+  // --- helpers: fechar + listeners de fora/ESC ---
+  const onClickOutside = (ev) => {
+    if (!menu) return;
+    if (!menu.contains(ev.target)) closeMenu();
+  };
+  const onEsc = (ev) => {
+    if (ev.key === "Escape") closeMenu();
+  };
+  function closeMenu() {
+    if (!menu) return;
+    if (menu.parentNode) menu.parentNode.removeChild(menu);
+    document.removeEventListener("click", onClickOutside);
+    document.removeEventListener("keydown", onEsc);
+    menu = null;
+  }
+  // expõe para que outros fechamentos consigam limpar os listeners
+  menu._close = closeMenu;
+
+  // Evita que cliques dentro do menu disparem o "click fora"
+  menu.addEventListener("click", (e) => e.stopPropagation());
+
+  // Botão "Apagar equipe"
+  const apagarBtn = document.createElement("div");
+  apagarBtn.innerHTML = `
+    <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;">
+      🗑 <span>Apagar equipe</span>
+    </span>`;
+  apagarBtn.style.padding = "0.5rem";
+  apagarBtn.style.cursor = "pointer";
+  apagarBtn.style.color = "#b91c1c";
+
+  apagarBtn.addEventListener("click", async () => {
+    closeMenu(); // fecha antes de abrir modal
+    const confirmar = await confirmarModal({
+      title: "Excluir equipe?",
+      message: "Tem certeza que deseja excluir esta equipe? Esta ação não pode ser desfeita.",
+    });
+    if (confirmar) {
+      if (typeof deleteTeam === "function") deleteTeam(teamId);
+      else console.warn("deleteTeam(teamId) não encontrado.");
+    }
+  });
+
+  menu.appendChild(apagarBtn);
+  menuContainer.appendChild(menu);
+
+  // Adiciona listeners globais *após* o click atual concluir
+  setTimeout(() => {
+    document.addEventListener("click", onClickOutside);
+    document.addEventListener("keydown", onEsc);
+  }, 0);
+};
+// FIM EQUIPES /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// AVISOS /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const S_NOTICE = typeof sanitizeHTML === "function"
+  ? sanitizeHTML
+  : (s) => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+window.equipes  = window.equipes  || JSON.parse(localStorage.getItem("equipes")  || "[]");
+window.projetos = window.projetos || JSON.parse(localStorage.getItem("projetos") || "[]");
+window.avisos   = window.avisos   || JSON.parse(localStorage.getItem("avisos")   || "[]");
+
+// Equipes e Projetos do estado global
+function getTeamOptions() {
+  const src = (Array.isArray(window.equipes) && window.equipes.length)
+    ? window.equipes
+    : (typeof equipes !== "undefined" ? equipes : JSON.parse(localStorage.getItem("equipes") || "[]"));
+  return src.map(e => ({ id: Number(e.id), name: e.name || "Sem nome" }));
+}
+
+function getProjectOptions() {
+  const src = (Array.isArray(window.projetos) && window.projetos.length)
+    ? window.projetos
+    : (typeof projetos !== "undefined" ? projetos : JSON.parse(localStorage.getItem("projetos") || "[]"));
+  return src.map(p => ({ id: Number(p.id), name: p.name || "Sem nome" }));
+}
+
+
+function resolveTeamNamesFromIds(ids=[]) {
+  const map = new Map(getTeamOptions().map(t => [t.id, t.name]));
+  return ids.map(id => map.get(Number(id))).filter(Boolean);
+}
+function resolveProjectNamesFromIds(ids=[]) {
+  const map = new Map(getProjectOptions().map(p => [p.id, p.name]));
+  return ids.map(id => map.get(Number(id))).filter(Boolean);
+}
+
+
 function loadAvisosContent() {
   const conteudoPagina = document.getElementById("conteudoPagina");
 
@@ -3095,78 +4123,89 @@ function setupNoticesFunctionality() {
   setupNoticeActions();
 }
 
-function generateNoticeCards() {
-  return avisos
-    .map(
-      (notice) => `
-      <div data-notice-id="${
-        notice.id
-      }" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-left: 4px solid ${getNoticePriorityColor(
-        notice.priority
-      )}; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-          <div style="flex: 1;">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <h3 style="font-size: 1.25rem; font-weight: 600; color: #000000;">${
-                notice.title
-              }</h3>
-              <span style="padding: 0.25rem 0.5rem; background-color: ${getNoticePriorityBgColor(
-                notice.priority
-              )}; color: ${getNoticePriorityTextColor(
-        notice.priority
-      )}; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500;">
-                ${notice.priority.toUpperCase()}
-              </span>
-              <span style="padding: 0.25rem 0.5rem; background-color: ${getNoticeTypeBgColor(
-                notice.type
-              )}; color: ${getNoticeTypeTextColor(
-        notice.type
-      )}; border-radius: 0.25rem; font-size: 0.75rem;">
-                ${getNoticeTypeLabel(notice.type)}
-              </span>
-            </div>
-            <p style="color: #666666; margin-bottom: 0.75rem; line-height: 1.5;">${
-              notice.content
-            }</p>
-            <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.875rem; color: #9ca3af;">
-              <div style="display: flex; align-items: center; gap: 0.25rem;">
-                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/>
-                </svg>
-                <span>Por: ${notice.author}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 0.25rem;">
-                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                <span>Publicado: ${new Date(
-                  notice.publishedAt
-                ).toLocaleDateString("pt-BR")}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 0.25rem;">
-                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12,6 12,12 16,14"/>
-                </svg>
-                <span>Expira: ${new Date(notice.expiresAt).toLocaleDateString(
-                  "pt-BR"
-                )}</span>
-              </div>
-            </div>
+function renderNoticeCard(notice) {
+  const teamNames = resolveTeamNamesFromIds(notice.teamIds || []);
+  const projectNames = resolveProjectNamesFromIds(notice.projectIds || []);
+
+  const teamsChips = teamNames.length
+    ? `<div style="display:flex;flex-wrap:wrap;gap:0.25rem;margin-top:0.5rem;">
+         ${teamNames.map(n => `<span style="background:#eef2ff;color:#3730a3;padding:0.125rem 0.5rem;border-radius:999px;font-size:0.7rem;">${S_NOTICE(n)}</span>`).join("")}
+       </div>`
+    : "";
+
+  const projectsChips = projectNames.length
+    ? `<div style="display:flex;flex-wrap:wrap;gap:0.25rem;margin-top:0.25rem;">
+         ${projectNames.map(n => `<span style="background:#ecfeff;color:#155e75;padding:0.125rem 0.5rem;border-radius:999px;font-size:0.7rem;">${S_NOTICE(n)}</span>`).join("")}
+       </div>`
+    : "";
+
+  return `
+    <div data-notice-id="${notice.id}"
+         style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid ${getNoticePriorityColor(notice.priority)};border-radius:0.5rem;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.1);">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <h3 style="font-size:1.25rem;font-weight:600;color:#000;">${S_NOTICE(notice.title)}</h3>
+            <span style="padding:0.25rem 0.5rem;background:${getNoticePriorityBgColor(notice.priority)};color:${getNoticePriorityTextColor(notice.priority)};border-radius:0.25rem;font-size:0.75rem;font-weight:500;">
+              ${notice.priority.toUpperCase()}
+            </span>
+            <span style="padding:0.25rem 0.5rem;background:${getNoticeTypeBgColor(notice.type)};color:${getNoticeTypeTextColor(notice.type)};border-radius:0.25rem;font-size:0.75rem;">
+              ${getNoticeTypeLabel(notice.type)}
+            </span>
           </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="edit-notice-btn btn btn-outline" style="font-size: 0.875rem;">Editar</button>
-            <button class="delete-notice-btn btn btn-outline" style="font-size: 0.875rem; color: #dc2626; border-color: #dc2626;">Excluir</button>
+
+          <p style="color:#666;margin-bottom:0.75rem;line-height:1.5;">${S_NOTICE(notice.content)}</p>
+
+          ${teamNames.length || projectNames.length ? `
+            <div style="margin:0.25rem 0 0.5rem;color:#6b7280;font-size:0.85rem;">
+              ${teamNames.length ? `<div><strong>Equipes:</strong> ${teamNames.length}</div>` : ``}
+              ${teamsChips}
+              ${projectNames.length ? `<div style="margin-top:0.35rem;"><strong>Projetos:</strong> ${projectNames.length}</div>` : ``}
+              ${projectsChips}
+            </div>` : ``}
+
+          <div style="display:flex;align-items:center;gap:1rem;font-size:0.875rem;color:#9ca3af;margin-top:0.5rem;">
+            <div style="display:flex;align-items:center;gap:0.25rem;">
+              <svg style="width:1rem;height:1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/>
+              </svg>
+              <span>Por: ${S_NOTICE(notice.author)}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.25rem;">
+              <svg style="width:1rem;height:1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>Publicado: ${formatarDataPtBR(notice.publishedAt)}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.25rem;">
+              <svg style="width:1rem;height:1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12,6 12,12 16,14"/>
+              </svg>
+              <span>Expira: ${formatarDataPtBR(notice.expiresAt)}</span>
+            </div>
           </div>
         </div>
+
+        <div style="display:flex;gap:0.5rem;">
+          <button class="edit-notice-btn btn btn-outline" style="font-size:0.875rem;">Editar</button>
+          <button class="delete-notice-btn btn btn-outline" style="font-size:0.875rem;color:#dc2626;border-color:#dc2626;">Excluir</button>
+        </div>
       </div>
-    `
-    )
-    .join("");
+    </div>
+  `;
 }
+
+function generateNoticeCards() {
+  return (window.avisos || []).map(renderNoticeCard).join("");
+}
+function generateNoticeCardsFromArray(arr) {
+  return (arr || []).map(renderNoticeCard).join("");
+}
+
 
 function setupNoticeActions() {
   // Edit notice buttons
@@ -3196,7 +4235,7 @@ function filterNotices() {
   const typeFilter =
     document.getElementById("noticeTypeFilter")?.value || "todos";
 
-  const filteredNotices = avisos.filter((notice) => {
+  const filteredNotices = (window.avisos || []).filter((notice) => {
     const matchesPriority =
       priorityFilter === "todas" || notice.priority === priorityFilter;
     const matchesType = typeFilter === "todos" || notice.type === typeFilter;
@@ -3210,104 +4249,50 @@ function filterNotices() {
   }
 }
 
-function generateNoticeCardsFromArray(avisosArray) {
-  return avisosArray
-    .map(
-      (notice) => `
-      <div data-notice-id="${
-        notice.id
-      }" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-left: 4px solid ${getNoticePriorityColor(
-        notice.priority
-      )}; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-          <div style="flex: 1;">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <h3 style="font-size: 1.25rem; font-weight: 600; color: #000000;">${
-                notice.title
-              }</h3>
-              <span style="padding: 0.25rem 0.5rem; background-color: ${getNoticePriorityBgColor(
-                notice.priority
-              )}; color: ${getNoticePriorityTextColor(
-        notice.priority
-      )}; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500;">
-                ${notice.priority.toUpperCase()}
-              </span>
-              <span style="padding: 0.25rem 0.5rem; background-color: ${getNoticeTypeBgColor(
-                notice.type
-              )}; color: ${getNoticeTypeTextColor(
-        notice.type
-      )}; border-radius: 0.25rem; font-size: 0.75rem;">
-                ${getNoticeTypeLabel(notice.type)}
-              </span>
-            </div>
-            <p style="color: #666666; margin-bottom: 0.75rem; line-height: 1.5;">${
-              notice.content
-            }</p>
-            <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.875rem; color: #9ca3af;">
-              <div style="display: flex; align-items: center; gap: 0.25rem;">
-                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/>
-                </svg>
-                <span>Por: ${notice.author}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 0.25rem;">
-                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                <span>Publicado: ${new Date(
-                  notice.publishedAt
-                ).toLocaleDateString("pt-BR")}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 0.25rem;">
-                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12,6 12,12 16,14"/>
-                </svg>
-                <span>Expira: ${new Date(notice.expiresAt).toLocaleDateString(
-                  "pt-BR"
-                )}</span>
-              </div>
-            </div>
-          </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="edit-notice-btn btn btn-outline" style="font-size: 0.875rem;">Editar</button>
-            <button class="delete-notice-btn btn btn-outline" style="font-size: 0.875rem; color: #dc2626; border-color: #dc2626;">Excluir</button>
-          </div>
-        </div>
-      </div>
-    `
-    )
-    .join("");
-}
-
 function showNewNoticeModal() {
-  const modal = createModal(
+  const teams = getTeamOptions();
+  const projects = getProjectOptions();
+
+  const teamsList = teams.length
+    ? teams.map(t => `
+        <label data-row-team="${t.id}" style="display:flex;align-items:center;gap:0.5rem;">
+          <input type="checkbox" class="noticeTeamChk" value="${t.id}"> ${S_NOTICE(t.name)}
+        </label>`).join("")
+    : `<div style="color:#6b7280;">Nenhuma equipe cadastrada.</div>`;
+
+  const projectsList = projects.length
+    ? projects.map(p => `
+        <label data-row-project="${p.id}" style="display:flex;align-items:center;gap:0.5rem;">
+          <input type="checkbox" class="noticeProjectChk" value="${p.id}"> ${S_NOTICE(p.name)}
+        </label>`).join("")
+    : `<div style="color:#6b7280;">Nenhum projeto cadastrado.</div>`;
+
+  createModal(
     "Criar Novo Aviso",
     `
       <form id="newNoticeForm">
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Título do Aviso</label>
-          <input type="text" id="noticeTitle" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Título do Aviso</label>
+          <input type="text" id="noticeTitle" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Conteúdo</label>
-          <textarea id="noticeContent" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; min-height: 120px; resize: vertical;"></textarea>
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Conteúdo</label>
+          <textarea id="noticeContent" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:120px;resize:vertical;"></textarea>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Prioridade</label>
-            <select id="noticePriority" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Prioridade</label>
+            <select id="noticePriority" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
               <option value="baixa">Baixa</option>
               <option value="media" selected>Média</option>
               <option value="alta">Alta</option>
             </select>
           </div>
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Tipo</label>
-            <select id="noticeType" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tipo</label>
+            <select id="noticeType" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
               <option value="announcement">Anúncio</option>
               <option value="policy">Política</option>
               <option value="maintenance">Manutenção</option>
@@ -3315,11 +4300,29 @@ function showNewNoticeModal() {
             </select>
           </div>
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Data de Expiração</label>
-          <input type="date" id="noticeExpires" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Data de Expiração</label>
+          <input type="date" id="noticeExpires" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
         </div>
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+
+        <div style="margin:1rem 0 0.5rem;font-weight:600;">Equipes</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+          <input type="text" id="noticeTeamSearch" placeholder="Buscar equipes..." style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        </div>
+        <div id="noticeTeamList" style="max-height:180px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+          ${teamsList}
+        </div>
+
+        <div style="margin:1rem 0 0.5rem;font-weight:600;">Projetos</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+          <input type="text" id="noticeProjectSearch" placeholder="Buscar projetos..." style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        </div>
+        <div id="noticeProjectList" style="max-height:180px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+          ${projectsList}
+        </div>
+
+        <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
           <button type="button" onclick="fecharModal()" class="btn btn-outline">Cancelar</button>
           <button type="submit" class="btn btn-primary">Publicar Aviso</button>
         </div>
@@ -3327,10 +4330,40 @@ function showNewNoticeModal() {
     `
   );
 
+  // busca equipes
+  const teamSearch = document.getElementById("noticeTeamSearch");
+  if (teamSearch) {
+    teamSearch.addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      document.querySelectorAll("#noticeTeamList [data-row-team]").forEach(row => {
+        const id = Number(row.getAttribute("data-row-team"));
+        const name = (teams.find(t => t.id === id)?.name || "").toLowerCase();
+        row.style.display = name.includes(q) ? "flex" : "none";
+      });
+    });
+  }
+
+  // busca projetos
+  const projSearch = document.getElementById("noticeProjectSearch");
+  if (projSearch) {
+    projSearch.addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      document.querySelectorAll("#noticeProjectList [data-row-project]").forEach(row => {
+        const id = Number(row.getAttribute("data-row-project"));
+        const name = (projects.find(p => p.id === id)?.name || "").toLowerCase();
+        row.style.display = name.includes(q) ? "flex" : "none";
+      });
+    });
+  }
+
+  // submit
   document.getElementById("newNoticeForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(localStorage.getItem("user")) || { name: "Sistema" };
+    const teamIds = Array.from(document.querySelectorAll(".noticeTeamChk:checked")).map(c => Number(c.value));
+    const projectIds = Array.from(document.querySelectorAll(".noticeProjectChk:checked")).map(c => Number(c.value));
+
     const newNotice = {
       id: Date.now(),
       title: document.getElementById("noticeTitle").value,
@@ -3338,76 +4371,110 @@ function showNewNoticeModal() {
       priority: document.getElementById("noticePriority").value,
       type: document.getElementById("noticeType").value,
       author: user.name,
-      publishedAt: new Date().toISOString().split("T")[0],
+      // ✅ usa horário de Brasília (yyyy-mm-dd)
+      publishedAt: getDataBrasiliaFormatada(),
+      // vem de <input type="date">, já está yyyy-mm-dd
       expiresAt: document.getElementById("noticeExpires").value,
+      // vínculos
+      teamIds,
+      projectIds,
     };
 
-    avisos.push(newNotice);
+    (window.avisos ||= []);
+    window.avisos.push(newNotice);
+    localStorage.setItem("avisos", JSON.stringify(window.avisos));
+
     fecharModal();
-    loadAvisosContent(); // Refresh avisos
+    loadAvisosContent();
+
   });
 }
 
+
 function editNotice(noticeId) {
-  const notice = avisos.find((n) => n.id === noticeId);
+  const notice = (window.avisos || []).find((n) => n.id === noticeId);
   if (!notice) return;
 
-  const modal = createModal(
+  const teams = getTeamOptions();
+  const projects = getProjectOptions();
+  const selTeams = new Set((notice.teamIds || []).map(Number));
+  const selProjects = new Set((notice.projectIds || []).map(Number));
+
+  createModal(
     "Editar Aviso",
     `
       <form id="editNoticeForm">
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Título do Aviso</label>
-          <input type="text" id="editNoticeTitle" value="${
-            notice.title
-          }" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Título do Aviso</label>
+          <input type="text" id="editNoticeTitle" value="${S_NOTICE(notice.title)}" required
+                 style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Conteúdo</label>
-          <textarea id="editNoticeContent" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; min-height: 120px; resize: vertical;">${
-            notice.content
-          }</textarea>
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Conteúdo</label>
+          <textarea id="editNoticeContent" required
+            style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:120px;resize:vertical;">${S_NOTICE(notice.content)}</textarea>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Prioridade</label>
-            <select id="editNoticePriority" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-              <option value="baixa" ${
-                notice.priority === "baixa" ? "selected" : ""
-              }>Baixa</option>
-              <option value="media" ${
-                notice.priority === "media" ? "selected" : ""
-              }>Média</option>
-              <option value="alta" ${
-                notice.priority === "alta" ? "selected" : ""
-              }>Alta</option>
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Prioridade</label>
+            <select id="editNoticePriority" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+              <option value="baixa" ${notice.priority==="baixa"?"selected":""}>Baixa</option>
+              <option value="media" ${notice.priority==="media"?"selected":""}>Média</option>
+              <option value="alta"  ${notice.priority==="alta" ?"selected":""}>Alta</option>
             </select>
           </div>
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Tipo</label>
-            <select id="editNoticeType" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-              <option value="announcement" ${
-                notice.type === "announcement" ? "selected" : ""
-              }>Anúncio</option>
-              <option value="policy" ${
-                notice.type === "policy" ? "selected" : ""
-              }>Política</option>
-              <option value="maintenance" ${
-                notice.type === "maintenance" ? "selected" : ""
-              }>Manutenção</option>
-              <option value="urgent" ${
-                notice.type === "urgent" ? "selected" : ""
-              }>Urgente</option>
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tipo</label>
+            <select id="editNoticeType" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+              <option value="announcement" ${notice.type==="announcement"?"selected":""}>Anúncio</option>
+              <option value="policy" ${notice.type==="policy"?"selected":""}>Política</option>
+              <option value="maintenance" ${notice.type==="maintenance"?"selected":""}>Manutenção</option>
+              <option value="urgent" ${notice.type==="urgent"?"selected":""}>Urgente</option>
             </select>
           </div>
         </div>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Data de Expiração</label>
-          <input type="date" id="editNoticeExpires" value="${
-            notice.expiresAt
-          }" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Data de Expiração</label>
+          <input type="date" id="editNoticeExpires" value="${notice.expiresAt}"
+                 required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
         </div>
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+
+        <div style="margin:1rem 0 0.5rem;font-weight:600;">Equipes</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+          <input type="text" id="editNoticeTeamSearch" placeholder="Buscar equipes..." style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        </div>
+        <div id="editNoticeTeamList" style="max-height:180px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+          ${
+            teams.length
+              ? teams.map(t => `
+                  <label data-row-team="${t.id}" style="display:flex;align-items:center;gap:0.5rem;">
+                    <input type="checkbox" class="editNoticeTeamChk" value="${t.id}" ${selTeams.has(t.id) ? "checked":""}>
+                    ${S_NOTICE(t.name)}
+                  </label>`).join("")
+              : `<div style="color:#6b7280;">Nenhuma equipe cadastrada.</div>`
+          }
+        </div>
+
+        <div style="margin:1rem 0 0.5rem;font-weight:600;">Projetos</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+          <input type="text" id="editNoticeProjectSearch" placeholder="Buscar projetos..." style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        </div>
+        <div id="editNoticeProjectList" style="max-height:180px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+          ${
+            projects.length
+              ? projects.map(p => `
+                  <label data-row-project="${p.id}" style="display:flex;align-items:center;gap:0.5rem;">
+                    <input type="checkbox" class="editNoticeProjectChk" value="${p.id}" ${selProjects.has(p.id) ? "checked":""}>
+                    ${S_NOTICE(p.name)}
+                  </label>`).join("")
+              : `<div style="color:#6b7280;">Nenhum projeto cadastrado.</div>`
+          }
+        </div>
+
+        <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
           <button type="button" onclick="fecharModal()" class="btn btn-outline">Cancelar</button>
           <button type="submit" class="btn btn-primary">Salvar Alterações</button>
         </div>
@@ -3415,6 +4482,26 @@ function editNotice(noticeId) {
     `
   );
 
+  // buscas
+  document.getElementById("editNoticeTeamSearch")?.addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll("#editNoticeTeamList [data-row-team]").forEach(row => {
+      const id = Number(row.getAttribute("data-row-team"));
+      const name = (teams.find(t => t.id === id)?.name || "").toLowerCase();
+      row.style.display = name.includes(q) ? "flex" : "none";
+    });
+  });
+
+  document.getElementById("editNoticeProjectSearch")?.addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll("#editNoticeProjectList [data-row-project]").forEach(row => {
+      const id = Number(row.getAttribute("data-row-project"));
+      const name = (projects.find(p => p.id === id)?.name || "").toLowerCase();
+      row.style.display = name.includes(q) ? "flex" : "none";
+    });
+  });
+
+  // submit
   document.getElementById("editNoticeForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -3424,10 +4511,14 @@ function editNotice(noticeId) {
     notice.type = document.getElementById("editNoticeType").value;
     notice.expiresAt = document.getElementById("editNoticeExpires").value;
 
+    notice.teamIds = Array.from(document.querySelectorAll(".editNoticeTeamChk:checked")).map(c => Number(c.value));
+    notice.projectIds = Array.from(document.querySelectorAll(".editNoticeProjectChk:checked")).map(c => Number(c.value));
+
     fecharModal();
-    loadAvisosContent(); // Refresh avisos
+    loadAvisosContent();
   });
 }
+
 
 function deleteNotice(noticeId) {
   if (
@@ -3435,12 +4526,15 @@ function deleteNotice(noticeId) {
       "Tem certeza que deseja excluir este aviso? Esta ação não pode ser desfeita."
     )
   ) {
-    avisos = avisos.filter((n) => n.id !== noticeId);
+    window.avisos = (window.avisos || []).filter((n) => n.id !== noticeId);
+    localStorage.setItem("avisos", JSON.stringify(window.avisos));
     loadAvisosContent(); // Refresh avisos
   }
 }
 
-// Profile functionality
+// FIM AVISOS //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// PERFIL //////////////////////////////////////////////////////////////////////////////////////////////////////////
 function loadPerfilContent() {
   const user = JSON.parse(localStorage.getItem("user"));
   const conteudoPagina = document.getElementById("conteudoPagina");
@@ -3600,8 +4694,9 @@ function setupProfileFunctionality() {
     });
   }
 }
+// FIM PERFIL //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Settings functionality
+// CONFIGURAÇÕES ///////////////////////////////////////////////////////////////////////////////////////////////////
 function loadConfiguracoesContent() {
   const conteudoPagina = document.getElementById("conteudoPagina");
 
@@ -3841,6 +4936,7 @@ function confirmDeleteAccount() {
     }
   }
 }
+// FIM CONFIGURAÇÕES //////////////////////////////////////////////////////////////////////////////////////////////////
 
 function gerarCardsProjetos() {
   return gerarArrayProjetosCards(projetos);
