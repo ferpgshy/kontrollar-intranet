@@ -41,4 +41,40 @@ function getInitials(name) {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+  }
+
+  function carregarConteudoPagina(page) {
+  const conteudoPagina = document.getElementById("conteudoPagina");
+
+  switch (page) {
+    case "dashboard":
+      carregarConteudoDashboard();
+      break;
+    case "projetos":
+      carregarConteudoProjetos();
+      break;
+    case "backlog":
+      carregarConteudoBacklog();
+      break;
+    case "calendarioio":
+      carregarConteudoCalendario();
+      break;
+    case "chat":
+      carregarConteudoChat();
+      break;
+    case "equipes":
+      loadEquipesContent();
+      break;
+    case "avisos":
+      loadAvisosContent();
+      break;
+    case "perfil":
+      loadPerfilContent();
+      break;
+    case "configuracoes":
+      loadConfiguracoesContent();
+      break;
+    default:
+      carregarConteudoDashboard();
+  }
 }
