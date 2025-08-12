@@ -1,4 +1,4 @@
-// Funcionalidade da Dashboard
+// ---------- Inicialização da Dashboard ----------
 document.addEventListener("DOMContentLoaded", () => {
   // Verificar Auth
   const user = JSON.parse(localStorage.getItem("user"));
@@ -7,74 +7,92 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Inicializador
+  // Preenche header do usuário
   IniciarDashboard(user);
-  carregarConteudoDashboard();
-  configurarEventos();
+
+  // Eventos de UI (menu, botão Novo, logout, etc.)
+  if (typeof configurarEventos === "function") {
+    configurarEventos();
+  }
+
+  // Deixe o roteador do app.js carregar a página atual pelo hash.
+  // Se não houver hash, use a última aba salva ou "dashboard".
+  if (!location.hash) {
+    const saved = localStorage.getItem("activePage") || "dashboard";
+    if (typeof navigate === "function") navigate(saved);
+  }
 });
 
+// ---------- Header (nome/cargo/avatar) ----------
 function IniciarDashboard(user) {
-  // Atualiza o nome do usuário, cargo e avatar
-  const userName = document.getElementById("userName");
-  const userRole = document.getElementById("userRole");
+  const userName   = document.getElementById("userName");
+  const userRole   = document.getElementById("userRole");
   const userAvatar = document.getElementById("userAvatar");
 
-  if (userName) userName.textContent = user.name;
-  if (userRole) userRole.textContent = cargosLabel(user.role);
+  if (userName)   userName.textContent = user.name;
+  if (userRole)   userRole.textContent = cargosLabel(user.role);
   if (userAvatar) userAvatar.textContent = getInitials(user.name);
 }
 
-function cargosLabel(role) {
-  const roles = {
-    admin: "Administrador",
-    manager: "Gestor",
-    developer: "Desenvolvedor",
-    client: "Cliente",
+// ---------- Helpers seguros (evita redefinir se já existem) ----------
+if (typeof window.cargosLabel !== "function") {
+  window.cargosLabel = function cargosLabel(role) {
+    const roles = {
+      admin: "Administrador",
+      manager: "Gestor",
+      developer: "Desenvolvedor",
+      client: "Cliente",
+    };
+    return roles[role] || "Usuário";
   };
-  return roles[role] || "Usuário";
 }
 
-function getInitials(name) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-  }
+if (typeof window.getInitials !== "function") {
+  window.getInitials = function getInitials(name) {
+    return String(name)
+      .trim()
+      .split(/\s+/)
+      .map(n => n[0] || "")
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "U";
+  };
+}
 
-  function carregarConteudoPagina(page) {
+// ---------- Dispatcher de páginas (usado pelo roteador) ----------
+function carregarConteudoPagina(page) {
   const conteudoPagina = document.getElementById("conteudoPagina");
+  if (!conteudoPagina) return;
 
   switch (page) {
     case "dashboard":
-      carregarConteudoDashboard();
+      if (typeof carregarConteudoDashboard === "function") carregarConteudoDashboard();
       break;
     case "projetos":
-      carregarConteudoProjetos();
+      if (typeof carregarConteudoProjetos === "function") carregarConteudoProjetos();
       break;
     case "backlog":
-      carregarConteudoBacklog();
+      if (typeof carregarConteudoBacklog === "function") carregarConteudoBacklog();
       break;
     case "calendarioio":
-      carregarConteudoCalendario();
+      if (typeof carregarConteudoCalendario === "function") carregarConteudoCalendario();
       break;
     case "chat":
-      carregarConteudoChat();
+      if (typeof carregarConteudoChat === "function") carregarConteudoChat();
       break;
     case "equipes":
-      loadEquipesContent();
+      if (typeof loadEquipesContent === "function") loadEquipesContent();
       break;
     case "avisos":
-      loadAvisosContent();
+      if (typeof loadAvisosContent === "function") loadAvisosContent();
       break;
     case "perfil":
-      loadPerfilContent();
+      if (typeof loadPerfilContent === "function") loadPerfilContent();
       break;
     case "configuracoes":
-      loadConfiguracoesContent();
+      if (typeof loadConfiguracoesContent === "function") loadConfiguracoesContent();
       break;
     default:
-      carregarConteudoDashboard();
+      if (typeof carregarConteudoDashboard === "function") carregarConteudoDashboard();
   }
 }

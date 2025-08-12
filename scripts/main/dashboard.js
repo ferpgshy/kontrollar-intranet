@@ -411,11 +411,6 @@ function gerarCalendario() {
   return cal;
 }
 
-// ---------- auto-refresh quando outros módulos mexem nos dados ----------
-const _refreshDashboard = () => {
-  try { carregarConteudoDashboard(); } catch (e) { console.warn("Refresh dashboard falhou:", e); }
-};
-
 // eventos customizados disparados pelas outras abas (projetos/backlogs/equipes/calendário)
 ["projetos","tarefas","equipes","eventos"].forEach(k => {
   document.addEventListener(`data:${k}:changed`, _refreshDashboard);

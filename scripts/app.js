@@ -1,6 +1,31 @@
+function pageFromHash() {
+  const h = (location.hash || "").replace(/^#/, "");
+  return h || "dashboard";
+}
+
+function getCurrentPage() {
+  return pageFromHash() || localStorage.getItem("activePage") || "dashboard";
+}
+
+function navigate(page) {
+  // navegação centralizada: só mexe no hash;
+  // o handler de 'hashchange' vai carregar o conteúdo.
+  const target = "#" + page;
+  if (location.hash !== target) {
+    location.hash = target;
+  } else {
+    // se já estamos no mesmo hash, força só o refresh
+    definirPaginaAtiva(page);
+    carregarConteudoPagina(page);
+  }
+}
+window.navigate = navigate;
 
 function atualizarDashboardSeVisivel() {
-  if (window.paginaAtiva === "dashboard" && typeof carregarConteudoPagina === "function") {
+  if (
+    window.paginaAtiva === "dashboard" &&
+    typeof carregarConteudoPagina === "function"
+  ) {
     carregarConteudoPagina("dashboard");
   }
 }
@@ -14,10 +39,10 @@ window.atualizarDashboardSeVisivel = atualizarDashboardSeVisivel;
       return;
     }
     Notifs.initUI({
-      bellSelector:  "#botaoNotificacao",
+      bellSelector: "#botaoNotificacao",
       panelSelector: "#painelNotificacao",
       closeSelector: "#fecharNotificacao",
-      listSelector:  "#listaNotificacoes" // será criado se não existir
+      listSelector: "#listaNotificacoes", // será criado se não existir
     });
   };
   if (document.readyState === "loading") {
@@ -30,7 +55,9 @@ window.atualizarDashboardSeVisivel = atualizarDashboardSeVisivel;
 function configurarEventos() {
   // Barra Lateral
   const controleSidebar = document.getElementById("controleSidebar");
-  const celularcontroleSidebar = document.getElementById("celularcontroleSidebar");
+  const celularcontroleSidebar = document.getElementById(
+    "celularcontroleSidebar"
+  );
   const sidebar = document.getElementById("sidebar");
 
   controleSidebar?.addEventListener("click", () => {
@@ -41,14 +68,11 @@ function configurarEventos() {
   });
 
   // Navegação
-  document.querySelectorAll(".nav-link").forEach(link => {
+  document.querySelectorAll(".nav-link").forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
       const page = link.getAttribute("data-page");
-      if (page) {
-        definirPaginaAtiva(page);
-        carregarConteudoPagina(page);
-      }
+      if (page) navigate(page);
     });
   });
 
@@ -70,7 +94,6 @@ function configurarEventos() {
     });
   }
 }
-
 
 function configurarBotaoNovoCabecalho() {
   // Criar o botão "Novo" no cabeçalho
@@ -184,24 +207,19 @@ function exibirDropdownNovoItem(botao) {
 function lidarComAcaoNovoItem(acao) {
   switch (acao) {
     case "new-task":
-      definirPaginaAtiva("backlog");
-      carregarConteudoPagina("backlog");
+      navigate("backlog");
       break;
     case "new-projetos":
-      definirPaginaAtiva("projetos");
-      carregarConteudoPagina("projetos");
+      navigate("projetos");
       break;
     case "new-equipe":
-      definirPaginaAtiva("equipes");
-      carregarConteudoPagina("equipes");
+      navigate("equipes");
       break;
     case "new-notice":
-      definirPaginaAtiva("avisos");
-      carregarConteudoPagina("avisos");
+      navigate("avisos");
       break;
   }
 }
-
 
 function definirPaginaAtiva(page) {
   const navLinks = document.querySelectorAll(".nav-link");
@@ -211,9 +229,22 @@ function definirPaginaAtiva(page) {
       link.classList.add("active");
     }
   });
-  window.paginaAtiva = page;
+  // ✅ guarda aba ativa (fallback se recarregar sem hash)
+  localStorage.setItem("activePage", page);
 }
 
-window.fecharModal = fecharModal;
 
-window.editarProjetos = editarProjetos;
+// Boot do roteador baseado no hash
+(function bootRouter() {
+  const load = () => {
+    const page = pageFromHash();           // lê #aba-atual
+    definirPaginaAtiva(page);              // pinta item do menu
+    carregarConteudoPagina(page);          // carrega o conteúdo da aba
+  };
+  window.addEventListener("hashchange", load);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", load, { once: true });
+  } else {
+    load();
+  }
+})();
