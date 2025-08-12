@@ -25,75 +25,75 @@ function formatarDataPtBR(dataIso) {
   return `${dia}/${mes}/${ano}`;
 }
 
-function configurarEventos() {
-  // Barra Lateral toggle
-  const controleSidebar = document.getElementById("controleSidebar");
-  const celularcontroleSidebar = document.getElementById(
-    "celularcontroleSidebar"
-  );
-  const sidebar = document.getElementById("sidebar");
+  function configurarEventos() {
+    // Barra Lateral toggle
+    const controleSidebar = document.getElementById("controleSidebar");
+    const celularcontroleSidebar = document.getElementById(
+      "celularcontroleSidebar"
+    );
+    const sidebar = document.getElementById("sidebar");
 
-  if (controleSidebar) {
-    controleSidebar.addEventListener("click", () => {
-      sidebar.classList.toggle("collapsed");
-    });
-  }
-
-  if (celularcontroleSidebar) {
-    celularcontroleSidebar.addEventListener("click", () => {
-      sidebar.classList.toggle("celular-open");
-    });
-  }
-
-  // Navegação entre páginas
-  const navLinks = document.querySelectorAll(".nav-link");
-  navLinks.forEach((link) => {
-    link.addEventListener("click", function (e) {
-      e.preventDefault();
-      const page = this.getAttribute("data-page");
-      if (page) {
-        definirPaginaAtiva(page);
-        carregarConteudoPagina(page);
-      }
-    });
-  });
-
-  // Header "Novo" botão
-  configurarBotaoNovoCabecalho();
-
-  // Notificações
-  configurarNotificacao();
-
-  // Logout
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
-      const confirmado = await confirmarModal({
-        title: "Confirmação",
-        message: "Tem certeza que deseja sair?",
+    if (controleSidebar) {
+      controleSidebar.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
       });
+    }
 
-      if (confirmado) {
-        localStorage.removeItem("user");
-        window.location.href = "login.html";
+    if (celularcontroleSidebar) {
+      celularcontroleSidebar.addEventListener("click", () => {
+        sidebar.classList.toggle("celular-open");
+      });
+    }
+
+    // Navegação entre páginas
+    const navLinks = document.querySelectorAll(".nav-link");
+    navLinks.forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const page = this.getAttribute("data-page");
+        if (page) {
+          definirPaginaAtiva(page);
+          carregarConteudoPagina(page);
+        }
+      });
+    });
+
+    // Header "Novo" botão
+    configurarBotaoNovoCabecalho();
+
+    // Notificações
+    configurarNotificacao();
+
+    // Logout
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", async () => {
+        const confirmado = await confirmarModal({
+          title: "Confirmação",
+          message: "Tem certeza que deseja sair?",
+        });
+
+        if (confirmado) {
+          localStorage.removeItem("user");
+          window.location.href = "login.html";
+        }
+      });
+    }
+
+    // Fechar notificações ao clicar fora
+    document.addEventListener("click", (e) => {
+      const painelNotificacao = document.getElementById("painelNotificacao");
+      const botaoNotificacao = document.getElementById("botaoNotificacao");
+      if (painelNotificacao && botaoNotificacao) {
+        if (
+          !botaoNotificacao.contains(e.target) &&
+          !painelNotificacao.contains(e.target)
+        ) {
+          painelNotificacao.style.display = "none";
+        }
       }
     });
   }
-
-  // Fechar notificações ao clicar fora
-  document.addEventListener("click", (e) => {
-    const painelNotificacao = document.getElementById("painelNotificacao");
-    const botaoNotificacao = document.getElementById("botaoNotificacao");
-    if (painelNotificacao && botaoNotificacao) {
-      if (
-        !botaoNotificacao.contains(e.target) &&
-        !painelNotificacao.contains(e.target)
-      ) {
-        painelNotificacao.style.display = "none";
-      }
-    }
-  });
-}
 
 function configurarBotaoNovoCabecalho() {
   // Criar o botão "Novo" no cabeçalho
@@ -4520,422 +4520,799 @@ function editNotice(noticeId) {
 }
 
 
-function deleteNotice(noticeId) {
-  if (
-    confirm(
-      "Tem certeza que deseja excluir este aviso? Esta ação não pode ser desfeita."
-    )
-  ) {
-    window.avisos = (window.avisos || []).filter((n) => n.id !== noticeId);
-    localStorage.setItem("avisos", JSON.stringify(window.avisos));
+// Substitua sua função deleteNotice por esta
+async function deleteNotice(noticeId) {
+  const confirmar = (typeof confirmarModal === "function")
+    ? await confirmarModal({
+        title: "Excluir aviso?",
+        message: "Tem certeza que deseja excluir este aviso? Esta ação não pode ser desfeita.",
+      })
+    : window.confirm("Tem certeza que deseja excluir este aviso? Esta ação não pode ser desfeita.");
+
+  if (!confirmar) return;
+
+  const lista = Array.isArray(window.avisos) ? window.avisos : [];
+  window.avisos = lista.filter(n => Number(n.id) !== Number(noticeId));
+  localStorage.setItem("avisos", JSON.stringify(window.avisos));
+
+  if (typeof loadAvisosContent === "function") {
     loadAvisosContent(); // Refresh avisos
+  } else {
+    console.warn("loadAvisosContent() não encontrado.");
   }
 }
+
 
 // FIM AVISOS //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // PERFIL //////////////////////////////////////////////////////////////////////////////////////////////////////////
+function getSafeUser() {
+  let u = JSON.parse(localStorage.getItem("user") || "{}");
+  if (!u || !u.name) {
+    // fallback básico caso não exista usuário logado
+    u = { name: "Usuário", email: "usuario@example.com", role: "user" };
+  }
+  // garante campos
+  if (!u.createdAt) {
+    // guarda "membro desde" (yyyy-mm-dd em São Paulo)
+    if (typeof getDataBrasiliaFormatada === "function") {
+      u.createdAt = getDataBrasiliaFormatada();
+    } else {
+      u.createdAt = new Date().toISOString().split("T")[0];
+    }
+    localStorage.setItem("user", JSON.stringify(u));
+  }
+  if (!u.settings) u.settings = {};
+  if (!u.settings.theme) u.settings.theme = "system"; // system|light|dark
+  if (!u.settings.timezone) u.settings.timezone = "America/Sao_Paulo";
+  if (typeof u.settings.notifyEmail !== "boolean") u.settings.notifyEmail = true;
+  if (typeof u.settings.notifyDesktop !== "boolean") u.settings.notifyDesktop = false;
+  return u;
+}
+
+function applyTheme(theme) {
+  const root = document.documentElement;
+  root.removeAttribute("data-theme");
+  if (theme === "light" || theme === "dark") {
+    root.setAttribute("data-theme", theme);
+  }
+}
+
+function splitName(fullName="") {
+  const parts = String(fullName).trim().split(/\s+/);
+  return {
+    first: parts[0] || "",
+    last: parts.length > 1 ? parts.slice(1).join(" ") : ""
+  };
+}
+
+function joinName(first, last) {
+  return [first || "", last || ""].filter(Boolean).join(" ").trim();
+}
+
+function getInitials(name="") {
+  return String(name).trim().split(/\s+/).slice(0,2).map(s => s[0]?.toUpperCase()||"").join("") || "U";
+}
+
+function maskPhone(v="") {
+  // máscara rapidinha pt-BR (11) 99999-9999
+  return v
+    .replace(/\D/g, "")
+    .replace(/^(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d)/, "$1-$2")
+    .slice(0, 15);
+}
+
+function pwdStrengthScore(p="") {
+  let s = 0;
+  if (p.length >= 8) s++;
+  if (/[A-Z]/.test(p)) s++;
+  if (/[a-z]/.test(p)) s++;
+  if (/\d/.test(p)) s++;
+  if (/[^A-Za-z0-9]/.test(p)) s++;
+  return Math.min(s, 5);
+}
+
+function computeUserStats(userOrName) {
+  const user = typeof userOrName === "object" ? userOrName : { name: userOrName };
+  const name = String(user.name || "").trim().toLowerCase();
+  const email = String(user.email || "").trim().toLowerCase();
+
+  const matches = (m) => {
+    if (!m) return false;
+    if (typeof m === "string") {
+      const s = m.trim().toLowerCase();
+      return s && (s === name || (email && s === email));
+    }
+    if (typeof m === "object") {
+      const n = String(m.name || "").trim().toLowerCase();
+      const e = String(m.email || "").trim().toLowerCase();
+      return (n && n === name) || (email && e === email);
+    }
+    return false;
+  };
+
+  const eqs = Array.isArray(window.equipes) ? window.equipes : [];
+  const projs = Array.isArray(window.projetos) ? window.projetos : [];
+  const tasks = Array.isArray(window.tarefas) ? window.tarefas : [];
+
+  const equipesDoUsuario = eqs.filter(e => Array.isArray(e.members) && e.members.some(matches));
+
+  const projetosDoUsuario = projs.filter(p =>
+    (Array.isArray(p.members) && p.members.some(matches)) ||
+    (Array.isArray(p.equipe)  && p.equipe.some(matches))  ||
+    (matches(p.responsavel)) ||
+    (matches(p.owner))
+  );
+
+  const tarefasUsuario = tasks.filter(t => matches(t.assignee || t.responsavel || t.atribuidoA));
+  const concluidas = tarefasUsuario.filter(t => String(t.status || "").toLowerCase().includes("concl")).length;
+  const pendentes = tarefasUsuario.length - concluidas;
+
+  return {
+    equipesCount: equipesDoUsuario.length,
+    projetosCount: projetosDoUsuario.length,
+    tarefasConcluidas: concluidas,
+    tarefasPendentes: pendentes,
+    equipesDoUsuario,
+    projetosDoUsuario
+  };
+}
+
+
+function formatarDataPtBR(dataIso="") {
+  const [ano, mes, dia] = String(dataIso).split("-");
+  if (!ano || !mes || !dia) return dataIso || "";
+  return `${dia}/${mes}/${ano}`;
+}
+
 function loadPerfilContent() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = getSafeUser();
   const conteudoPagina = document.getElementById("conteudoPagina");
+  const { first, last } = splitName(user.name);
+  const stats = computeUserStats(user);
+
+  // aplica tema salvo
+  applyTheme(user.settings?.theme || "system");
+
+  const avatarStyle = user.avatarDataUrl
+    ? `background-image:url('${user.avatarDataUrl}'); background-size:cover; background-position:center; color:transparent;`
+    : "";
 
   conteudoPagina.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <div>
-          <h1 style="font-size: 2rem; font-weight: bold; color: #000000; margin-bottom: 0.5rem;">Perfil</h1>
-          <p style="color: #666666;">Gerencie suas informações pessoais</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+      <div>
+        <h1 style="font-size:2rem;font-weight:bold;color:#000;margin-bottom:0.5rem;">Perfil</h1>
+        <p style="color:#666;">Gerencie suas informações pessoais</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns: 1fr 2fr; gap: 2rem; align-items:start;">
+      <!-- Coluna Esquerda -->
+      <div style="background:#fff;border-radius:0.5rem;border:1px solid #e5e7eb;padding:1.5rem;">
+        <div style="text-align:center;margin-bottom:1rem;">
+          <div id="avatarPreview"
+               style="width:6rem;height:6rem;background:#111827;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:2rem;margin:0 auto 1rem;${avatarStyle}">
+            ${user.avatarDataUrl ? "" : getInitials(user.name)}
+          </div>
+          <label class="btn btn-outline" style="cursor:pointer;display:inline-block;">
+            Alterar foto
+            <input id="avatarInput" type="file" accept="image/*" style="display:none">
+          </label>
+          ${user.avatarDataUrl ? `<button id="removeAvatarBtn" class="btn btn-outline" style="margin-left:0.5rem;">Remover</button>` : ""}
+        </div>
+
+        <h2 style="font-size:1.25rem;font-weight:600;color:#000;margin-bottom:0.25rem;text-align:center;">${user.name}</h2>
+        <p style="color:#666;text-align:center;margin-bottom:0.25rem;">${user.email}</p>
+        <p style="color:#666;text-align:center;font-size:0.875rem;margin-bottom:1rem;">${typeof cargosLabel === "function" ? cargosLabel(user.role) : (user.role || "Usuário")}</p>
+
+        <div style="display:grid;gap:0.5rem;">
+          <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid #f3f4f6;">
+            <span style="font-weight:500;">Status:</span>
+            <span style="color:#10b981;">Ativo</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid #f3f4f6;">
+            <span style="font-weight:500;">Membro desde:</span>
+            <span>${formatarDataPtBR(user.createdAt)}</span>
+          </div>
+          ${user.lastLoginAt ? `
+          <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid #f3f4f6;">
+            <span style="font-weight:500;">Último acesso:</span>
+            <span>${formatarDataPtBR(user.lastLoginAt)}</span>
+          </div>` : ""}
+        </div>
+
+        <!-- Stats Pessoais -->
+        <div style="margin-top:1.25rem;">
+          <h3 style="font-weight:600;margin-bottom:0.5rem;">Seu resumo</h3>
+
+          <!-- KPIs -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.75rem;">
+            <div style="border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.75rem;">
+              <div style="font-size:0.8rem;color:#6b7280;">Equipes</div>
+              <div style="font-weight:700;font-size:1.2rem;">${stats.equipesCount}</div>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.75rem;">
+              <div style="font-size:0.8rem;color:#6b7280;">Projetos</div>
+              <div style="font-weight:700;font-size:1.2rem;">${stats.projetosCount}</div>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.75rem;">
+              <div style="font-size:0.8rem;color:#6b7280;">Tarefas concl.</div>
+              <div style="font-weight:700;font-size:1.2rem;">${stats.tarefasConcluidas}</div>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.75rem;">
+              <div style="font-size:0.8rem;color:#6b7280;">Tarefas pend.</div>
+              <div style="font-weight:700;font-size:1.2rem;">${stats.tarefasPendentes}</div>
+            </div>
+          </div>
+
+          <!-- Detalhes do perfil (puxa dos campos) -->
+          <div style="border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.75rem;">
+            <div style="display:grid;row-gap:0.35rem;font-size:0.9rem;color:#374151;">
+              <div><strong>Departamento:</strong> ${user.department || "—"}</div>
+              <div><strong>Cargo:</strong> ${user.role || "—"}</div>
+              <div><strong>Telefone:</strong> ${user.phone || "—"}</div>
+              <div><strong>Fuso horário:</strong> ${(user.settings && user.settings.timezone) || "America/Sao_Paulo"}</div>
+              <div><strong>Notificações:</strong>
+                ${
+                  (user.settings?.notifyEmail ? "E-mail" : "")
+                  + (user.settings?.notifyDesktop ? (user.settings?.notifyEmail ? " + Push" : "Push") : "")
+                  || "—"
+                }
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-  
-      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
-        <!-- Profile Picture and Basic Info -->
-        <div style="background-color: #ffffff; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1.5rem;">
-          <div style="text-align: center; margin-bottom: 1.5rem;">
-            <div style="width: 6rem; height: 6rem; background-color: #000000; color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2rem; margin: 0 auto 1rem;">
-              ${getInitials(user.name)}
-            </div>
-            <h2 style="font-size: 1.5rem; font-weight: 600; color: #000000; margin-bottom: 0.25rem;">${
-              user.name
-            }</h2>
-            <p style="color: #666666; margin-bottom: 0.25rem;">${user.email}</p>
-            <p style="color: #666666; font-size: 0.875rem;">${cargosLabel(
-              user.role
-            )}</p>
-          </div>
-          
-          <div style="space-y: 0.5rem;">
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6;">
-              <span style="font-weight: 500;">Status:</span>
-              <span style="color: #10b981;">Ativo</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6;">
-              <span style="font-weight: 500;">Membro desde:</span>
-              <span>Janeiro 2025</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6;">
-              <span style="font-weight: 500;">Último acesso:</span>
-              <span>Hoje</span>
-            </div>
-          </div>
-        </div>
-  
-        <!-- Profile Form -->
-        <div style="background-color: #ffffff; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1.5rem;">
-          <h3 style="font-weight: 600; margin-bottom: 1.5rem;">Informações Pessoais</h3>
-          
+
+      <!-- Coluna Direita -->
+      <div style="display:grid;gap:1.5rem;">
+        <!-- Informações Pessoais -->
+        <div style="background:#fff;border-radius:0.5rem;border:1px solid #e5e7eb;padding:1.5rem;">
+          <h3 style="font-weight:600;margin-bottom:1rem;">Informações Pessoais</h3>
           <form id="profileForm">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
               <div>
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nome</label>
-                <input type="text" id="profileName" value="${
-                  user.name
-                }" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Nome</label>
+                <input type="text" id="profileName" value="${first}" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
               </div>
               <div>
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Sobrenome</label>
-                <input type="text" id="profileLastName" value="" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Sobrenome</label>
+                <input type="text" id="profileLastName" value="${last}" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
               </div>
             </div>
-            
-            <div style="margin-bottom: 1rem;">
-              <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">E-mail</label>
-              <input type="email" id="profileEmail" value="${
-                user.email
-              }" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
               <div>
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Telefone</label>
-                <input type="tel" id="profilePhone" value="" placeholder="(11) 99999-9999" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                <label style="display:block;margin-bottom:0.5rem;font-weight:500;">E-mail</label>
+                <input type="email" id="profileEmail" value="${user.email}" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
               </div>
               <div>
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Departamento</label>
-                <select id="profileDepartment" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Telefone</label>
+                <input type="tel" id="profilePhone" value="${user.phone || ""}" placeholder="(11) 99999-9999" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+              <div>
+                <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Departamento</label>
+                <select id="profileDepartment" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
                   <option value="">Selecione</option>
-                  <option value="desenvolvimento">Desenvolvimento</option>
-                  <option value="design">Design</option>
-                  <option value="marketing">Marketing</option>
-                  <option value="vendas">Vendas</option>
-                  <option value="rh">Recursos Humanos</option>
-                  <option value="financeiro">Financeiro</option>
+                  ${["desenvolvimento","design","marketing","vendas","rh","financeiro"]
+                    .map(dep => `<option value="${dep}" ${user.department===dep?"selected":""}>${dep[0].toUpperCase()+dep.slice(1)}</option>`).join("")}
                 </select>
               </div>
+              <div>
+                <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Cargo</label>
+                <input type="text" id="profileRole" value="${user.role || ""}" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+              </div>
             </div>
-            
-            <div style="margin-bottom: 1rem;">
-              <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Bio</label>
-              <textarea id="profileBio" placeholder="Conte um pouco sobre você..." style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; min-height: 80px; resize: vertical;"></textarea>
+
+            <div style="margin-bottom:1rem;">
+              <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Bio</label>
+              <textarea id="profileBio" placeholder="Conte um pouco sobre você..." style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:80px;resize:vertical;">${user.bio || ""}</textarea>
             </div>
-            
-            <div style="margin-bottom: 1.5rem;">
-              <h4 style="font-weight: 600; margin-bottom: 1rem;">Alterar Senha</h4>
-              <div style="display: grid; gap: 1rem;">
+
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:1rem 0;">
+
+            <!-- Segurança -->
+            <h4 style="font-weight:600;margin-bottom:0.75rem;">Segurança</h4>
+            <div style="display:grid;gap:1rem;margin-bottom:1rem;">
+              <div>
+                <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Senha Atual</label>
+                <input type="password" id="currentPassword" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                 <div>
-                  <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Senha Atual</label>
-                  <input type="password" id="currentPassword" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                  <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Nova Senha</label>
+                  <div style="display:flex;gap:0.5rem;">
+                    <input type="password" id="newPassword" style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+                    <button type="button" id="togglePwd" class="btn btn-outline">Mostrar</button>
+                  </div>
+                  <div style="height:6px;background:#e5e7eb;border-radius:999px;margin-top:0.5rem;overflow:hidden;">
+                    <div id="pwdBar" style="height:100%;width:0%;background:#ef4444;"></div>
+                  </div>
+                  <div id="pwdTip" style="font-size:0.8rem;color:#6b7280;margin-top:0.25rem;"></div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                  <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nova Senha</label>
-                    <input type="password" id="newPassword" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-                  </div>
-                  <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Confirmar Nova Senha</label>
-                    <input type="password" id="confirmNewPassword" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-                  </div>
+                <div>
+                  <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Confirmar Nova Senha</label>
+                  <input type="password" id="confirmNewPassword" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
                 </div>
               </div>
             </div>
-            
-            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-              <button type="button" class="btn btn-outline">Cancelar</button>
+
+            <div style="display:flex;gap:1rem;justify-content:flex-end;">
+              <button type="button" id="cancelProfileBtn" class="btn btn-outline">Cancelar</button>
               <button type="submit" class="btn btn-primary">Salvar Alterações</button>
             </div>
           </form>
         </div>
       </div>
-    `;
+    </div>
+  `;
 
   setupProfileFunctionality();
 }
 
 function setupProfileFunctionality() {
+  const user = getSafeUser();
+
+  // avatar upload
+  const avatarInput = document.getElementById("avatarInput");
+  const avatarPreview = document.getElementById("avatarPreview");
+  const removeAvatarBtn = document.getElementById("removeAvatarBtn");
+  if (avatarInput) {
+    avatarInput.addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        user.avatarDataUrl = reader.result;
+        localStorage.setItem("user", JSON.stringify(user));
+        loadPerfilContent();
+      };
+      reader.readAsDataURL(f);
+    });
+  }
+  if (removeAvatarBtn) {
+    removeAvatarBtn.addEventListener("click", () => {
+      delete user.avatarDataUrl;
+      localStorage.setItem("user", JSON.stringify(user));
+      loadPerfilContent();
+    });
+  }
+
+  // máscara telefone
+  const phoneEl = document.getElementById("profilePhone");
+  if (phoneEl) {
+    phoneEl.addEventListener("input", () => {
+      phoneEl.value = maskPhone(phoneEl.value);
+    });
+  }
+
+  // força da senha
+  const newPwdEl = document.getElementById("newPassword");
+  const bar = document.getElementById("pwdBar");
+  const tip = document.getElementById("pwdTip");
+  const togglePwd = document.getElementById("togglePwd");
+  if (togglePwd && newPwdEl) {
+    togglePwd.addEventListener("click", () => {
+      const t = newPwdEl.getAttribute("type") === "password" ? "text" : "password";
+      newPwdEl.setAttribute("type", t);
+      togglePwd.textContent = t === "password" ? "Mostrar" : "Ocultar";
+    });
+  }
+  if (newPwdEl && bar && tip) {
+    const updateStrength = () => {
+      const s = pwdStrengthScore(newPwdEl.value);
+      const pct = (s / 5) * 100;
+      bar.style.width = pct + "%";
+      bar.style.background = s >= 4 ? "#10b981" : s >= 3 ? "#f59e0b" : "#ef4444";
+      tip.textContent = s >= 4 ? "Senha forte" : s >= 3 ? "Senha média" : "Use 8+ caracteres, maiúsculas, números e símbolos";
+    };
+    newPwdEl.addEventListener("input", updateStrength);
+    updateStrength();
+  }
+
+  // cancelar
+  document.getElementById("cancelProfileBtn")?.addEventListener("click", () => {
+    loadPerfilContent();
+  });
+
+  // submit
   const profileForm = document.getElementById("profileForm");
   if (profileForm) {
     profileForm.addEventListener("submit", (e) => {
       e.preventDefault();
 
-      const user = JSON.parse(localStorage.getItem("user"));
-      const newPassword = document.getElementById("newPassword").value;
-      const confirmNewPassword =
-        document.getElementById("confirmNewPassword").value;
+      const first = document.getElementById("profileName").value.trim();
+      const last  = document.getElementById("profileLastName").value.trim();
+      const name = joinName(first, last);
 
-      // Validate password change if provided
+      const email = document.getElementById("profileEmail").value.trim();
+      const phone = document.getElementById("profilePhone").value.trim();
+      const department = document.getElementById("profileDepartment").value;
+      const role = document.getElementById("profileRole").value.trim();
+      const bio = document.getElementById("profileBio").value.trim();
+      const newPassword = document.getElementById("newPassword").value;
+      const confirmNewPassword = document.getElementById("confirmNewPassword").value;
+
+      // valida senha (opcional)
       if (newPassword || confirmNewPassword) {
         if (newPassword !== confirmNewPassword) {
           alert("As senhas não coincidem");
           return;
         }
-        if (newPassword.length < 6) {
-          alert("A nova senha deve ter pelo menos 6 caracteres");
+        if (newPassword.length < 8) {
+          alert("A nova senha deve ter pelo menos 8 caracteres");
           return;
         }
+        // aqui você faria a chamada de API para trocar senha; localmente só ignoramos.
       }
 
-      // Update user data
-      user.name = document.getElementById("profileName").value;
-      user.email = document.getElementById("profileEmail").value;
+      // atualiza usuário
+      user.name = name || user.name;
+      user.email = email || user.email;
+      user.phone = phone;
+      user.department = department || "";
+      user.role = role || user.role;
+      user.bio = bio;
 
       localStorage.setItem("user", JSON.stringify(user));
+      applyTheme(user.settings?.theme || "system");
 
       alert("Perfil atualizado com sucesso!");
-      loadPerfilContent(); // Refresh profile
+      loadPerfilContent();
     });
   }
 }
+
 // FIM PERFIL //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // CONFIGURAÇÕES ///////////////////////////////////////////////////////////////////////////////////////////////////
+// Helpers (usam os já existentes se houver)
+const _getUser = typeof getSafeUser === "function"
+  ? getSafeUser
+  : () => {
+      let u = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!u || !u.name) u = { name: "Usuário", email: "usuario@example.com", role: "user" };
+      if (!u.settings) u.settings = {};
+      if (!u.settings.theme) u.settings.theme = "system";
+      if (!u.settings.fontSize) u.settings.fontSize = "medium";
+      if (!u.settings.timezone) u.settings.timezone = "America/Sao_Paulo";
+      if (typeof u.settings.notifyEmail !== "boolean") u.settings.notifyEmail = true;
+      if (typeof u.settings.notifyDesktop !== "boolean") u.settings.notifyDesktop = false;
+      if (typeof u.settings.sound !== "boolean") u.settings.sound = false;
+      if (typeof u.settings.publicProfile !== "boolean") u.settings.publicProfile = true;
+      if (typeof u.settings.onlineStatus !== "boolean") u.settings.onlineStatus = true;
+      localStorage.setItem("user", JSON.stringify(u));
+      return u;
+    };
+
+const _applyTheme = typeof applyTheme === "function"
+  ? applyTheme
+  : (theme) => {
+      const root = document.documentElement;
+      root.removeAttribute("data-theme");
+      if (theme === "light" || theme === "dark") root.setAttribute("data-theme", theme);
+    };
+
+function applyFontSize(size) {
+  // small 93.75% (15px), medium 100% (16px), large 112.5% (18px) — ajuste à vontade
+  const map = { small: "93.75%", medium: "100%", large: "112.5%" };
+  document.documentElement.style.fontSize = map[size] || "100%";
+}
+
+// Beep simples para testar som
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = 880;
+    o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.02);
+    o.start();
+    setTimeout(() => { g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.02); o.stop(ctx.currentTime + 0.04); }, 180);
+  } catch {}
+}
+
 function loadConfiguracoesContent() {
   const conteudoPagina = document.getElementById("conteudoPagina");
+  const user = _getUser();
+  // aplica preferências atuais
+  _applyTheme(user.settings.theme);
+  applyFontSize(user.settings.fontSize);
 
   conteudoPagina.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <div>
-          <h1 style="font-size: 2rem; font-weight: bold; color: #000000; margin-bottom: 0.5rem;">Configurações</h1>
-          <p style="color: #666666;">Personalize sua experiência no Kontrollar</p>
-        </div>
-      </div>
-  
-<!-- <div style="display: grid; gap: 1.5rem;">
-  <div style="background-color: #ffffff; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1.5rem;">
-    <h3 style="font-weight: 600; margin-bottom: 1rem;">Aparência</h3>
-    
-    <div style="display: grid; gap: 1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
       <div>
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Tema</label>
-        <select id="themeSelect" style="width: 100%; max-width: 200px; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-          <option value="light">Claro</option>
-          <option value="dark">Escuro</option>
-          <option value="auto">Automático</option>
-        </select>
-      </div>
-      
-      <div>
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Tamanho da Fonte</label>
-        <select id="fontSizeSelect" style="width: 100%; max-width: 200px; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-          <option value="small">Pequena</option>
-          <option value="medium" selected>Média</option>
-          <option value="large">Grande</option>
-        </select>
+        <h1 style="font-size:2rem;font-weight:bold;color:#000;margin-bottom:0.5rem;">Configurações</h1>
+        <p style="color:#666;">Personalize sua experiência no Kontrollar</p>
       </div>
     </div>
-  </div> -->
-  
-        <!-- Notification Settings -->
-        <div style="background-color: #ffffff; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1.5rem;">
-          <h3 style="font-weight: 600; margin-bottom: 1rem;">Notificações</h3>
-          
-          <div style="display: grid; gap: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <h4 style="font-weight: 500; margin-bottom: 0.25rem;">Notificações por E-mail</h4>
-                <p style="color: #666666; font-size: 0.875rem;">Receba notificações importantes por e-mail</p>
-              </div>
-              <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                <input type="checkbox" id="emailNotifications" checked style="opacity: 0; width: 0; height: 0;">
-                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-              </label>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <h4 style="font-weight: 500; margin-bottom: 0.25rem;">Notificações Push</h4>
-                <p style="color: #666666; font-size: 0.875rem;">Receba notificações no navegador</p>
-              </div>
-              <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                <input type="checkbox" id="pushNotifications" checked style="opacity: 0; width: 0; height: 0;">
-                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-              </label>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <h4 style="font-weight: 500; margin-bottom: 0.25rem;">Sons de Notificação</h4>
-                <p style="color: #666666; font-size: 0.875rem;">Reproduzir sons para novas notificações</p>
-              </div>
-              <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                <input type="checkbox" id="soundNotifications" style="opacity: 0; width: 0; height: 0;">
-                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-              </label>
-            </div>
+
+    <div style="display:grid;gap:1.5rem;">
+      <!-- Aparência -->
+      <div style="background:#fff;border-radius:0.5rem;border:1px solid #e5e7eb;padding:1.5rem;">
+        <h3 style="font-weight:600;margin-bottom:1rem;">Aparência</h3>
+        <div style="display:grid;gap:1rem;">
+          <div>
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tema</label>
+            <select id="themeSelect" style="width:100%;max-width:220px;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+              <option value="system" ${user.settings.theme==="system"?"selected":""}>Seguir o sistema</option>
+              <option value="light"  ${user.settings.theme==="light" ?"selected":""}>Claro</option>
+              <option value="dark"   ${user.settings.theme==="dark"  ?"selected":""}>Escuro</option>
+            </select>
           </div>
-        </div>
-  
-        <!-- Privacy Settings -->
-        <div style="background-color: #ffffff; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1.5rem;">
-          <h3 style="font-weight: 600; margin-bottom: 1rem;">Privacidade</h3>
-          
-          <div style="display: grid; gap: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <h4 style="font-weight: 500; margin-bottom: 0.25rem;">Perfil Público</h4>
-                <p style="color: #666666; font-size: 0.875rem;">Permitir que outros usuários vejam seu perfil</p>
-              </div>
-              <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                <input type="checkbox" id="publicProfile" checked style="opacity: 0; width: 0; height: 0;">
-                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-              </label>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <h4 style="font-weight: 500; margin-bottom: 0.25rem;">Status Online</h4>
-                <p style="color: #666666; font-size: 0.875rem;">Mostrar quando você está online</p>
-              </div>
-              <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                <input type="checkbox" id="onlineStatus" checked style="opacity: 0; width: 0; height: 0;">
-                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-              </label>
-            </div>
+          <div>
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tamanho da Fonte</label>
+            <select id="fontSizeSelect" style="width:100%;max-width:220px;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+              <option value="small"  ${user.settings.fontSize==="small" ?"selected":""}>Pequena</option>
+              <option value="medium" ${user.settings.fontSize==="medium"?"selected":""}>Média</option>
+              <option value="large"  ${user.settings.fontSize==="large" ?"selected":""}>Grande</option>
+            </select>
           </div>
-        </div>
-  
-        <!-- <div style="background-color: #ffffff; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1.5rem;">
-          <h3 style="font-weight: 600; margin-bottom: 1rem;">Sistema</h3>
-          
-          <div style="display: grid; gap: 1rem;">
-            <div>
-              <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Idioma</label>
-              <select id="languageSelect" style="width: 100%; max-width: 200px; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-                <option value="pt-BR" selected>Português (Brasil)</option>
-                <option value="en-US">English (US)</option>
-                <option value="es-ES">Español</option>
-              </select>
-            </div>
-            
-            <div>
-              <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Fuso Horário</label>
-              <select id="timezoneSelect" style="width: 100%; max-width: 300px; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-                <option value="America/Sao_Paulo" selected>São Paulo (GMT-3)</option>
-                <option value="America/New_York">New York (GMT-5)</option>
-                <option value="Europe/London">London (GMT+0)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-  
-        <!-- Data Management -->
-        <div style="background-color: #ffffff; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1.5rem;">
-          <h3 style="font-weight: 600; margin-bottom: 1rem;">Gerenciamento de Dados</h3>
-          
-          <div style="display: grid; gap: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <h4 style="font-weight: 500; margin-bottom: 0.25rem;">Exportar Dados</h4>
-                <p style="color: #666666; font-size: 0.875rem;">Baixar uma cópia dos seus dados</p>
-              </div>
-              <button class="btn btn-outline">Exportar</button>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <h4 style="font-weight: 500; margin-bottom: 0.25rem;">Limpar Cache</h4>
-                <p style="color: #666666; font-size: 0.875rem;">Limpar dados temporários armazenados</p>
-              </div>
-              <button class="btn btn-outline">Limpar</button>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-              <div>
-                <h4 style="font-weight: 500; margin-bottom: 0.25rem; color: #dc2626;">Excluir Conta</h4>
-                <p style="color: #666666; font-size: 0.875rem;">Excluir permanentemente sua conta e todos os dados</p>
-              </div>
-              <button class="btn btn-outline" style="color: #dc2626; border-color: #dc2626;" onclick="confirmDeleteAccount()">Excluir</button>
-            </div>
-          </div>
-        </div>
-  
-        <!-- Save Button -->
-        <div style="display: flex; justify-content: flex-end;">
-          <button id="saveSettings" class="btn btn-primary">Salvar Configurações</button>
         </div>
       </div>
-    `;
+
+      <!-- Notificações -->
+      <div style="background:#fff;border-radius:0.5rem;border:1px solid #e5e7eb;padding:1.5rem;">
+        <h3 style="font-weight:600;margin-bottom:1rem;">Notificações</h3>
+        <div style="display:grid;gap:1rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h4 style="font-weight:500;margin-bottom:0.25rem;">Notificações por E-mail</h4>
+              <p style="color:#666;font-size:0.875rem;">Receba notificações importantes por e-mail</p>
+            </div>
+            <input type="checkbox" id="emailNotifications" ${user.settings.notifyEmail ? "checked": ""}>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h4 style="font-weight:500;margin-bottom:0.25rem;">Notificações Push</h4>
+              <p style="color:#666;font-size:0.875rem;">Receba notificações no navegador</p>
+            </div>
+            <input type="checkbox" id="pushNotifications" ${user.settings.notifyDesktop ? "checked": ""}>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h4 style="font-weight:500;margin-bottom:0.25rem;">Sons de Notificação</h4>
+              <p style="color:#666;font-size:0.875rem;">Reproduzir som quando chegar algo novo</p>
+            </div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <button id="testSoundBtn" class="btn btn-outline">Testar som</button>
+              <input type="checkbox" id="soundNotifications" ${user.settings.sound ? "checked": ""}>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Privacidade -->
+      <div style="background:#fff;border-radius:0.5rem;border:1px solid #e5e7eb;padding:1.5rem;">
+        <h3 style="font-weight:600;margin-bottom:1rem;">Privacidade</h3>
+        <div style="display:grid;gap:1rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h4 style="font-weight:500;margin-bottom:0.25rem;">Perfil Público</h4>
+              <p style="color:#666;font-size:0.875rem;">Permitir que outros usuários vejam seu perfil</p>
+            </div>
+            <input type="checkbox" id="publicProfile" ${user.settings.publicProfile ? "checked": ""}>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h4 style="font-weight:500;margin-bottom:0.25rem;">Status Online</h4>
+              <p style="color:#666;font-size:0.875rem;">Mostrar quando você está online</p>
+            </div>
+            <input type="checkbox" id="onlineStatus" ${user.settings.onlineStatus ? "checked": ""}>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sistema -->
+      <div style="background:#fff;border-radius:0.5rem;border:1px solid #e5e7eb;padding:1.5rem;">
+        <h3 style="font-weight:600;margin-bottom:1rem;">Sistema</h3>
+        <div style="display:grid;gap:1rem;">
+          <div>
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Idioma</label>
+            <select id="languageSelect" style="width:100%;max-width:220px;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+              <option value="pt-BR" selected>Português (Brasil)</option>
+              <option value="en-US">English (US)</option>
+              <option value="es-ES">Español</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Fuso Horário</label>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <input type="text" id="timezoneSelect" value="${user.settings.timezone}" placeholder="Ex.: America/Sao_Paulo" style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+              <button id="detectTZ" class="btn btn-outline">Detectar</button>
+            </div>
+            <p style="color:#6b7280;font-size:0.8rem;margin-top:0.25rem;">Use um ID IANA (ex.: America/Sao_Paulo). Isso ajuda nas datas.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dados -->
+      <div style="background:#fff;border-radius:0.5rem;border:1px solid #e5e7eb;padding:1.5rem;">
+        <h3 style="font-weight:600;margin-bottom:1rem;">Gerenciamento de Dados</h3>
+        <div style="display:grid;gap:1rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h4 style="font-weight:500;margin-bottom:0.25rem;">Exportar Dados</h4>
+              <p style="color:#666;font-size:0.875rem;">Baixar uma cópia (JSON) de usuário, equipes, projetos, tarefas e avisos</p>
+            </div>
+            <button id="exportBtn" class="btn btn-outline">Exportar</button>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h4 style="font-weight:500;margin-bottom:0.25rem;">Limpar Cache</h4>
+              <p style="color:#666;font-size:0.875rem;">Zerar dados selecionados do armazenamento local</p>
+              <div style="display:flex;gap:0.75rem;margin-top:0.5rem;flex-wrap:wrap;">
+                <label><input type="checkbox" class="cc" value="equipes"> Equipes</label>
+                <label><input type="checkbox" class="cc" value="projetos"> Projetos</label>
+                <label><input type="checkbox" class="cc" value="tarefas"> Tarefas</label>
+                <label><input type="checkbox" class="cc" value="avisos"> Avisos</label>
+                <label><input type="checkbox" class="cc" value="settings"> Configurações</label>
+              </div>
+            </div>
+            <button id="clearBtn" class="btn btn-outline">Limpar</button>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:1rem;border-top:1px solid #e5e7eb;">
+            <div>
+              <h4 style="font-weight:500;margin-bottom:0.25rem;color:#dc2626;">Excluir Conta</h4>
+              <p style="color:#666;font-size:0.875rem;">Remove todos os dados e sai do app</p>
+            </div>
+            <button class="btn btn-outline" style="color:#dc2626;border-color:#dc2626;" onclick="confirmDeleteAccount()">Excluir</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;">
+        <button id="saveSettings" class="btn btn-primary">Salvar Configurações</button>
+      </div>
+    </div>
+  `;
 
   setupSettingsFunctionality();
 }
 
 function setupSettingsFunctionality() {
-  const saveSettings = document.getElementById("saveSettings");
-  if (saveSettings) {
-    saveSettings.addEventListener("click", () => {
-      // Save settings to localStorage
-      const settings = {
-        theme: document.getElementById("themeSelect").value,
-        fontSize: document.getElementById("fontSizeSelect").value,
-        emailNotifications:
-          document.getElementById("emailNotifications").checked,
-        pushNotifications: document.getElementById("pushNotifications").checked,
-        soundNotifications:
-          document.getElementById("soundNotifications").checked,
-        publicProfile: document.getElementById("publicProfile").checked,
-        onlineStatus: document.getElementById("onlineStatus").checked,
-        language: document.getElementById("languageSelect").value,
-        timezone: document.getElementById("timezoneSelect").value,
-      };
+  const user = _getUser();
 
-      localStorage.setItem("kontrollarSettings", JSON.stringify(settings));
-      alert("Configurações salvas com sucesso!");
+  // Live-preview de tema e fonte
+  document.getElementById("themeSelect")?.addEventListener("change", (e) => {
+    _applyTheme(e.target.value);
+  });
+  document.getElementById("fontSizeSelect")?.addEventListener("change", (e) => {
+    applyFontSize(e.target.value);
+  });
+
+  // Detectar fuso horário
+  document.getElementById("detectTZ")?.addEventListener("click", () => {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo";
+    const tzEl = document.getElementById("timezoneSelect");
+    if (tzEl) tzEl.value = tz;
+  });
+
+  // Testar som
+  document.getElementById("testSoundBtn")?.addEventListener("click", playBeep);
+
+  // Solicitar permissão de push quando marcar
+  const pushEl = document.getElementById("pushNotifications");
+  if (pushEl) {
+    pushEl.addEventListener("change", async (e) => {
+      if (e.target.checked && "Notification" in window) {
+        try {
+          const perm = await Notification.requestPermission();
+          if (perm !== "granted") {
+            alert("Permissão de notificação negada pelo navegador.");
+            e.target.checked = false;
+          }
+        } catch {
+          e.target.checked = false;
+        }
+      }
     });
   }
 
-  // Load existing settings
-  loadSettings();
-}
+  // Salvar
+  document.getElementById("saveSettings")?.addEventListener("click", () => {
+    const theme = document.getElementById("themeSelect").value;
+    const fontSize = document.getElementById("fontSizeSelect").value;
+    const notifyEmail = document.getElementById("emailNotifications").checked;
+    const notifyDesktop = document.getElementById("pushNotifications").checked;
+    const sound = document.getElementById("soundNotifications").checked;
+    const publicProfile = document.getElementById("publicProfile").checked;
+    const onlineStatus = document.getElementById("onlineStatus").checked;
+    const language = document.getElementById("languageSelect").value;
+    const timezone = document.getElementById("timezoneSelect").value.trim() || "America/Sao_Paulo";
 
-function loadSettings() {
-  const settings = JSON.parse(
-    localStorage.getItem("kontrollarSettings") || "{}"
-  );
+    user.settings = {
+      ...user.settings,
+      theme,
+      fontSize,
+      notifyEmail,
+      notifyDesktop,
+      sound,
+      publicProfile,
+      onlineStatus,
+      language,
+      timezone,
+    };
 
-  if (settings.theme)
-    document.getElementById("themeSelect").value = settings.theme;
-  if (settings.fontSize)
-    document.getElementById("fontSizeSelect").value = settings.fontSize;
-  if (settings.emailNotifications !== undefined)
-    document.getElementById("emailNotifications").checked =
-      settings.emailNotifications;
-  if (settings.pushNotifications !== undefined)
-    document.getElementById("pushNotifications").checked =
-      settings.pushNotifications;
-  if (settings.soundNotifications !== undefined)
-    document.getElementById("soundNotifications").checked =
-      settings.soundNotifications;
-  if (settings.publicProfile !== undefined)
-    document.getElementById("publicProfile").checked = settings.publicProfile;
-  if (settings.onlineStatus !== undefined)
-    document.getElementById("onlineStatus").checked = settings.onlineStatus;
-  if (settings.language)
-    document.getElementById("languageSelect").value = settings.language;
-  if (settings.timezone)
-    document.getElementById("timezoneSelect").value = settings.timezone;
+    localStorage.setItem("user", JSON.stringify(user));
+
+    // aplica imediatamente
+    applyTheme(user.settings?.theme || "system");
+    applyFontSize(fontSize);
+
+    alert("Configurações salvas com sucesso!");
+  });
+
+  // Exportar
+  document.getElementById("exportBtn")?.addEventListener("click", () => {
+    const payload = {
+      savedAt: new Date().toISOString(),
+      user: _getUser(),
+      equipes: window.equipes || JSON.parse(localStorage.getItem("equipes") || "[]"),
+      projetos: window.projetos || JSON.parse(localStorage.getItem("projetos") || "[]"),
+      tarefas: window.tarefas || JSON.parse(localStorage.getItem("tarefas") || "[]"),
+      avisos: window.avisos || JSON.parse(localStorage.getItem("avisos") || "[]"),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const y = new Date();
+    const ymd = `${y.getFullYear()}${String(y.getMonth()+1).padStart(2,"0")}${String(y.getDate()).padStart(2,"0")}`;
+    a.href = url;
+    a.download = `kontrollar-backup-${ymd}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // Limpar cache seletivo
+  document.getElementById("clearBtn")?.addEventListener("click", () => {
+    const checks = Array.from(document.querySelectorAll(".cc:checked")).map(c => c.value);
+    if (!checks.length) {
+      alert("Selecione pelo menos um item para limpar.");
+      return;
+    }
+    if (!confirm("Tem certeza que deseja limpar os dados selecionados?")) return;
+
+    if (checks.includes("equipes")) { localStorage.removeItem("equipes"); window.equipes = []; }
+    if (checks.includes("projetos")) { localStorage.removeItem("projetos"); window.projetos = []; }
+    if (checks.includes("tarefas")) { localStorage.removeItem("tarefas"); window.tarefas = []; }
+    if (checks.includes("avisos")) { localStorage.removeItem("avisos"); window.avisos = []; }
+    if (checks.includes("settings")) {
+      // só reseta settings, mantém user básico
+      const u = _getUser();
+      u.settings = {}; // será reidratado com defaults
+      localStorage.setItem("user", JSON.stringify(u));
+    }
+
+    alert("Dados limpos.");
+  });
 }
 
 function confirmDeleteAccount() {
-  if (
-    confirm(
-      "Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita e todos os seus dados serão perdidos permanentemente."
-    )
-  ) {
-    if (confirm("Esta é sua última chance. Confirma a exclusão da conta?")) {
-      localStorage.clear();
-      alert("Conta excluída com sucesso.");
-      window.location.href = "index.html";
-    }
-  }
+  if (!confirm("Tem certeza que deseja excluir sua conta? Esta ação é irreversível.")) return;
+  if (!confirm("Última confirmação: deseja mesmo excluir TUDO?")) return;
+
+  // Limpa tudo e volta pra index
+  localStorage.clear();
+  alert("Conta excluída com sucesso.");
+  window.location.href = "index.html";
 }
+
 // FIM CONFIGURAÇÕES //////////////////////////////////////////////////////////////////////////////////////////////////
 
 function gerarCardsProjetos() {
