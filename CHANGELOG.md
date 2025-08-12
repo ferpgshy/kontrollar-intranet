@@ -3,13 +3,96 @@
 
 **Data:** 2025-08-11
 
+# Avisos
+
+* Corrigido “data -1 dia”: `publishedAt` agora usa `getDataBrasiliaFormatada()` (yyyy-mm-dd) e exibição via `formatarDataPtBR()`.
+* Vínculo de Avisos com Equipes e Projetos:
+
+  * Novos campos no modal (criação/edição) com checkboxes + busca.
+  * Renderização de “chips” das equipes/projetos no card do aviso.
+  * Helpers: `getTeamOptions()`, `getProjectOptions()`, `resolveTeamNamesFromIds()`, `resolveProjectNamesFromIds()`.
+* Estado/Persistência:
+
+  * `window.equipes`, `window.projetos`, `window.avisos` inicializados a partir do `localStorage`.
+  * `deleteNotice()` refeito para atualizar `window.avisos` + `localStorage`.
+* UI/Segurança:
+
+  * `renderNoticeCard()` unificado para gerar cards.
+  * Sanitização simples via `S_NOTICE` em campos sensíveis.
+* Filtros:
+
+  * `filterNotices()` agora filtra em `window.avisos` e re-renderiza com `generateNoticeCardsFromArray()`.
+
+# Perfil
+
+* Removidas “Preferências” duplicadas (ficam só nas Configurações).
+* “Seu resumo” agora puxa dados reais do usuário:
+
+  * Departamento, Cargo, Telefone, Fuso, Notificações (email/push).
+* Melhorias de base do usuário:
+
+  * `getSafeUser()` (default + `createdAt` + `settings`).
+  * Upload/remoção de avatar (dataURL) e iniciais.
+  * Split/join de nome (`splitName`/`joinName`).
+  * Máscara de telefone `maskPhone()`.
+  * Barra de força de senha (`pwdStrengthScore()` + feedback).
+* Métricas pessoais:
+
+  * `computeUserStats()` mais tolerante (match por nome/email e por formatos variados de membros/responsável).
+
+# Configurações
+
+* Mantido como fonte única de preferências (tema, notificações, idioma/fuso etc.).
+* Perfil exibe os valores salvos, mas não duplica a edição.
+
+# Notificações (módulo global `Notifs`)
+
+* Extraído para **`notificacao.js`**:
+
+  * API: `Notifs.initUI()`, `Notifs.add()`, `Notifs.addMany()`, `Notifs.readAll()`, `Notifs.clear()`.
+  * Badge (contador) dinâmico; some quando 0 (sem “3” hardcoded).
+  * Painel com **ícones** de ação no header: “marcar tudo como lido” e “limpar tudo”.
+  * Clique nas notificações chama callbacks (ex.: navegar para páginas).
+* Integração no app:
+
+  * Em `app.js` trocamos o handler antigo por `Notifs.initUI({ bellSelector, panelSelector, closeSelector, listSelector })`.
+  * Confirm de “limpar todas” passou a usar `confirmarModal(...)` (mesmo padrão dos modais do app).
+
+# Backlog (integração com Notificações)
+
+* Ao criar um novo backlog/tarefa, adiciona notificação via `Notifs.add({ type:'task', title:'Nova tarefa', message:..., onClick: () => ... })`.
+* Ajustes de persistência/estilo mantidos.
+
+# Datas & Utils
+
+* Criado **`date-utils.js`** com:
+
+  * `getDataBrasiliaFormatada()` (corrige timezone de Brasília, yyyy-mm-dd).
+  * `formatarDataPtBR()`.
+* Centralização de helpers de label/estilo/modal separados (conforme seus arquivos `utils`).
+
+# Deleções com modal
+
+* Padronizado o padrão de confirmação assíncrona:
+
+  * `deleteNotice()` e outros handlers agora usam `confirmarModal({ title, message })` antes de executar, como no exemplo de projetos/equipes.
+
+# Ordem de scripts (recomendada)
+
+1. `scripts/utils/date-utils.js`
+2. (outros utils) `label.js`, `styles.js`, `modal.js`
+3. `scripts/notificacao.js`
+4. `scripts/app.js`
+5. mains: `dashboard.js`, `projetos.js`, `backlogs.js`, `calendario.js`, `chats.js`, `equipes.js`, `avisos.js`, `perfil.js`, `configs.js`
+
+> Objetivo: garantir que utils e Notifs existam antes do app e das telas.
+
 # Base / Helpers
 
 * **Data de Brasília (corrige “um dia antes”)**
 
   * Trocado uso de `new Date().toISOString().split("T")[0]` por **`getDataBrasiliaFormatada()`** nas criações (equipes, projetos, avisos).
   * Exibição padronizada com **`formatarDataPtBR(yyyy-mm-dd)`**.
-  * Observação: o seu helper original usava offset fixo `-3` e pode errar perto da meia-noite/DST — recomendado migrar para `Intl` com `timeZone: "America/Sao_Paulo"` (se quiser, eu te passo a função pronta).
 
 * **Sanitização**
 

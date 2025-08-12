@@ -696,3 +696,28 @@
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes typing-dot { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-4px); opacity: 1; } }
+
+
+.notification-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border: none; background: transparent; cursor: pointer;
+}
+
+.notification-btn .icon { width: 20px; height: 20px; }
+
+/* Mostra o pontinho quando Notifs.bumpBellBadge() seta data-has="1" */
+.notification-btn[data-has="1"]::after {
+  content: "";
+  position: absolute;
+  top: 3px; right: 3px;
+  width: 8px; height: 8px;
+  background: #ef4444; /* vermelho */
+  border-radius: 999px;
+}
+
+/* Se quiser garantir que um badge antigo não apareça mais */
+.notification-btn .notification-badge { display: none !important; }

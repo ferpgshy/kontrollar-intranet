@@ -129,6 +129,11 @@ function setupTaskStatusChanges() {
         e.target.closest("[data-task-id]").getAttribute("data-task-id")
       );
       deleteTask(taskId);
+      tarefas = tarefas.filter((t) => t.id !== taskId);
+      try {
+        localStorage.setItem("tarefas", JSON.stringify(tarefas));
+      } catch (e) {}
+      filterTasks();
     });
   });
 }
@@ -137,6 +142,16 @@ function updateTaskStatus(taskId, newStatus) {
   const task = tarefas.find((t) => t.id === taskId);
   if (task) {
     task.status = newStatus;
+
+    if (window.Notifs && newStatus === "concluida") {
+      Notifs.push({
+        type: "task",
+        title: `Tarefa concluída: ${task.title}`,
+        body: `Projeto: ${task.projetos} • Resp.: ${task.assignee}`,
+        page: "backlog",
+      });
+    }
+
     if (newStatus === "concluida") {
       updateProjectProgress(task.projetos);
     }
@@ -233,6 +248,22 @@ function showNewTaskModal() {
     };
 
     tarefas.push(newTask);
+    try {
+      localStorage.setItem("tarefas", JSON.stringify(tarefas));
+    } catch (e) {}
+
+    // 🔔 Notificação de nova tarefa
+    if (window.Notifs) {
+      Notifs.push({
+        type: "task",
+        title: `Nova tarefa: ${newTask.title}`,
+        body: `Resp.: ${newTask.assignee} • Projeto: ${newTask.projetos} • Prioridade: ${newTask.priority}`,
+        page: "backlog",
+      });
+    } else {
+      console.warn("Notifs não está carregado; notificação não enviada.");
+    }
+
     fecharModal();
     filterTasks(); // Refresh the tarefas display
   });
@@ -424,7 +455,8 @@ window.abrirMenuTarefas = (taskId) => {
     closeMenu(); // fecha antes de abrir o modal
     const confirmar = await confirmarModal({
       title: "Excluir tarefa?",
-      message: "Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.",
+      message:
+        "Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.",
     });
     if (confirmar) {
       if (typeof deleteTask === "function") deleteTask(taskId);
@@ -441,7 +473,6 @@ window.abrirMenuTarefas = (taskId) => {
     document.addEventListener("keydown", onEsc);
   }, 0);
 };
-
 
 function gerarArrayCardsTarefas(tarefasArray) {
   return tarefasArray
@@ -463,7 +494,6 @@ function gerarArrayCardsTarefas(tarefasArray) {
             )}; color: ${getTaskStatusTextColor(
         task.status
       )}; border-radius: 0.25rem; font-size: 0.75rem;">
-              ${getPriorityBorderColor(task.status)}
               ${getTaskStatusLabel(task.status)}
             </span>
             <span style="padding: 0.25rem 0.5rem; background-color: ${getTaskPriorityBgColor(

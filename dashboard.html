@@ -243,7 +243,11 @@
               </svg>
               Novo
             </button>
-            <button id="botaoNotificacao" class="notification-btn">
+            <button
+              id="botaoNotificacao"
+              class="notification-btn"
+              aria-label="Notificações"
+            >
               <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -251,10 +255,10 @@
                 stroke="currentColor"
               >
                 <path
-                  d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5"
                 />
+                <path d="M13.73 21a2 2 0 01-3.46 0" />
               </svg>
-              <span class="notification-badge">3</span>
             </button>
           </div>
         </header>
@@ -283,29 +287,8 @@
         <h3>Notificações</h3>
         <button id="fecharNotificacao" class="close-btn">×</button>
       </div>
-      <div class="notification-list">
-        <div class="notification-item unread">
-          <div class="notification-content">
-            <h4>Nova tarefa atribuída</h4>
-            <p>Você foi atribuído à tarefa "Revisar documentação"</p>
-            <span class="notification-time">5 min atrás</span>
-          </div>
-        </div>
-        <div class="notification-item unread">
-          <div class="notification-content">
-            <h4>Reunião em 30 minutos</h4>
-            <p>Reunião de Sprint Planning às 14:00</p>
-            <span class="notification-time">25 min atrás</span>
-          </div>
-        </div>
-        <div class="notification-item">
-          <div class="notification-content">
-            <h4>Projeto atualizado</h4>
-            <p>O projeto "Sistema de Vendas" foi atualizado</p>
-            <span class="notification-time">1 hora atrás</span>
-          </div>
-        </div>
-      </div>
+      <!-- CONTEÚDO RENDERIZADO PELO Notifs.render() -->
+      <div id="listaNotificacoes" class="notification-list"></div>
     </div>
 
     <div
@@ -515,7 +498,10 @@
 
     <script src="ia/iaAcessoPago.js"></script>
     <script src="scripts/data.js"></script>
+    <script src="scripts/notificacao.js"></script>
     <script src="scripts/inicializador.js"></script>
+    <script src="scripts/app.js"></script>
+    <script src="scripts/utils/date-utils.js"></script>
     <script src="scripts/utils/label.js"></script>
     <script src="scripts/utils/styles.js"></script>
     <script src="scripts/utils/modal.js"></script>
@@ -528,6 +514,5 @@
     <script src="scripts/main/avisos.js"></script>
     <script src="scripts/main/perfil.js"></script>
     <script src="scripts/main/configs.js"></script>
-    <script src="scripts/main.js"></script>
   </body>
 </html>
