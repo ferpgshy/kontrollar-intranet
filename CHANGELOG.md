@@ -184,7 +184,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
-## [1.0.0] - Data anterior
+## [1.0.0] - 2025-01-15
 ### Inicial
 - Versão básica da página de termos
 - Estrutura HTML, CSS e JS simples
