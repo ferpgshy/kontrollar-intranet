@@ -190,6 +190,7 @@ export const getTeamName = (id: TeamId, map: Map<number, { name: string }>) =>
 
 **Descrição do PR (modelo)**
 
+```md
 ## 📋 Resumo
 Breve descrição do que foi feito e por quê.
 
@@ -209,6 +210,7 @@ Passos claros de validação.
 
 ## 📝 Notas
 Riscos, limitações, próximos passos.
+```
 
 ---
 
