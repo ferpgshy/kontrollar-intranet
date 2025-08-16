@@ -1,6 +1,3 @@
-perfeito — segue uma versão **refatorada e mais completa** do `CONTRIBUTING.md`, pronta pra **substituir** o arquivo atual. Foquei em clareza, passo a passo, padrões de código, fluxo de Git/PR e checklists práticos.
-
-````md
 # 🤝 Contribuindo para o Kontrollar
 
 Obrigado por querer contribuir com o **Kontrollar**! Este guia explica **como preparar o ambiente, o fluxo de contribuição, padrões de código, qualidade e PRs**.
