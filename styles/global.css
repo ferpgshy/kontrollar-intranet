@@ -77,7 +77,9 @@ a {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  min-width: 110px;
 }
+
 
 .btn:disabled {
   opacity: 0.5;

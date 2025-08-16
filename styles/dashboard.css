@@ -540,59 +540,62 @@
 
 .ia-premium-btn {
   position: fixed;
-  bottom: 25px;
-  right: 25px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #000000ff, #000000ff);
-  color: white;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 80px;
+  border-radius: 6px 0 0 6px;
+  background: #000;       /* preto */
+  color: #fff;            /* ícone branco */
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 24px;
   cursor: pointer;
   z-index: 9999;
-  box-shadow: 0 6px 20px rgba(0, 255, 221, 0.3);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
 }
 .ia-premium-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 153, 255, 0.4);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.45);
 }
+.ia-premium-btn svg {
+  width: 18px;
+  height: 18px;
+  transform: rotate(90deg);
+}
+
+
 
 .ia-premium-container {
   position: fixed;
-  bottom: 95px;
-  right: 25px;
+  top: 0;
+  right: -380px;
   width: 380px;
-  height: 520px;
+  height: 100vh;
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border-left: 2px solid #000;
+  border-radius: 0;
+  box-shadow: -6px 0 20px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   z-index: 9999;
   overflow: hidden;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  border: 1px solid #e5e7eb;
-  transform: translateY(20px);
-  opacity: 0;
-  transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  transition: right 0.4s ease;
 }
-.ia-premium-container.ia-visible {
-  transform: translateY(0);
-  opacity: 1;
-}
+.ia-premium-container.ia-visible { right: 0; }
+
+
 
 .ia-premium-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 18px 24px;
-  background: linear-gradient(to right, #000000ff, rgba(0, 255, 221, 0.3));
-  color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  background: #000;   /* preto sólido */
+  color: #fff;
 }
 .ia-header-content { display: flex; align-items: center; gap: 15px; }
 .ia-premium-badge {
@@ -612,8 +615,14 @@
   cursor: pointer;
   width: 32px;
   height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; transition: all 0.2s; background: transparent; color: white; border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  background: transparent;
+  color: #fff;
+  border: 0;
 }
 .ia-close-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
@@ -628,17 +637,17 @@
   border: 1px solid #e5e7eb; display: flex; gap: 15px; animation: fadeIn 0.5s ease-out;
 }
 .ia-card-icon {
-  font-size: 28px; background: #f0fdf4; color: #000000ff; width: 50px; height: 50px;
+  font-size: 28px; background: #ffffff; color: rgb(0, 0, 0); width: 50px; height: 50px;
   border-radius: 12px; display: flex; align-items: center; justify-content: center;
 }
 .ia-card-content h3 { margin: 0 0 8px 0; font-size: 16px; color: #111827; }
 .ia-card-content p { margin: 0 0 15px 0; font-size: 14px; color: #4b5563; }
 .ia-quick-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .ia-quick-actions button {
-  background: #f0fdf4; color: #065f46; border: 1px solid #000000ff; border-radius: 8px;
+  background: #f0fdf4; color: #575757; border: 1px solid #000000ff; border-radius: 8px;
   padding: 6px 12px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
 }
-.ia-quick-actions button:hover { background: #dcfce7; transform: translateY(-2px); }
+.ia-quick-actions button:hover { background: #ffffff; transform: translateY(-2px); }
 
 #iaChatPagoMessages { display: flex; flex-direction: column; gap: 8px; }
 
@@ -648,17 +657,24 @@
 }
 .user-premium-message {
   align-self: flex-end;
-  background: linear-gradient(to right, #000000ff, #000000ff);
-  color: white; border-bottom-right-radius: 4px !important;
+  background: #000;   /* preta */
+  color: #fff;
+  border-bottom-right-radius: 4px !important;
 }
 .ia-premium-response {
-  align-self: flex-start; background: white; color: #111827;
-  border: 1px solid #e5e7eb; border-bottom-left-radius: 4px !important;
+  align-self: flex-start;
+  background: #fff;   /* branca */
+  color: #000;
+  border: 1px solid #000;
+  border-bottom-left-radius: 4px !important;
 }
 .ia-premium-response pre {
-  background: #f9fafb; border-radius: 8px; padding: 12px; overflow-x: auto;
-  font-size: 13px; margin: 10px 0; border: 1px solid #e5e7eb;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #000;
 }
+
 
 .ia-premium-footer { padding: 0 20px 20px 20px; border-top: 1px solid #e5e7eb; background: white; }
 .ia-input-container { display: flex; gap: 12px; margin-top: 18px; }
@@ -667,15 +683,15 @@
   font-size: 14px; outline: none; transition: all 0.2s; background: #f9fafb; color: #111827;
 }
 .ia-premium-input:focus {
-  border-color: #000000ff; box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1); background: white;
+  border-color: #000000ff; box-shadow: 0 0 0 3px rgba(158, 158, 158, 0.1); background: white;
 }
 .ia-premium-send {
   width: 50px; height: 50px; border-radius: 14px;
-  background: linear-gradient(135deg, #000000ff, rgba(0, 255, 221, 0.3));
+  background: linear-gradient(135deg, #000000ff, rgba(192, 192, 192, 0.3));
   color: white; border: none; display: flex; justify-content: center; align-items: center;
   cursor: pointer; transition: all 0.2s;
 }
-.ia-premium-send:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); }
+.ia-premium-send:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(146, 146, 146, 0.2); }
 
 .ia-footer-note {
   display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6b7280; margin-top: 12px; padding: 0 8px;
@@ -687,7 +703,7 @@
   font-size: 14px; color: #4b5563;
 }
 .ia-typing-dot {
-  width: 8px; height: 8px; background: #059669; border-radius: 50%;
+  width: 8px; height: 8px; background: #969696; border-radius: 50%;
   opacity: 0.6; animation: typing-dot 1.4s infinite ease-in-out;
 }
 .ia-typing-dot:nth-child(1) { animation-delay: 0s; }
