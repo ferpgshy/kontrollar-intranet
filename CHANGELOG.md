@@ -1,258 +1,213 @@
-# 🤝 Contribuindo para o Kontrollar
+# Changelog
 
-Obrigado por querer contribuir com o **Kontrollar**! Este guia explica **como preparar o ambiente, o fluxo de contribuição, padrões de código, qualidade e PRs**.
+Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
-> **Resumo rápido:** abra uma *issue* → crie uma *branch* → desenvolva seguindo os padrões → teste → abra um PR pequeno, descritivo e com prints/GIFs.
+O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
+e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
----
+## [Não Lançado]
 
-## 🚀 Começando
-
-### Pré-requisitos
-- **Git** 2.40+
-- **Node.js** LTS (18 ou 20) + **npm** (ou **pnpm/yarn**, se preferir)
-- Conta no GitHub com acesso ao repositório
-
-### Clonar e instalar
-```bash
-# 1) Fork (recomendado) e clone seu fork
-git clone https://github.com/ferpgshy/kontrollar-intranet.git
-cd kontrollar-intranet
-
-# 2) Instalar dependências
-npm install
-
-# 3) Variáveis de ambiente (se aplicável)
-cp .env.example .env
-# edite o .env com seus valores locais
-
-# 4) Rodar em dev
-# Use o script do projeto, se existir:
-npm run dev
-# ou, se o projeto usar um servidor simples:
-node server.js
-````
-
-> Se o repo “principal” estiver em `ferpgshy/kontrollar-intranet`, você também pode clonar direto dele:
-> `git clone https://github.com/ferpgshy/kontrollar-intranet.git`
+### 🔄 Em Desenvolvimento
+- Melhorias de acessibilidade
+- Otimizações de performance
 
 ---
 
-## 🗂️ Estrutura do projeto (visão geral)
+## [3.0.0] - 2025-01-16
 
-```
-kontrollar-intranet/
-├── ia/                  # servidor/integrações de IA (Node/Express)
-├── public/              # assets estáticos
-├── scripts/
-│   ├── main/            # módulos principais (dashboard, termos, chat, etc.)
-│   └── utils/           # utilitários (modal, sanitizer, data-bus, helpers)
-├── styles/              # CSS organizado por componente/página
-└── *.html               # páginas estáticas
-```
+### ✨ Adicionado
 
----
+#### **Sistema de Autenticação (Login)**
+- **Inputs padronizados**: Altura fixa de `44px` e largura `100%` aplicada a todos os campos
+- **Campo de senha aprimorado**: 
+  - Estrutura com `.input-group` para abrigar o botão "olho"
+  - `padding-right` aplicado para evitar sobreposição de texto com ícone
+- **Botão "olho" melhorado**:
+  - Reposicionado com `top: 50%` + `transform: translateY(-50%)`
+  - Cor preta forçada (`#000`) com `stroke-width: 2.5` no SVG
+  - Hover suave alterando para `#333`
 
-## 🎯 Onde contribuir
+#### **Sistema de Configurações**
+- **Confirmações de segurança**: 
+  - Ação de "Limpar dados" com `confirmarModal`
+  - Exclusão de conta com duas confirmações sequenciais
+  - Salvamento de configurações com confirmação
+- **Aba flutuante (Assistente Premium)**:
+  - Botão convertido em aba lateral retrátil com seta
+  - Comportamento acessível: fecha com ESC ou clique fora
 
-* **Issues abertas** com labels `good first issue`, `help wanted` ou `bug`.
-* Pequenas melhorias de **UX**, **acessibilidade**, **performance** e **documentação** são muito bem-vindas.
-* Antes de grandes mudanças, **abra uma issue** para alinharmos escopo.
+#### **Sistema de Avisos**
+- **Vínculo com Equipes e Projetos**:
+  - Novos campos no modal com checkboxes + busca
+  - Renderização de "chips" das equipes/projetos no card
+  - Helpers: `getTeamOptions()`, `getProjectOptions()`, `resolveTeamNamesFromIds()`
+- **Filtros avançados**: `filterNotices()` com re-renderização dinâmica
 
----
+#### **Sistema de Perfil**
+- **Dados reais do usuário**: Departamento, Cargo, Telefone, Fuso, Notificações
+- **Upload de avatar**: Suporte a dataURL e remoção
+- **Métricas pessoais**: `computeUserStats()` com tolerância aprimorada
 
-## 🌿 Fluxo de Git
+#### **Sistema de Notificações Global**
+- **Módulo `Notifs` extraído**: API completa com `initUI()`, `add()`, `addMany()`
+- **Badge dinâmico**: Contador que some quando zero
+- **Painel com ícones**: Ações de "marcar tudo como lido" e "limpar tudo"
+- **Integração com Backlog**: Notificações automáticas para novas tarefas
 
-### Branching
+#### **Sistema de Chats**
+- **Seleção de participantes**: Busca por nome e adição manual
+- **Política de envio**: Modo "apenas administradores podem enviar"
+- **Helpers de usuários**: `getAllKnownUsers()`, `canUserPost()`
 
-* `main`: estável / produção.
-* `feature/<slug-descritivo>` para features.
-* `fix/<slug-descritivo>` para correções.
-* `chore/<slug-descritivo>` para tarefas de manutenção.
+### 🔧 Melhorado
 
-```bash
-git checkout -b feature/filtro-data-dashboard
-# ...codar...
-git commit -m "feat(dashboard): adiciona filtro de data com ordenação estável"
-git push -u origin feature/filtro-data-dashboard
-```
+#### **Gestão de Datas**
+- **Módulo `date-utils.js`**: 
+  - `getDataBrasiliaFormatada()` corrige timezone de Brasília
+  - `formatarDataPtBR()` para formatação consistente
+- **Correção "data -1 dia"**: `publishedAt` usa timezone correto
 
-### Commits — Conventional Commits
+#### **Dropdowns de Ação**
+- **Equipes**: `toggleTeamMenu()` com fechamento por ESC e clique fora
+- **Projetos**: `abrirMenuProjeto()` com comportamento consistente  
+- **Tarefas**: `abrirMenuTarefas()` com limpeza de listeners
 
-Tipos comuns: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`.
+#### **Dashboard**
+- **Card "Equipes & Parceiros"**: 
+  - Estatísticas com `getTeamsPartnersStats()`
+  - Chips por equipe com `updateTeamsStatCard()`
 
-**Exemplos**
+#### **Estado Global e Persistência**
+- **Inicialização garantida**: `window.equipes`, `window.projetos`, `window.avisos`
+- **Fallback triplo**: Para `getTeamOptions()` e `getProjectOptions()`
 
-```
-feat(chat): suporte a grupos privados com badge de não lido
-fix(termos): corrige índice com scroll em iOS
-docs: adiciona seção de a11y ao CONTRIBUTING
-style(css): ajusta espaçamentos (8/16/24px) e tokens de cor
-perf(projects): memoiza cards de projetos recentes
-```
+### 🐛 Corrigido
 
----
+#### **Autenticação**
+- **Compatibilidade**: Overrides isolados em `auth.css`
+- **Herança de estilos**: Removida dependência de `.icon` global
 
-## 🧰 Padrões de código
+#### **Configurações**  
+- **Alertas padronizados**: Todos os `alert()` substituídos por `alertModal`
+- **Entrada de fuso horário**: Estilo consistente com outros inputs
 
-### JavaScript/TypeScript
+#### **Avisos**
+- **Bug de criação**: Agora faz `push` correto no array e persiste
+- **Sanitização**: Fallback `S_NOTICE` para prevenir XSS
+- **Exclusão**: `deleteNotice()` atualiza `window.avisos` e localStorage
 
-* **ESM** + `const`/`let`. Evite `var`.
-* **camelCase** para variáveis/funções; **PascalCase** para construtores.
-* **Funções puras** e helpers em `scripts/utils`.
-* Evite globais; exporte/import módulos.
-* **DOM**: `data-attributes` para seleção/estado; sanitize entradas visíveis ao usuário.
-* Comentários **curtos e úteis** (o *porquê*, não o *o que*).
+#### **Chats**
+- **Prevenção de nulidade**: Guards em elementos DOM críticos
+- **Bloqueio de envio**: Aplicado corretamente com `canUserPost()`
 
-```ts
-// ✅ Exemplo curto
-type TeamId = number;
+### 🎨 Design
 
-export const getTeamName = (id: TeamId, map: Map<number, { name: string }>) =>
-  map.get(id)?.name ?? "—";
-```
+#### **Padronização Visual**
+- **Botões**: Regra global de `min-width` para `.btn`
+- **Labels e espaçamento**: `.form-group` padronizado com `margin-bottom: 14px`
+- **Foco**: Borda preta + `box-shadow` para feedback claro
 
-### CSS
+### 📋 Estrutura de Arquivos
 
-* Classes em **kebab-case**; agrupar por componente.
-* Tokens (cores/spacing) centralizados; escala de **8px** (8, 16, 24, 32).
-* Evite `!important`; favoreça especificidade clara.
-* Responsividade **mobile-first**.
+#### **Ordem de Scripts Recomendada**
+1. `scripts/utils/date-utils.js`
+2. `scripts/utils/label.js`, `styles.js`, `modal.js`
+3. `scripts/notificacao.js`
+4. `scripts/app.js`
+5. **Mains**: `dashboard.js`, `projetos.js`, `backlogs.js`, `calendario.js`, `chats.js`, `equipes.js`, `avisos.js`, `perfil.js`, `configs.js`
 
-```css
-.notice-card { padding: 16px; border-radius: 12px; }
-.notice-card__title { font-weight: 600; }
-@media (min-width: 768px) { .notice-grid { grid-template-columns: 1fr 1fr; } }
-```
+### 🔒 Modelo de Dados
 
-### HTML
+#### **Chat (compatível)**
+\`\`\`javascript
+{
+  id: string,
+  name: string,
+  type: "public" | "private",
+  members: string[],
+  admins: string[], // NOVO
+  policies: { posting: "all" | "admins" }, // NOVO
+  messages: array
+}
+\`\`\`
 
-* **Semântico** (use `<main>`, `<header>`, `<section>`…).
-* Atributos `aria-*` para componentes interativos.
-* Texto visível para ícones com `aria-label`/`title` quando aplicável.
+#### **Avisos**
+\`\`\`javascript
+{
+  teamIds: string[], // NOVO
+  projectIds: string[], // NOVO
+  publishedAt: string, // Corrigido timezone
+  // ... campos existentes
+}
+\`\`\`
 
----
+### ⚠️ Pontos de Atenção
 
-## 🧪 Qualidade e testes manuais
+#### **Após Operações CRUD**
+1. Atualize o array em `window.*`
+2. Execute `localStorage.setItem(...)`
+3. Re-renderize a área correspondente
+4. Se no dashboard, execute `updateTeamsStatCard()`
 
-### Checklist mínimo (marque antes do PR)
-
-* [ ] Sem erros no console.
-* [ ] Responsivo: **320px**, **768px**, **1024px+**.
-* [ ] Acessibilidade básica: foco visível, navegação por **tab**, `aria-label` em botões icônicos.
-* [ ] Performance: sem *layouts thrashing*; imagens otimizadas; listas grandes com renderização eficiente.
-* [ ] Dados sensíveis **não** commitados (`.env`, tokens); use placeholders em `.env.example`.
-* [ ] Sem regressões nas áreas: **login**, **dashboard**, **avisos**, **projetos**, **chat**.
-
-### Como testar (exemplos)
-
-* **Dashboard/Projetos**: cards populam com dados do `localStorage`? filtros/sort aplicam corretamente?
-* **Avisos**: criação/edição exclusão persistem? chips de equipes/projetos renderizam ok?
-* **Chat**: criação de grupos, última mensagem na listagem, badges de não lido e persistência.
-* **Termos**: índice acompanha o scroll (sem `position: fixed` indevido).
-
----
-
-## 🐛 Reportando bugs (template)
-
-```md
-## 🐛 Bug Report
-**Descrição:** o que aconteceu?
-**Esperado:** o que deveria acontecer?
-**Passos para reproduzir:**
-1. …
-2. …
-3. …
-**Ambiente:** navegador/versão, OS
-**Evidências:** screenshots/logs
-```
-
-## 💡 Sugerindo funcionalidades (template)
-
-```md
-## 💡 Feature Request
-**Problema a resolver:** …
-**Proposta:** (o que muda, UX resumida, impacto)
-**Alternativas consideradas:** …
-**Notas adicionais:** mocks/links se houver
-```
-
----
-
-## 🔁 Pull Requests
-
-**Antes de abrir o PR**
-
-* [ ] Rebase/sync com `main` e resolva conflitos.
-* [ ] PR **pequeno e focado** (ideal: < 300 LoC).
-* [ ] Inclua **prints/GIF** do antes/depois quando for UI.
-* [ ] Atualize docs/`CHANGELOG` se relevante.
-
-**Descrição do PR (modelo)**
-
-```md
-## 📋 Resumo
-Breve descrição do que foi feito e por quê.
-
-## 🔄 Tipo
-- [ ] 🐛 Bug fix
-- [ ] ✨ Feature
-- [ ] 💄 UI/UX
-- [ ] 📚 Docs
-- [ ] ⚡ Perf
-- [ ] 🔧 Refactor
-
-## 🧪 Como testar
-Passos claros de validação.
-
-## 📸 Evidências
-(coloque imagens/GIFs)
-
-## 📝 Notas
-Riscos, limitações, próximos passos.
-```
+#### **Funções Utilitárias Críticas**
+- **getSafeUser()**: Default + `createdAt` + `settings`
+- **S_NOTICE**: Sanitização simples para HTML
+- **maskPhone()**: Máscara de telefone
+- **pwdStrengthScore()**: Barra de força de senha
 
 ---
 
-## 🎨 Diretrizes de design (rápidas)
+## [2.0.0] - 2025-01-16
 
-* **Cores**: Primária **#000**, secundária **#FFF**, cinzas `#111/#333/#666/#999`; estados padrão (verde sucesso, vermelho erro, azul info).
-* **Tipografia**: Títulos 600–700, corpo 400–500.
-* **Espaçamento**: **8/16/24/32px**.
-* **Dark mode**: priorizar contraste AA+.
+### ✨ Adicionado
+- **Navegação lateral fixa**: Índice permanece visível durante o scroll na lateral esquerda
+- **Scroll tracking inteligente**: Navegação automática que acompanha a posição da página
+- **Design moderno preto e branco**: Esquema de cores elegante com alto contraste
+- **Conteúdo expandido**: 4 novas seções adicionadas aos termos de uso
+  - Segurança de Dados e Sistemas
+  - Suporte Técnico e Atendimento
+  - Conformidade Legal e Regulamentações
+  - Casos de Força Maior
+- **Cards informativos**: Elementos visuais destacados para melhor organização
+- **Responsividade aprimorada**: Layout adaptável para diferentes tamanhos de tela
 
----
+### 🔧 Melhorado
+- **Aproveitamento de espaço**: Cards agora utilizam toda a largura disponível da tela
+- **Experiência de navegação**: Transições suaves entre seções
+- **Hierarquia visual**: Melhor organização do conteúdo com tipografia aprimorada
+- **Performance**: Otimização da detecção de seções ativas durante o scroll
 
-## 🔐 Segurança & privacidade
-
-* Nunca comitar **secrets** (tokens, chaves, cookies).
-* Não logar dados sensíveis no console.
-* Sanitizar entradas/HTML gerado; evitar `innerHTML` sem necessidade.
-* Dados de sessão temporários → `sessionStorage`; persistentes e não sensíveis → `localStorage`.
-
----
-
-## 🗣️ Comunicação
-
-* **Issues/PRs**: resposta em **24–48h**.
-* Dúvidas arquiteturais: abra uma **Discussion** curta com contexto e proposta.
-
----
-
-## 🏆 Reconhecimento
-
-Contribuidores são reconhecidos em:
-
-* README (seção de contribuidores)
-* Notas de release
-* Badges/menções
+### 🐛 Corrigido
+- **Movimentação bugada**: Resolvido problema de scroll que voltava posições aleatoriamente
+- **Índice não fixo**: Corrigido posicionamento para manter visibilidade constante
+- **Conflitos de scroll**: Removido listener temporariamente durante navegação por clique
 
 ---
 
-## 📄 Licença
-
-Ao contribuir, você concorda com a **Licença MIT Personalizada** do projeto. Veja `LICENSE`.
+## [1.0.0] - 2025-01-15
+### Inicial
+- Versão básica da página de termos
+- Estrutura HTML, CSS e JS simples
+- Conteúdo básico de termos de uso
 
 ---
 
-**Obrigado por contribuir!** Sua ajuda melhora o Kontrollar para toda a comunidade. 🚀
+## 🚀 Guia de Migração
+
+### De 2.x para 3.x
+- **Chats**: Novos campos `admins` e `policies` são opcionais (defaults aplicados)
+- **Avisos**: Campos `teamIds` e `projectIds` são opcionais
+- **Scripts**: Seguir nova ordem de carregamento recomendada
+
+### De 1.x para 2.x
+- **CSS**: Verificar compatibilidade com novo esquema de cores
+- **JavaScript**: Atualizar referências de navegação se customizadas
+
+---
+
+## 📞 Suporte
+
+Para questões sobre este changelog ou implementação:
+- Consulte a documentação técnica do projeto
+- Verifique os comentários no código para detalhes específicos
+- Teste em ambiente de desenvolvimento antes de produção
