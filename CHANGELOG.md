@@ -1,4 +1,3 @@
-````md
 # 🤝 Contribuindo para o Kontrollar
 
 Obrigado por querer contribuir com o **Kontrollar**! Este guia explica **como preparar o ambiente, o fluxo de contribuição, padrões de código, qualidade e PRs**.
