@@ -1,29 +1,37 @@
 // Helpers (usam os já existentes se houver)
-const _getUser = typeof getSafeUser === "function"
-  ? getSafeUser
-  : () => {
-      let u = JSON.parse(localStorage.getItem("user") || "{}");
-      if (!u || !u.name) u = { name: "Usuário", email: "usuario@example.com", role: "user" };
-      if (!u.settings) u.settings = {};
-      if (!u.settings.theme) u.settings.theme = "system";
-      if (!u.settings.fontSize) u.settings.fontSize = "medium";
-      if (!u.settings.timezone) u.settings.timezone = "America/Sao_Paulo";
-      if (typeof u.settings.notifyEmail !== "boolean") u.settings.notifyEmail = true;
-      if (typeof u.settings.notifyDesktop !== "boolean") u.settings.notifyDesktop = false;
-      if (typeof u.settings.sound !== "boolean") u.settings.sound = false;
-      if (typeof u.settings.publicProfile !== "boolean") u.settings.publicProfile = true;
-      if (typeof u.settings.onlineStatus !== "boolean") u.settings.onlineStatus = true;
-      localStorage.setItem("user", JSON.stringify(u));
-      return u;
-    };
+const _getUser =
+  typeof getSafeUser === "function"
+    ? getSafeUser
+    : () => {
+        let u = JSON.parse(localStorage.getItem("user") || "{}");
+        if (!u || !u.name)
+          u = { name: "Usuário", email: "usuario@example.com", role: "user" };
+        if (!u.settings) u.settings = {};
+        if (!u.settings.theme) u.settings.theme = "system";
+        if (!u.settings.fontSize) u.settings.fontSize = "medium";
+        if (!u.settings.timezone) u.settings.timezone = "America/Sao_Paulo";
+        if (typeof u.settings.notifyEmail !== "boolean")
+          u.settings.notifyEmail = true;
+        if (typeof u.settings.notifyDesktop !== "boolean")
+          u.settings.notifyDesktop = false;
+        if (typeof u.settings.sound !== "boolean") u.settings.sound = false;
+        if (typeof u.settings.publicProfile !== "boolean")
+          u.settings.publicProfile = true;
+        if (typeof u.settings.onlineStatus !== "boolean")
+          u.settings.onlineStatus = true;
+        localStorage.setItem("user", JSON.stringify(u));
+        return u;
+      };
 
-const _applyTheme = typeof applyTheme === "function"
-  ? applyTheme
-  : (theme) => {
-      const root = document.documentElement;
-      root.removeAttribute("data-theme");
-      if (theme === "light" || theme === "dark") root.setAttribute("data-theme", theme);
-    };
+const _applyTheme =
+  typeof applyTheme === "function"
+    ? applyTheme
+    : (theme) => {
+        const root = document.documentElement;
+        root.removeAttribute("data-theme");
+        if (theme === "light" || theme === "dark")
+          root.setAttribute("data-theme", theme);
+      };
 
 function applyFontSize(size) {
   // small 93.75% (15px), medium 100% (16px), large 112.5% (18px) — ajuste à vontade
@@ -39,11 +47,15 @@ function playBeep() {
     const g = ctx.createGain();
     o.type = "sine";
     o.frequency.value = 880;
-    o.connect(g); g.connect(ctx.destination);
+    o.connect(g);
+    g.connect(ctx.destination);
     g.gain.setValueAtTime(0.0001, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.02);
     o.start();
-    setTimeout(() => { g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.02); o.stop(ctx.currentTime + 0.04); }, 180);
+    setTimeout(() => {
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.02);
+      o.stop(ctx.currentTime + 0.04);
+    }, 180);
   } catch {}
 }
 
@@ -70,17 +82,29 @@ function loadConfiguracoesContent() {
           <div>
             <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tema</label>
             <select id="themeSelect" style="width:100%;max-width:220px;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-              <option value="system" ${user.settings.theme==="system"?"selected":""}>Seguir o sistema</option>
-              <option value="light"  ${user.settings.theme==="light" ?"selected":""}>Claro</option>
-              <option value="dark"   ${user.settings.theme==="dark"  ?"selected":""}>Escuro</option>
+              <option value="system" ${
+                user.settings.theme === "system" ? "selected" : ""
+              }>Seguir o sistema</option>
+              <option value="light"  ${
+                user.settings.theme === "light" ? "selected" : ""
+              }>Claro</option>
+              <option value="dark"   ${
+                user.settings.theme === "dark" ? "selected" : ""
+              }>Escuro</option>
             </select>
           </div>
           <div>
             <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tamanho da Fonte</label>
             <select id="fontSizeSelect" style="width:100%;max-width:220px;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-              <option value="small"  ${user.settings.fontSize==="small" ?"selected":""}>Pequena</option>
-              <option value="medium" ${user.settings.fontSize==="medium"?"selected":""}>Média</option>
-              <option value="large"  ${user.settings.fontSize==="large" ?"selected":""}>Grande</option>
+              <option value="small"  ${
+                user.settings.fontSize === "small" ? "selected" : ""
+              }>Pequena</option>
+              <option value="medium" ${
+                user.settings.fontSize === "medium" ? "selected" : ""
+              }>Média</option>
+              <option value="large"  ${
+                user.settings.fontSize === "large" ? "selected" : ""
+              }>Grande</option>
             </select>
           </div>
         </div>
@@ -95,7 +119,9 @@ function loadConfiguracoesContent() {
               <h4 style="font-weight:500;margin-bottom:0.25rem;">Notificações por E-mail</h4>
               <p style="color:#666;font-size:0.875rem;">Receba notificações importantes por e-mail</p>
             </div>
-            <input type="checkbox" id="emailNotifications" ${user.settings.notifyEmail ? "checked": ""}>
+            <input type="checkbox" id="emailNotifications" ${
+              user.settings.notifyEmail ? "checked" : ""
+            }>
           </div>
 
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -103,7 +129,9 @@ function loadConfiguracoesContent() {
               <h4 style="font-weight:500;margin-bottom:0.25rem;">Notificações Push</h4>
               <p style="color:#666;font-size:0.875rem;">Receba notificações no navegador</p>
             </div>
-            <input type="checkbox" id="pushNotifications" ${user.settings.notifyDesktop ? "checked": ""}>
+            <input type="checkbox" id="pushNotifications" ${
+              user.settings.notifyDesktop ? "checked" : ""
+            }>
           </div>
 
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -113,7 +141,9 @@ function loadConfiguracoesContent() {
             </div>
             <div style="display:flex;gap:0.5rem;align-items:center;">
               <button id="testSoundBtn" class="btn btn-outline">Testar som</button>
-              <input type="checkbox" id="soundNotifications" ${user.settings.sound ? "checked": ""}>
+              <input type="checkbox" id="soundNotifications" ${
+                user.settings.sound ? "checked" : ""
+              }>
             </div>
           </div>
         </div>
@@ -128,7 +158,9 @@ function loadConfiguracoesContent() {
               <h4 style="font-weight:500;margin-bottom:0.25rem;">Perfil Público</h4>
               <p style="color:#666;font-size:0.875rem;">Permitir que outros usuários vejam seu perfil</p>
             </div>
-            <input type="checkbox" id="publicProfile" ${user.settings.publicProfile ? "checked": ""}>
+            <input type="checkbox" id="publicProfile" ${
+              user.settings.publicProfile ? "checked" : ""
+            }>
           </div>
 
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -136,7 +168,9 @@ function loadConfiguracoesContent() {
               <h4 style="font-weight:500;margin-bottom:0.25rem;">Status Online</h4>
               <p style="color:#666;font-size:0.875rem;">Mostrar quando você está online</p>
             </div>
-            <input type="checkbox" id="onlineStatus" ${user.settings.onlineStatus ? "checked": ""}>
+            <input type="checkbox" id="onlineStatus" ${
+              user.settings.onlineStatus ? "checked" : ""
+            }>
           </div>
         </div>
       </div>
@@ -157,7 +191,9 @@ function loadConfiguracoesContent() {
           <div>
             <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Fuso Horário</label>
             <div style="display:flex;gap:0.5rem;align-items:center;">
-              <input type="text" id="timezoneSelect" value="${user.settings.timezone}" placeholder="Ex.: America/Sao_Paulo" style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+              <input type="text" id="timezoneSelect" value="${
+                user.settings.timezone
+              }" placeholder="Ex.: America/Sao_Paulo" style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
               <button id="detectTZ" class="btn btn-outline">Detectar</button>
             </div>
             <p style="color:#6b7280;font-size:0.8rem;margin-top:0.25rem;">Use um ID IANA (ex.: America/Sao_Paulo). Isso ajuda nas datas.</p>
@@ -224,7 +260,8 @@ function setupSettingsFunctionality() {
 
   // Detectar fuso horário
   document.getElementById("detectTZ")?.addEventListener("click", () => {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo";
+    const tz =
+      Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo";
     const tzEl = document.getElementById("timezoneSelect");
     if (tzEl) tzEl.value = tz;
   });
@@ -240,7 +277,10 @@ function setupSettingsFunctionality() {
         try {
           const perm = await Notification.requestPermission();
           if (perm !== "granted") {
-            alert("Permissão de notificação negada pelo navegador.");
+            await alertModal({
+              title: "Permissão negada",
+              message: "Permissão de notificação negada pelo navegador.",
+            });
             e.target.checked = false;
           }
         } catch {
@@ -251,54 +291,77 @@ function setupSettingsFunctionality() {
   }
 
   // Salvar
-  document.getElementById("saveSettings")?.addEventListener("click", () => {
-    const theme = document.getElementById("themeSelect").value;
-    const fontSize = document.getElementById("fontSizeSelect").value;
-    const notifyEmail = document.getElementById("emailNotifications").checked;
-    const notifyDesktop = document.getElementById("pushNotifications").checked;
-    const sound = document.getElementById("soundNotifications").checked;
-    const publicProfile = document.getElementById("publicProfile").checked;
-    const onlineStatus = document.getElementById("onlineStatus").checked;
-    const language = document.getElementById("languageSelect").value;
-    const timezone = document.getElementById("timezoneSelect").value.trim() || "America/Sao_Paulo";
+  document
+    .getElementById("saveSettings")
+    ?.addEventListener("click", async () => {
+      const confirmar = await confirmarModal({
+        title: "Confirmação",
+        message: "Deseja realmente salvar as configurações?",
+      });
+      if (!confirmar) return;
 
-    user.settings = {
-      ...user.settings,
-      theme,
-      fontSize,
-      notifyEmail,
-      notifyDesktop,
-      sound,
-      publicProfile,
-      onlineStatus,
-      language,
-      timezone,
-    };
+      const theme = document.getElementById("themeSelect").value;
+      const fontSize = document.getElementById("fontSizeSelect").value;
+      const notifyEmail = document.getElementById("emailNotifications").checked;
+      const notifyDesktop =
+        document.getElementById("pushNotifications").checked;
+      const sound = document.getElementById("soundNotifications").checked;
+      const publicProfile = document.getElementById("publicProfile").checked;
+      const onlineStatus = document.getElementById("onlineStatus").checked;
+      const language = document.getElementById("languageSelect").value;
+      const timezone =
+        document.getElementById("timezoneSelect").value.trim() ||
+        "America/Sao_Paulo";
 
-    localStorage.setItem("user", JSON.stringify(user));
+      user.settings = {
+        ...user.settings,
+        theme,
+        fontSize,
+        notifyEmail,
+        notifyDesktop,
+        sound,
+        publicProfile,
+        onlineStatus,
+        language,
+        timezone,
+      };
 
-    // aplica imediatamente
-    applyTheme(user.settings?.theme || "system");
-    applyFontSize(fontSize);
+      localStorage.setItem("user", JSON.stringify(user));
 
-    alert("Configurações salvas com sucesso!");
-  });
+      // aplica imediatamente
+      _applyTheme(user.settings?.theme || "system");
+      applyFontSize(fontSize);
+
+      await alertModal({
+        title: "Sucesso",
+        message: "Configurações salvas com sucesso!",
+      });
+    });
 
   // Exportar
   document.getElementById("exportBtn")?.addEventListener("click", () => {
     const payload = {
       savedAt: new Date().toISOString(),
       user: _getUser(),
-      equipes: window.equipes || JSON.parse(localStorage.getItem("equipes") || "[]"),
-      projetos: window.projetos || JSON.parse(localStorage.getItem("projetos") || "[]"),
-      tarefas: window.tarefas || JSON.parse(localStorage.getItem("tarefas") || "[]"),
-      avisos: window.avisos || JSON.parse(localStorage.getItem("avisos") || "[]"),
+      equipes:
+        window.equipes || JSON.parse(localStorage.getItem("equipes") || "[]"),
+      projetos:
+        window.projetos || JSON.parse(localStorage.getItem("projetos") || "[]"),
+      tarefas:
+        window.tarefas || JSON.parse(localStorage.getItem("tarefas") || "[]"),
+      avisos:
+        window.avisos || JSON.parse(localStorage.getItem("avisos") || "[]"),
     };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     const y = new Date();
-    const ymd = `${y.getFullYear()}${String(y.getMonth()+1).padStart(2,"0")}${String(y.getDate()).padStart(2,"0")}`;
+    const ymd = `${y.getFullYear()}${String(y.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}${String(y.getDate()).padStart(2, "0")}`;
     a.href = url;
     a.download = `kontrollar-backup-${ymd}.json`;
     document.body.appendChild(a);
@@ -308,35 +371,76 @@ function setupSettingsFunctionality() {
   });
 
   // Limpar cache seletivo
-  document.getElementById("clearBtn")?.addEventListener("click", () => {
-    const checks = Array.from(document.querySelectorAll(".cc:checked")).map(c => c.value);
+  document.getElementById("clearBtn")?.addEventListener("click", async () => {
+    const checks = Array.from(document.querySelectorAll(".cc:checked")).map(
+      (c) => c.value
+    );
+
     if (!checks.length) {
-      alert("Selecione pelo menos um item para limpar.");
+      await alertModal({
+        title: "Atenção",
+        message: "Selecione pelo menos um item para limpar.",
+      });
       return;
     }
-    if (!confirm("Tem certeza que deseja limpar os dados selecionados?")) return;
 
-    if (checks.includes("equipes")) { localStorage.removeItem("equipes"); window.equipes = []; }
-    if (checks.includes("projetos")) { localStorage.removeItem("projetos"); window.projetos = []; }
-    if (checks.includes("tarefas")) { localStorage.removeItem("tarefas"); window.tarefas = []; }
-    if (checks.includes("avisos")) { localStorage.removeItem("avisos"); window.avisos = []; }
+    const confirmar = await confirmarModal({
+      title: "Confirmação",
+      message: "Tem certeza que deseja limpar os dados selecionados?",
+    });
+    if (!confirmar) return;
+
+    // limpa dados
+    if (checks.includes("equipes")) {
+      localStorage.removeItem("equipes");
+      window.equipes = [];
+    }
+    if (checks.includes("projetos")) {
+      localStorage.removeItem("projetos");
+      window.projetos = [];
+    }
+    if (checks.includes("tarefas")) {
+      localStorage.removeItem("tarefas");
+      window.tarefas = [];
+    }
+    if (checks.includes("avisos")) {
+      localStorage.removeItem("avisos");
+      window.avisos = [];
+    }
     if (checks.includes("settings")) {
-      // só reseta settings, mantém user básico
       const u = _getUser();
-      u.settings = {}; // será reidratado com defaults
+      u.settings = {};
       localStorage.setItem("user", JSON.stringify(u));
     }
 
-    alert("Dados limpos.");
+    await alertModal({
+      title: "Sucesso",
+      message: "Dados limpos.",
+    });
   });
 }
 
-function confirmDeleteAccount() {
-  if (!confirm("Tem certeza que deseja excluir sua conta? Esta ação é irreversível.")) return;
-  if (!confirm("Última confirmação: deseja mesmo excluir TUDO?")) return;
+async function confirmDeleteAccount() {
+  const confirmar1 = await confirmarModal({
+    title: "Confirmação",
+    message:
+      "Tem certeza que deseja excluir sua conta? Esta ação é irreversível.",
+  });
+  if (!confirmar1) return;
+
+  const confirmar2 = await confirmarModal({
+    title: "Última Confirmação",
+    message: "Deseja mesmo excluir TUDO?",
+  });
+  if (!confirmar2) return;
 
   // Limpa tudo e volta pra index
   localStorage.clear();
-  alert("Conta excluída com sucesso.");
+
+  await alertModal({
+    title: "Sucesso",
+    message: "Conta excluída com sucesso.",
+  });
+
   window.location.href = "index.html";
 }

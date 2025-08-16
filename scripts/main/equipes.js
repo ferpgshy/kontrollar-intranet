@@ -51,16 +51,24 @@ if (typeof window.getKnownUsersForEvents !== "function") {
     try {
       const me = (JSON.parse(localStorage.getItem("user") || "{}") || {}).name;
       const localUsers = JSON.parse(localStorage.getItem("users") || "[]")
-        .map(u => typeof u === "string" ? u : u?.name).filter(Boolean);
+        .map((u) => (typeof u === "string" ? u : u?.name))
+        .filter(Boolean);
       const chatUsers = Array.isArray(window.chatGrupos)
-        ? window.chatGrupos.flatMap(g => [...(g.members||[]), ...(g.admins||[])])
+        ? window.chatGrupos.flatMap((g) => [
+            ...(g.members || []),
+            ...(g.admins || []),
+          ])
         : [];
       const teamUsers = Array.isArray(window.equipes)
-        ? window.equipes.flatMap(e => e.members || [])
+        ? window.equipes.flatMap((e) => e.members || [])
         : [];
-      const all = [me, ...localUsers, ...chatUsers, ...teamUsers].filter(Boolean);
-      return Array.from(new Set(all)).sort((a,b)=>a.localeCompare(b));
-    } catch { return []; }
+      const all = [me, ...localUsers, ...chatUsers, ...teamUsers].filter(
+        Boolean
+      );
+      return Array.from(new Set(all)).sort((a, b) => a.localeCompare(b));
+    } catch {
+      return [];
+    }
   };
 }
 
@@ -70,14 +78,18 @@ if (typeof window.getKnownProjects !== "function") {
       // garante que pega global mesmo se não estiver em window
       const globProjetos = Array.isArray(window.projetos)
         ? window.projetos
-        : (typeof projetos !== "undefined" && Array.isArray(projetos) ? projetos : []);
+        : typeof projetos !== "undefined" && Array.isArray(projetos)
+        ? projetos
+        : [];
 
-      const fromProjetos = globProjetos.map(p => p?.name).filter(Boolean);
+      const fromProjetos = globProjetos.map((p) => p?.name).filter(Boolean);
       const fromTeams = Array.isArray(window.equipes)
-        ? window.equipes.flatMap(e => Array.isArray(e.projetos) ? e.projetos : [])
+        ? window.equipes.flatMap((e) =>
+            Array.isArray(e.projetos) ? e.projetos : []
+          )
         : [];
       const fromTasks = Array.isArray(window.tarefas)
-        ? window.tarefas.map(t => t?.projetos).filter(Boolean)
+        ? window.tarefas.map((t) => t?.projetos).filter(Boolean)
         : [];
       const fromLocal = JSON.parse(localStorage.getItem("projects") || "[]");
 
@@ -85,8 +97,10 @@ if (typeof window.getKnownProjects !== "function") {
         ...fromProjetos,
         ...fromTeams,
         ...fromTasks,
-        ...(Array.isArray(fromLocal) ? fromLocal : [])
-      ].map(s => String(s).trim()).filter(Boolean);
+        ...(Array.isArray(fromLocal) ? fromLocal : []),
+      ]
+        .map((s) => String(s).trim())
+        .filter(Boolean);
 
       return Array.from(new Set(all)).sort((a, b) => a.localeCompare(b));
     } catch {
@@ -98,13 +112,16 @@ if (typeof window.getKnownProjects !== "function") {
 function renderEquipesStats() {
   const totalEquipes = Array.isArray(equipes) ? equipes.length : 0;
   const totalMembros = Array.isArray(equipes)
-    ? equipes.reduce((acc, e) => acc + ((e.members && e.members.length) || 0), 0)
+    ? equipes.reduce(
+        (acc, e) => acc + ((e.members && e.members.length) || 0),
+        0
+      )
     : 0;
 
-  const wrap = document.getElementById('equipesStats');
+  const wrap = document.getElementById("equipesStats");
   if (!wrap) return;
-  const valueEl = wrap.querySelector('.stat-value');
-  const changeEl = wrap.querySelector('.stat-change');
+  const valueEl = wrap.querySelector(".stat-value");
+  const changeEl = wrap.querySelector(".stat-change");
 
   if (valueEl) valueEl.textContent = `${totalMembros}`;
   if (changeEl) changeEl.textContent = `${totalEquipes} equipe(s)`;
@@ -124,13 +141,21 @@ function generateTeamCards() {
   return equipes
     .map(
       (equipe) => `
-      <div data-equipe-id="${equipe.id}" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); transition: box-shadow 0.2s ease;" onmouseover="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)'" onmouseout="this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1)'">
+      <div data-equipe-id="${
+        equipe.id
+      }" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); transition: box-shadow 0.2s ease;" onmouseover="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)'" onmouseout="this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1)'">
         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
           <div style="flex: 1;">
-            <h3 style="font-size: 1.25rem; font-weight: 600; color: #000000; margin-bottom: 0.5rem;">${sanitizeHTML(equipe.name)}</h3>
-            <p style="color: #666666; font-size: 0.875rem; margin-bottom: 0.75rem;">${sanitizeHTML(equipe.description)}</p>
+            <h3 style="font-size: 1.25rem; font-weight: 600; color: #000000; margin-bottom: 0.5rem;">${sanitizeHTML(
+              equipe.name
+            )}</h3>
+            <p style="color: #666666; font-size: 0.875rem; margin-bottom: 0.75rem;">${sanitizeHTML(
+              equipe.description
+            )}</p>
           </div>
-          <button onclick="toggleTeamMenu(${equipe.id})" style="background: none; border: none; cursor: pointer; padding: 0.25rem; color: #666666;">
+          <button onclick="toggleTeamMenu(${
+            equipe.id
+          })" style="background: none; border: none; cursor: pointer; padding: 0.25rem; color: #666666;">
             <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="12" cy="12" r="1"/>
               <circle cx="19" cy="12" r="1"/>
@@ -142,7 +167,9 @@ function generateTeamCards() {
         <div style="margin-bottom: 1rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
             <span style="font-weight: 500; font-size: 0.875rem;">Líder:</span>
-            <span style="color: #3b82f6; font-weight: 500;">${sanitizeHTML(equipe.leader)}</span>
+            <span style="color: #3b82f6; font-weight: 500;">${sanitizeHTML(
+              equipe.leader
+            )}</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
             <span style="font-weight: 500; font-size: 0.875rem;">Membros:</span>
@@ -157,22 +184,30 @@ function generateTeamCards() {
         <div style="margin-bottom: 1rem;">
           <h4 style="font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem;">Membros da Equipe:</h4>
           <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-            ${(equipe.members || []).map(member => `
+            ${(equipe.members || [])
+              .map(
+                (member) => `
               <span style="background-color: #f3f4f6; color: #374151; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
                 ${sanitizeHTML(member)}
               </span>
-            `).join("")}
+            `
+              )
+              .join("")}
           </div>
         </div>
   
         <div style="margin-bottom: 1rem;">
           <h4 style="font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem;">Projetos:</h4>
           <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-            ${(equipe.projetos || []).map(p => `
+            ${(equipe.projetos || [])
+              .map(
+                (p) => `
               <span style="background-color: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
                 ${sanitizeHTML(p)}
               </span>
-            `).join("")}
+            `
+              )
+              .join("")}
           </div>
         </div>
   
@@ -218,7 +253,7 @@ function showNewTeamModal() {
   const knownProjects = getKnownProjects();
 
   const selectedMembers = new Map(); // name -> boolean
-  let selectedLeader = "";           // string (um só)
+  let selectedLeader = ""; // string (um só)
   const selectedProjects = new Set();
 
   createModal(
@@ -270,7 +305,8 @@ function showNewTeamModal() {
   // ----- Membros/Líder -----
   function upsertUserRow(name) {
     const list = document.getElementById("teamUserList");
-    if (!list || list.querySelector(`[data-row-user="${CSS.escape(name)}"]`)) return;
+    if (!list || list.querySelector(`[data-row-user="${CSS.escape(name)}"]`))
+      return;
 
     const row = document.createElement("div");
     row.setAttribute("data-row-user", name);
@@ -281,15 +317,21 @@ function showNewTeamModal() {
     row.style.padding = "0.4rem 0.25rem";
     row.style.borderBottom = "1px dashed #eee";
     row.innerHTML = `
-      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(name)}">
+      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(
+        name
+      )}">
         ${sanitizeHTML(name)}
       </div>
       <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
-        <input type="checkbox" class="tmIncChk" data-user="${sanitizeHTML(name)}">
+        <input type="checkbox" class="tmIncChk" data-user="${sanitizeHTML(
+          name
+        )}">
         <span>Membro</span>
       </label>
       <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
-        <input type="radio" name="tmLeader" class="tmLeaderRadio" data-user="${sanitizeHTML(name)}">
+        <input type="radio" name="tmLeader" class="tmLeaderRadio" data-user="${sanitizeHTML(
+          name
+        )}">
         <span>Líder</span>
       </label>
     `;
@@ -314,9 +356,11 @@ function showNewTeamModal() {
         selectedLeader = name;
         selectedMembers.set(name, true);
         chk.checked = true;
-        document.querySelectorAll('#teamUserList .tmLeaderRadio').forEach((r) => {
-          if (r !== radio) r.checked = false;
-        });
+        document
+          .querySelectorAll("#teamUserList .tmLeaderRadio")
+          .forEach((r) => {
+            if (r !== radio) r.checked = false;
+          });
       }
     });
   }
@@ -341,7 +385,9 @@ function showNewTeamModal() {
     if (!selectedMembers.has(name)) {
       selectedMembers.set(name, true);
       upsertUserRow(name);
-      const row = document.querySelector(`#teamUserList [data-row-user="${CSS.escape(name)}"]`);
+      const row = document.querySelector(
+        `#teamUserList [data-row-user="${CSS.escape(name)}"]`
+      );
       row?.querySelector(".tmIncChk")?.setAttribute("checked", "checked");
       row?.querySelector(".tmIncChk")?.dispatchEvent(new Event("change"));
     }
@@ -352,7 +398,8 @@ function showNewTeamModal() {
   // ----- Projetos -----
   function upsertProjectRow(p) {
     const list = document.getElementById("teamProjectList");
-    if (!list || list.querySelector(`[data-row-project="${CSS.escape(p)}"]`)) return;
+    if (!list || list.querySelector(`[data-row-project="${CSS.escape(p)}"]`))
+      return;
 
     const row = document.createElement("div");
     row.setAttribute("data-row-project", p);
@@ -363,7 +410,9 @@ function showNewTeamModal() {
     row.style.padding = "0.4rem 0.25rem";
     row.style.borderBottom = "1px dashed #eee";
     row.innerHTML = `
-      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(p)}">
+      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(
+        p
+      )}">
         ${sanitizeHTML(p)}
       </div>
       <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
@@ -383,26 +432,34 @@ function showNewTeamModal() {
 
   for (const p of getKnownProjects()) upsertProjectRow(p);
 
-  document.getElementById("teamProjectSearch").addEventListener("input", (e) => {
-    const q = e.target.value.trim().toLowerCase();
-    document.querySelectorAll("#teamProjectList [data-row-project]").forEach((r) => {
-      const name = r.getAttribute("data-row-project") || "";
-      r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+  document
+    .getElementById("teamProjectSearch")
+    .addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      document
+        .querySelectorAll("#teamProjectList [data-row-project]")
+        .forEach((r) => {
+          const name = r.getAttribute("data-row-project") || "";
+          r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+        });
     });
-  });
 
-  document.getElementById("teamAddManualProjectBtn").addEventListener("click", () => {
-    const input = document.getElementById("teamManualProject");
-    const name = (input.value || "").trim();
-    if (!name) return;
-    if (!selectedProjects.has(name)) selectedProjects.add(name);
-    upsertProjectRow(name);
-    const row = document.querySelector(`#teamProjectList [data-row-project="${CSS.escape(name)}"]`);
-    row?.querySelector(".tpChk")?.setAttribute("checked", "checked");
-    row?.querySelector(".tpChk")?.dispatchEvent(new Event("change"));
-    input.value = "";
-    input.focus();
-  });
+  document
+    .getElementById("teamAddManualProjectBtn")
+    .addEventListener("click", () => {
+      const input = document.getElementById("teamManualProject");
+      const name = (input.value || "").trim();
+      if (!name) return;
+      if (!selectedProjects.has(name)) selectedProjects.add(name);
+      upsertProjectRow(name);
+      const row = document.querySelector(
+        `#teamProjectList [data-row-project="${CSS.escape(name)}"]`
+      );
+      row?.querySelector(".tpChk")?.setAttribute("checked", "checked");
+      row?.querySelector(".tpChk")?.dispatchEvent(new Event("change"));
+      input.value = "";
+      input.focus();
+    });
 
   // ----- submit -----
   document.getElementById("newTeamForm").addEventListener("submit", (e) => {
@@ -430,6 +487,17 @@ function showNewTeamModal() {
     };
 
     equipes.push(newTeam);
+    // persiste (opcional, útil para outras abas) e atualiza card do dashboard se aberto
+    try {
+      localStorage.setItem("equipes", JSON.stringify(equipes));
+    } catch {}
+    if (
+      typeof updateTeamsStatCard === "function" &&
+      document.getElementById("teamsStatCard")
+    ) {
+      updateTeamsStatCard();
+    }
+
     fecharModal();
     loadEquipesContent();
   });
@@ -448,8 +516,10 @@ function editTeam(teamId) {
   let selectedLeader = equipe.leader || "";
   const selectedProjects = new Set(equipe.projetos || []);
 
-  (equipe.members || []).forEach(m => selectedMembers.set(m, true));
-  knownUsers.forEach(u => { if (!selectedMembers.has(u)) selectedMembers.set(u, false); });
+  (equipe.members || []).forEach((m) => selectedMembers.set(m, true));
+  knownUsers.forEach((u) => {
+    if (!selectedMembers.has(u)) selectedMembers.set(u, false);
+  });
 
   createModal(
     "Editar Equipe",
@@ -499,12 +569,14 @@ function editTeam(teamId) {
 
   // set valores simples
   document.getElementById("editTeamName").value = equipe.name || "";
-  document.getElementById("editTeamDescription").value = equipe.description || "";
+  document.getElementById("editTeamDescription").value =
+    equipe.description || "";
 
   // ----- Membros/Líder -----
   function upsertUserRow(name, listId) {
     const list = document.getElementById(listId);
-    if (!list || list.querySelector(`[data-row-user="${CSS.escape(name)}"]`)) return;
+    if (!list || list.querySelector(`[data-row-user="${CSS.escape(name)}"]`))
+      return;
 
     const row = document.createElement("div");
     row.setAttribute("data-row-user", name);
@@ -515,15 +587,21 @@ function editTeam(teamId) {
     row.style.padding = "0.4rem 0.25rem";
     row.style.borderBottom = "1px dashed #eee";
     row.innerHTML = `
-      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(name)}">
+      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(
+        name
+      )}">
         ${sanitizeHTML(name)}
       </div>
       <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
-        <input type="checkbox" class="tmIncChk" data-user="${sanitizeHTML(name)}">
+        <input type="checkbox" class="tmIncChk" data-user="${sanitizeHTML(
+          name
+        )}">
         <span>Membro</span>
       </label>
       <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
-        <input type="radio" name="tmLeaderEdit" class="tmLeaderRadio" data-user="${sanitizeHTML(name)}">
+        <input type="radio" name="tmLeaderEdit" class="tmLeaderRadio" data-user="${sanitizeHTML(
+          name
+        )}">
         <span>Líder</span>
       </label>
     `;
@@ -548,47 +626,59 @@ function editTeam(teamId) {
         selectedLeader = name;
         selectedMembers.set(name, true);
         chk.checked = true;
-        document.querySelectorAll('#editTeamUserList .tmLeaderRadio').forEach((r) => {
-          if (r !== radio) r.checked = false;
-        });
+        document
+          .querySelectorAll("#editTeamUserList .tmLeaderRadio")
+          .forEach((r) => {
+            if (r !== radio) r.checked = false;
+          });
       }
     });
   }
 
   // popula lista
   for (const u of selectedMembers.keys()) upsertUserRow(u, "editTeamUserList");
-  for (const u of knownUsers) if (!selectedMembers.has(u)) {
-    selectedMembers.set(u, false);
-    upsertUserRow(u, "editTeamUserList");
-  }
-
-  document.getElementById("editTeamUserSearch").addEventListener("input", (e) => {
-    const q = e.target.value.trim().toLowerCase();
-    document.querySelectorAll("#editTeamUserList [data-row-user]").forEach((r) => {
-      const name = r.getAttribute("data-row-user") || "";
-      r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
-    });
-  });
-
-  document.getElementById("editTeamAddManualBtn").addEventListener("click", () => {
-    const input = document.getElementById("editTeamManualUser");
-    const name = (input.value || "").trim();
-    if (!name) return;
-    if (!selectedMembers.has(name)) {
-      selectedMembers.set(name, true);
-      upsertUserRow(name, "editTeamUserList");
-      const row = document.querySelector(`#editTeamUserList [data-row-user="${CSS.escape(name)}"]`);
-      row?.querySelector(".tmIncChk")?.setAttribute("checked", "checked");
-      row?.querySelector(".tmIncChk")?.dispatchEvent(new Event("change"));
+  for (const u of knownUsers)
+    if (!selectedMembers.has(u)) {
+      selectedMembers.set(u, false);
+      upsertUserRow(u, "editTeamUserList");
     }
-    input.value = "";
-    input.focus();
-  });
+
+  document
+    .getElementById("editTeamUserSearch")
+    .addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      document
+        .querySelectorAll("#editTeamUserList [data-row-user]")
+        .forEach((r) => {
+          const name = r.getAttribute("data-row-user") || "";
+          r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+        });
+    });
+
+  document
+    .getElementById("editTeamAddManualBtn")
+    .addEventListener("click", () => {
+      const input = document.getElementById("editTeamManualUser");
+      const name = (input.value || "").trim();
+      if (!name) return;
+      if (!selectedMembers.has(name)) {
+        selectedMembers.set(name, true);
+        upsertUserRow(name, "editTeamUserList");
+        const row = document.querySelector(
+          `#editTeamUserList [data-row-user="${CSS.escape(name)}"]`
+        );
+        row?.querySelector(".tmIncChk")?.setAttribute("checked", "checked");
+        row?.querySelector(".tmIncChk")?.dispatchEvent(new Event("change"));
+      }
+      input.value = "";
+      input.focus();
+    });
 
   // ----- Projetos -----
   function upsertProjectRow(p, listId) {
     const list = document.getElementById(listId);
-    if (!list || list.querySelector(`[data-row-project="${CSS.escape(p)}"]`)) return;
+    if (!list || list.querySelector(`[data-row-project="${CSS.escape(p)}"]`))
+      return;
 
     const row = document.createElement("div");
     row.setAttribute("data-row-project", p);
@@ -599,7 +689,9 @@ function editTeam(teamId) {
     row.style.padding = "0.4rem 0.25rem";
     row.style.borderBottom = "1px dashed #eee";
     row.innerHTML = `
-      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(p)}">
+      <div style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${sanitizeHTML(
+        p
+      )}">
         ${sanitizeHTML(p)}
       </div>
       <label style="display:flex;align-items:center;gap:0.35rem;justify-self:end;">
@@ -618,36 +710,46 @@ function editTeam(teamId) {
   }
 
   const projListId = "editTeamProjectList";
-  getKnownProjects().forEach(p => upsertProjectRow(p, projListId));
-  (equipe.projetos || []).forEach(p => upsertProjectRow(p, projListId)); // garante presença
+  getKnownProjects().forEach((p) => upsertProjectRow(p, projListId));
+  (equipe.projetos || []).forEach((p) => upsertProjectRow(p, projListId)); // garante presença
 
-  document.getElementById("editTeamProjectSearch").addEventListener("input", (e) => {
-    const q = e.target.value.trim().toLowerCase();
-    document.querySelectorAll(`#${projListId} [data-row-project]`).forEach((r) => {
-      const name = r.getAttribute("data-row-project") || "";
-      r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+  document
+    .getElementById("editTeamProjectSearch")
+    .addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      document
+        .querySelectorAll(`#${projListId} [data-row-project]`)
+        .forEach((r) => {
+          const name = r.getAttribute("data-row-project") || "";
+          r.style.display = name.toLowerCase().includes(q) ? "grid" : "none";
+        });
     });
-  });
 
-  document.getElementById("editTeamAddManualProjectBtn").addEventListener("click", () => {
-    const input = document.getElementById("editTeamManualProject");
-    const name = (input.value || "").trim();
-    if (!name) return;
-    if (!selectedProjects.has(name)) selectedProjects.add(name);
-    upsertProjectRow(name, projListId);
-    const row = document.querySelector(`#${projListId} [data-row-project="${CSS.escape(name)}"]`);
-    row?.querySelector(".tpChk")?.setAttribute("checked", "checked");
-    row?.querySelector(".tpChk")?.dispatchEvent(new Event("change"));
-    input.value = "";
-    input.focus();
-  });
+  document
+    .getElementById("editTeamAddManualProjectBtn")
+    .addEventListener("click", () => {
+      const input = document.getElementById("editTeamManualProject");
+      const name = (input.value || "").trim();
+      if (!name) return;
+      if (!selectedProjects.has(name)) selectedProjects.add(name);
+      upsertProjectRow(name, projListId);
+      const row = document.querySelector(
+        `#${projListId} [data-row-project="${CSS.escape(name)}"]`
+      );
+      row?.querySelector(".tpChk")?.setAttribute("checked", "checked");
+      row?.querySelector(".tpChk")?.dispatchEvent(new Event("change"));
+      input.value = "";
+      input.focus();
+    });
 
   // ----- submit -----
   document.getElementById("editTeamForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
     const name = document.getElementById("editTeamName").value.trim();
-    const description = document.getElementById("editTeamDescription").value.trim();
+    const description = document
+      .getElementById("editTeamDescription")
+      .value.trim();
 
     const members = Array.from(selectedMembers.entries())
       .filter(([, inc]) => inc)
@@ -659,8 +761,20 @@ function editTeam(teamId) {
     equipe.name = name;
     equipe.description = description;
     equipe.leader = leader || "";
-    equipe.members = leader ? Array.from(new Set([leader, ...members])) : members;
+    equipe.members = leader
+      ? Array.from(new Set([leader, ...members]))
+      : members;
     equipe.projetos = Array.from(selectedProjects);
+    // persiste (opcional) e atualiza card do dashboard se aberto
+    try {
+      localStorage.setItem("equipes", JSON.stringify(equipes));
+    } catch {}
+    if (
+      typeof updateTeamsStatCard === "function" &&
+      document.getElementById("teamsStatCard")
+    ) {
+      updateTeamsStatCard();
+    }
 
     fecharModal();
     loadEquipesContent();
@@ -673,9 +787,12 @@ function viewTeamDetails(teamId) {
   if (!equipe) return;
 
   // Corrige exibição da data (sem "voltar um dia")
-  const criadaEm = typeof equipe.createdAt === "string"
-    ? formatarDataPtBR(equipe.createdAt) // "YYYY-MM-DD" -> dd/mm/yyyy
-    : new Date(equipe.createdAt).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  const criadaEm =
+    typeof equipe.createdAt === "string"
+      ? formatarDataPtBR(equipe.createdAt) // "YYYY-MM-DD" -> dd/mm/yyyy
+      : new Date(equipe.createdAt).toLocaleDateString("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+        });
 
   createModal(
     `Detalhes da Equipe: ${sanitizeHTML(equipe.name)}`,
@@ -683,10 +800,18 @@ function viewTeamDetails(teamId) {
       <div style="max-height: 400px; overflow-y: auto;">
         <div style="margin-bottom: 1.5rem;">
           <h3 style="font-weight: 600; margin-bottom: 0.5rem;">Informações Gerais</h3>
-          <p style="margin-bottom: 0.5rem;"><strong>Descrição:</strong> ${sanitizeHTML(equipe.description)}</p>
-          <p style="margin-bottom: 0.5rem;"><strong>Líder:</strong> ${sanitizeHTML(equipe.leader)}</p>
-          <p style="margin-bottom: 0.5rem;"><strong>Total de Membros:</strong> ${equipe.members.length}</p>
-          <p style="margin-bottom: 0.5rem;"><strong>Projetos Ativos:</strong> ${equipe.projetos.length}</p>
+          <p style="margin-bottom: 0.5rem;"><strong>Descrição:</strong> ${sanitizeHTML(
+            equipe.description
+          )}</p>
+          <p style="margin-bottom: 0.5rem;"><strong>Líder:</strong> ${sanitizeHTML(
+            equipe.leader
+          )}</p>
+          <p style="margin-bottom: 0.5rem;"><strong>Total de Membros:</strong> ${
+            equipe.members.length
+          }</p>
+          <p style="margin-bottom: 0.5rem;"><strong>Projetos Ativos:</strong> ${
+            equipe.projetos.length
+          }</p>
           <p style="margin-bottom: 0.5rem;"><strong>Criada em:</strong> ${criadaEm}</p>
         </div>
         
@@ -694,15 +819,18 @@ function viewTeamDetails(teamId) {
           <h3 style="font-weight: 600; margin-bottom: 0.5rem;">Membros da Equipe</h3>
           <div style="display: grid; gap: 0.5rem;">
             ${equipe.members
-              .map((member) => `
+              .map(
+                (member) => `
               <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background-color: #f9fafb; border-radius: 0.375rem;">
                 <span>${sanitizeHTML(member)}</span>
-                ${member === equipe.leader
+                ${
+                  member === equipe.leader
                     ? '<span style="background-color: #3b82f6; color: white; padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">Líder</span>'
                     : ""
                 }
               </div>
-            `)
+            `
+              )
               .join("")}
           </div>
         </div>
@@ -712,18 +840,22 @@ function viewTeamDetails(teamId) {
           ${
             equipe.projetos.length > 0
               ? equipe.projetos
-                  .map((p) => `
+                  .map(
+                    (p) => `
               <div style="padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; margin-bottom: 0.5rem;">
                 <h4 style="font-weight: 500;">${sanitizeHTML(p)}</h4>
               </div>
-            `)
+            `
+                  )
                   .join("")
               : '<p style="color: #666666; text-align: center; padding: 1rem;">Nenhum projeto atribuído</p>'
           }
         </div>
       </div>
       <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-        <button type="button" onclick="editTeam(${equipe.id})" class="btn btn-outline">Editar</button>
+        <button type="button" onclick="editTeam(${
+          equipe.id
+        })" class="btn btn-outline">Editar</button>
         <button type="button" onclick="fecharModal()" class="btn btn-primary">Fechar</button>
       </div>
     `
@@ -738,7 +870,7 @@ function deleteTeam(teamId) {
     return;
   }
 
-  const idx = equipes.findIndex(e => Number(e?.id) === id);
+  const idx = equipes.findIndex((e) => Number(e?.id) === id);
   if (idx === -1) {
     console.warn("Equipe não encontrada:", id);
     if (typeof showToast === "function") showToast("Equipe não encontrada.");
@@ -754,7 +886,10 @@ function deleteTeam(teamId) {
   }
 
   // Atualiza card do dashboard (se estiver visível)
-  if (typeof updateTeamsStatCard === "function" && document.getElementById("teamsStatCard")) {
+  if (
+    typeof updateTeamsStatCard === "function" &&
+    document.getElementById("teamsStatCard")
+  ) {
     updateTeamsStatCard();
   }
 
@@ -764,7 +899,10 @@ function deleteTeam(teamId) {
 }
 
 // (Opcional) compatibilidade se você tinha outra função com nome diferente
-if (typeof window.deletarEquipe === "function" && typeof window.deleteTeam !== "function") {
+if (
+  typeof window.deletarEquipe === "function" &&
+  typeof window.deleteTeam !== "function"
+) {
   window.deleteTeam = window.deletarEquipe;
 }
 
@@ -847,7 +985,8 @@ window.toggleTeamMenu = (teamId) => {
     closeMenu(); // fecha antes de abrir modal
     const confirmar = await confirmarModal({
       title: "Excluir equipe?",
-      message: "Tem certeza que deseja excluir esta equipe? Esta ação não pode ser desfeita.",
+      message:
+        "Tem certeza que deseja excluir esta equipe? Esta ação não pode ser desfeita.",
     });
     if (confirmar) {
       if (typeof deleteTeam === "function") deleteTeam(teamId);

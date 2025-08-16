@@ -142,3 +142,48 @@ function showToast(message, type = "success") {
     setTimeout(() => toast.remove(), 300);
   }, 2500);
 }
+
+
+function alertModal({ title, message }) {
+  return new Promise((resolve) => {
+    const modalOverlay = document.createElement("div");
+    modalOverlay.style.position = "fixed";
+    modalOverlay.style.top = "0";
+    modalOverlay.style.left = "0";
+    modalOverlay.style.width = "100vw";
+    modalOverlay.style.height = "100vh";
+    modalOverlay.style.background = "rgba(0,0,0,0.5)";
+    modalOverlay.style.display = "flex";
+    modalOverlay.style.alignItems = "center";
+    modalOverlay.style.justifyContent = "center";
+    modalOverlay.style.zIndex = "1000";
+
+    const modal = document.createElement("div");
+    modal.style.background = "#fff";
+    modal.style.padding = "1.5rem";
+    modal.style.borderRadius = "0.5rem";
+    modal.style.maxWidth = "400px";
+    modal.style.width = "100%";
+    modal.style.boxShadow = "0 10px 25px rgba(0,0,0,0.1)";
+    modal.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600;">${title}</h3>
+        <button id="fecharModalBtn" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer;">&times;</button>
+      </div>
+      <p style="color: #374151; font-size: 0.95rem; margin-bottom: 1.5rem;">${message}</p>
+      <div style="display: flex; justify-content: flex-end;">
+        <button id="okBtn" style="padding: 0.5rem 1rem; background: rgb(0,0,0); color: white; border: none; border-radius: 0.375rem; cursor: pointer;">OK</button>
+      </div>
+    `;
+
+    modalOverlay.appendChild(modal);
+    document.body.appendChild(modalOverlay);
+
+    // Fechar com X ou OK
+    modal.querySelector("#fecharModalBtn").onclick =
+    modal.querySelector("#okBtn").onclick = () => {
+      document.body.removeChild(modalOverlay);
+      resolve(true);
+    };
+  });
+}
