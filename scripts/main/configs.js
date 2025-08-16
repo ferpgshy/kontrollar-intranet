@@ -193,7 +193,7 @@ function loadConfiguracoesContent() {
             <div style="display:flex;gap:0.5rem;align-items:center;">
               <input type="text" id="timezoneSelect" value="${
                 user.settings.timezone
-              }" placeholder="Ex.: America/Sao_Paulo" style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+              }" placeholder="Ex.: America/Sao_Paulo" style="width:100%;max-width:220px;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
               <button id="detectTZ" class="btn btn-outline">Detectar</button>
             </div>
             <p style="color:#6b7280;font-size:0.8rem;margin-top:0.25rem;">Use um ID IANA (ex.: America/Sao_Paulo). Isso ajuda nas datas.</p>
