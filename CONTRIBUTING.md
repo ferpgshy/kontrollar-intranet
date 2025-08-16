@@ -1,377 +1,235 @@
-# 🤝 Guia de Contribuição - Kontrollar
+# 🤝 Contribuindo para o Kontrollar
 
-Obrigado pelo seu interesse em contribuir com o **Kontrollar**! Este guia fornece todas as informações necessárias para contribuir de forma efetiva e organizada.
+Bem-vindo ao **Kontrollar**! Este guia te ajudará a contribuir de forma efetiva para nosso sistema de intranet.
 
-## 📋 Índice
+## 🚀 Início Rápido
 
-- [Código de Conduta](#código-de-conduta)
-- [Como Posso Contribuir?](#como-posso-contribuir)
-- [Configuração do Ambiente](#configuração-do-ambiente)
-- [Processo de Desenvolvimento](#processo-de-desenvolvimento)
-- [Padrões de Código](#padrões-de-código)
-- [Processo de Pull Request](#processo-de-pull-request)
-- [Reportando Bugs](#reportando-bugs)
-- [Sugerindo Melhorias](#sugerindo-melhorias)
-- [Comunidade](#comunidade)
+### Configuração do Ambiente
 
----
+\`\`\`bash
+# 1. Fork e clone o repositório
+git clone https://github.com/ferpgshy/kontrollar.git
+cd kontrollar
 
-## 📜 Código de Conduta
+# 2. Instale as dependências
+npm install
 
-Este projeto segue um código de conduta para garantir um ambiente acolhedor para todos. Ao participar, você concorda em manter um comportamento respeitoso e profissional.
+# 3. Configure o ambiente
+cp .env.example .env
+# Edite o .env com suas configurações
 
-### Comportamentos Esperados
-- Use linguagem acolhedora e inclusiva
-- Respeite diferentes pontos de vista e experiências
-- Aceite críticas construtivas com elegância
-- Foque no que é melhor para a comunidade
-
----
-
-## 🛠️ Como Posso Contribuir?
-
-### 🐛 Correção de Bugs
-- Identifique e corrija bugs existentes
-- Melhore tratamento de erros
-- Otimize performance
-
-### ✨ Novas Funcionalidades
-- Implemente recursos solicitados na roadmap
-- Sugira e desenvolva novas funcionalidades
-- Melhore funcionalidades existentes
-
-### 📚 Documentação
-- Melhore documentação existente
-- Crie tutoriais e guias
-- Traduza documentação
-- Corrija erros de digitação
-
-### 🎨 Interface e UX
-- Melhore design e usabilidade
-- Implemente responsividade
-- Otimize acessibilidade
-- Crie componentes reutilizáveis
-
-### 🧪 Testes
-- Escreva testes unitários
-- Crie testes de integração
-- Melhore cobertura de testes
-- Teste em diferentes navegadores
-
-### 🤖 Inteligência Artificial
-- Melhore prompts do chatbot
-- Otimize respostas da IA
-- Implemente novos modelos
-- Melhore processamento de linguagem natural
-
----
-
-## ⚙️ Configuração do Ambiente
-
-### Pré-requisitos
-- **Node.js** 18.0.0 ou superior
-- **npm** ou **yarn**
-- **Git**
-- Editor de código (recomendado: **VSCode**)
-
-### Configuração Inicial
-
-1. **Fork e Clone**
-   \`\`\`bash
-   git clone https://github.com/seu-usuario/kontrollar.git
-   cd kontrollar
-   \`\`\`
-
-2. **Instale Dependências**
-   \`\`\`bash
-   npm install
-   # ou
-   yarn install
-   \`\`\`
-
-3. **Configuração de Ambiente**
-   \`\`\`bash
-   cp .env.example .env
-   # Configure suas variáveis de ambiente
-   \`\`\`
-
-4. **Inicie o Servidor de Desenvolvimento**
-   \`\`\`bash
-   npm run dev
-   # ou
-   yarn dev
-   \`\`\`
+# 4. Inicie o servidor
+node server.js
+\`\`\`
 
 ### Estrutura do Projeto
+
 \`\`\`
-kontrollar/
-├── src/
-│   ├── components/     # Componentes reutilizáveis
-│   ├── pages/         # Páginas da aplicação
-│   ├── styles/        # Arquivos CSS
-│   ├── scripts/       # Scripts JavaScript
-│   └── assets/        # Imagens e recursos
-├── docs/              # Documentação
-├── tests/             # Testes automatizados
-└── server/            # Servidor Node.js (IA)
-\`\`\`
-
----
-
-## 🚀 Processo de Desenvolvimento
-
-### 1. Planejamento
-- Verifique issues existentes
-- Discuta grandes mudanças antes de implementar
-- Crie ou comente na issue relacionada
-
-### 2. Desenvolvimento
-- Crie uma branch específica para sua feature
-- Faça commits pequenos e frequentes
-- Teste suas mudanças localmente
-
-### 3. Testes
-- Execute todos os testes existentes
-- Adicione novos testes quando necessário
-- Verifique se não há regressões
-
-### 4. Documentação
-- Atualize documentação relevante
-- Adicione comentários no código quando necessário
-- Atualize CHANGELOG.md se aplicável
-
----
-
-## 📝 Padrões de Código
-
-### JavaScript
-- Use **camelCase** para variáveis e funções
-- Use **PascalCase** para classes e componentes
-- Use **UPPER_SNAKE_CASE** para constantes
-- Prefira `const` e `let` ao invés de `var`
-- Use arrow functions quando apropriado
-
-\`\`\`javascript
-// ✅ Bom
-const userName = 'ferpgshy';
-const API_BASE_URL = 'https://api.example.com';
-
-const getUserData = async (userId) => {
-  // implementação
-};
-
-// ❌ Evite
-var user_name = 'ferpgshy';
-function get_user_data(user_id) {
-  // implementação
-}
+KONTROLLAR-INTRANET/
+├── ia/            # Servidor e script IA
+├── public/                # Arquivos estáticos
+├── scripts/
+│   ├── main/             # Scripts principais (dashboard, termos, etc.)
+│   └── utils/            # Utilitários (modal, data-bus, etc.)
+├── styles/               # CSS modularizado
+└── *.html               # Páginas da aplicação
 \`\`\`
 
-### CSS
-- Use **kebab-case** para classes
-- Siga metodologia BEM quando apropriado
-- Mantenha especificidade baixa
-- Use variáveis CSS para cores e espaçamentos
+## 🎯 Como Contribuir
 
-\`\`\`css
-/* ✅ Bom */
-.user-profile {
-  background-color: var(--primary-color);
-}
+### 🐛 Reportando Bugs
 
-.user-profile__avatar {
-  border-radius: 50%;
-}
+**Antes de reportar:**
+- Verifique se já existe uma issue similar
+- Teste na versão mais recente
+- Reproduza o erro consistentemente
 
-/* ❌ Evite */
-.UserProfile {
-  background-color: #000000;
-}
+**Template de Bug:**
+\`\`\`markdown
+## 🐛 Bug Report
+
+**Descrição:** O que aconteceu?
+**Esperado:** O que deveria acontecer?
+**Passos:** Como reproduzir?
+**Ambiente:** Navegador, OS, versão
+
+**Screenshots/Logs:** (se aplicável)
 \`\`\`
 
-### HTML
-- Use HTML semântico
-- Mantenha acessibilidade em mente
-- Use atributos `alt` em imagens
-- Estruture conteúdo logicamente
+### ✨ Sugerindo Funcionalidades
 
----
+\`\`\`markdown
+## 💡 Feature Request
 
-## 🔄 Processo de Pull Request
+**Problema:** Que problema isso resolve?
+**Solução:** Como você imagina a funcionalidade?
+**Benefício:** Por que isso é importante?
+**Alternativas:** Outras opções consideradas?
+\`\`\`
 
-### 1. Preparação
+### 🔧 Desenvolvendo
+
+#### 1. Preparação
 \`\`\`bash
 # Crie uma branch para sua feature
-git checkout -b feature/nova-funcionalidade
-
-# ou para correção de bug
-git checkout -b fix/correcao-bug
+git checkout -b feature/nome-da-feature
+# ou para correções
+git checkout -b fix/nome-do-bug
 \`\`\`
 
-### 2. Desenvolvimento
-\`\`\`bash
-# Faça suas mudanças
-git add .
-git commit -m "feat: adiciona nova funcionalidade de filtro"
+#### 2. Padrões de Código
 
-# Mantenha sua branch atualizada
-git fetch origin
-git rebase origin/main
+**JavaScript:**
+\`\`\`javascript
+// ✅ Use camelCase para variáveis e funções
+const userName = 'fernando';
+const getUserData = () => { /* ... */ };
+
+// ✅ Use const/let, evite var
+const API_URL = 'https://api.example.com';
+let currentUser = null;
+
+// ✅ Funções arrow quando apropriado
+const handleClick = (event) => {
+    event.preventDefault();
+    // lógica aqui
+};
 \`\`\`
 
-### 3. Envio
-\`\`\`bash
-# Envie sua branch
-git push origin feature/nova-funcionalidade
+**CSS:**
+\`\`\`css
+/* ✅ Use kebab-case para classes */
+.user-dashboard {
+    background: var(--bg-primary);
+}
+
+/* ✅ Organize por componente */
+.dashboard-header { /* ... */ }
+.dashboard-content { /* ... */ }
+.dashboard-sidebar { /* ... */ }
 \`\`\`
 
-### 4. Pull Request
-- Use título descritivo e claro
-- Descreva as mudanças realizadas
-- Referencie issues relacionadas
-- Adicione screenshots se aplicável
-- Marque reviewers apropriados
-
-### Template de PR
-\`\`\`markdown
-## Descrição
-Breve descrição das mudanças realizadas.
-
-## Tipo de Mudança
-- [ ] Bug fix
-- [ ] Nova funcionalidade
-- [ ] Breaking change
-- [ ] Documentação
-
-## Como Testar
-1. Passos para testar
-2. Comportamento esperado
-
-## Screenshots
-(se aplicável)
-
-## Checklist
-- [ ] Código segue padrões do projeto
-- [ ] Testes passando
-- [ ] Documentação atualizada
+**HTML:**
+\`\`\`html
+<!-- ✅ Use HTML semântico -->
+<main class="dashboard-main">
+    <header class="dashboard-header">
+        <h1>Dashboard</h1>
+    </header>
+    <section class="dashboard-content">
+        <!-- conteúdo -->
+    </section>
+</main>
 \`\`\`
 
----
+#### 3. Commits
 
-## 🐛 Reportando Bugs
-
-### Antes de Reportar
-- Verifique se o bug já foi reportado
-- Teste na versão mais recente
-- Colete informações do ambiente
-
-### Template de Bug Report
-\`\`\`markdown
-**Descrição do Bug**
-Descrição clara e concisa do problema.
-
-**Passos para Reproduzir**
-1. Vá para '...'
-2. Clique em '...'
-3. Role para baixo até '...'
-4. Veja o erro
-
-**Comportamento Esperado**
-O que deveria acontecer.
-
-**Screenshots**
-Se aplicável, adicione screenshots.
-
-**Ambiente:**
-- OS: [ex: Windows 10]
-- Navegador: [ex: Chrome 91]
-- Versão: [ex: 1.2.3]
-\`\`\`
-
----
-
-## 💡 Sugerindo Melhorias
-
-### Template de Feature Request
-\`\`\`markdown
-**Sua sugestão está relacionada a um problema?**
-Descrição clara do problema.
-
-**Descreva a solução que você gostaria**
-Descrição clara e concisa da funcionalidade.
-
-**Descreva alternativas consideradas**
-Outras soluções ou funcionalidades consideradas.
-
-**Contexto Adicional**
-Qualquer outro contexto ou screenshots.
-\`\`\`
-
----
-
-## 🎯 Convenções de Commit
-
-Use [Conventional Commits](https://www.conventionalcommits.org/):
+Use [Conventional Commits](https://conventionalcommits.org/):
 
 \`\`\`bash
 # Tipos principais
 feat: nova funcionalidade
 fix: correção de bug
 docs: documentação
-style: formatação
-refactor: refatoração
+style: formatação/CSS
+refactor: refatoração de código
+perf: melhoria de performance
 test: testes
-chore: tarefas de manutenção
 
 # Exemplos
-git commit -m "feat: adiciona filtro por data no dashboard"
-git commit -m "fix: corrige bug de validação no formulário"
-git commit -m "docs: atualiza guia de instalação"
+git commit -m "feat: adiciona filtro de data no dashboard"
+git commit -m "fix: corrige bug de login no mobile"
+git commit -m "style: melhora responsividade da página de termos"
 \`\`\`
 
----
+#### 4. Pull Request
 
-## 🏷️ Versionamento
+**Checklist antes do PR:**
+- [ ] Código testado localmente
+- [ ] Segue padrões do projeto
+- [ ] Documentação atualizada (se necessário)
+- [ ] Commits organizados e descritivos
 
-O projeto segue [Semantic Versioning](https://semver.org/):
-- **MAJOR**: mudanças incompatíveis
-- **MINOR**: funcionalidades compatíveis
-- **PATCH**: correções compatíveis
+**Template de PR:**
+\`\`\`markdown
+## 📋 Resumo
+Breve descrição das mudanças.
 
----
+## 🔄 Tipo de Mudança
+- [ ] 🐛 Bug fix
+- [ ] ✨ Nova funcionalidade  
+- [ ] 💄 Melhoria de UI/UX
+- [ ] 📚 Documentação
+- [ ] ⚡ Performance
+- [ ] 🔧 Refatoração
 
-## 🌟 Reconhecimento
+## 🧪 Como Testar
+1. Passos para testar
+2. Comportamento esperado
+
+## 📸 Screenshots
+(se aplicável)
+
+## 📝 Notas Adicionais
+Informações extras para os reviewers.
+\`\`\`
+
+## 🎨 Diretrizes de Design
+
+### Cores
+- **Primária:** Preto (#000000)
+- **Secundária:** Branco (#FFFFFF)  
+- **Acentos:** Tons de cinza (#333, #666, #999)
+- **Estados:** Verde (sucesso), Vermelho (erro), Azul (info)
+
+### Tipografia
+- **Títulos:** Font-weight 600-700
+- **Corpo:** Font-weight 400-500
+- **Hierarquia:** h1 > h2 > h3 > p
+
+### Layout
+- **Mobile-first:** Sempre comece pelo mobile
+- **Espaçamento:** Use múltiplos de 8px (8, 16, 24, 32)
+- **Breakpoints:** 768px (tablet), 1024px (desktop)
+
+## 🧪 Testes
+
+### Testes Manuais
+- Teste em diferentes navegadores (Chrome, Firefox, Safari)
+- Verifique responsividade (mobile, tablet, desktop)
+- Teste funcionalidades críticas (login, dashboard, etc.)
+
+### Checklist de Qualidade
+- [ ] Funciona em mobile
+- [ ] Funciona em diferentes navegadores
+- [ ] Performance adequada
+- [ ] Acessibilidade básica
+- [ ] Sem erros no console
+
+## 📞 Suporte
+
+### Contato
+- **Email:** fernando.garcia2505@hotmail.com
+- **Issues:** Para bugs e sugestões
+- **Discussions:** Para dúvidas gerais
+
+### Tempo de Resposta
+- **Issues/PRs:** 24-48 horas
+- **Dúvidas:** 1-3 dias úteis
+
+## 🏆 Reconhecimento
 
 Contribuidores são reconhecidos:
-- Lista de contribuidores no README
-- Menção em releases
-- Badge de contribuidor
-- Agradecimentos especiais
-
----
-
-## 📞 Comunidade e Suporte
-
-### Canais de Comunicação
-- **Issues**: Para bugs e sugestões
-- **Discussions**: Para perguntas gerais
-- **Email**: ferpgshy@example.com
-
-### Horários de Resposta
-- Issues: 24-48 horas
-- Pull Requests: 48-72 horas
-- Discussões: 1-3 dias
-
----
-
-## 🙏 Agradecimentos
-
-Obrigado por contribuir com o **Kontrollar**! Sua participação ajuda a tornar este projeto melhor para toda a comunidade.
-
-Juntos, vamos construir uma ferramenta de controle e organização excepcional! 🚀
-
----
+- 📝 Lista no README
+- 🏷️ Menção em releases
+- 🌟 Badge de contribuidor
 
 ## 📄 Licença
 
-Ao contribuir, você concorda que suas contribuições serão licenciadas sob a mesma licença do projeto.
+Ao contribuir, você concorda que suas contribuições seguirão a licença MIT Personalizada do projeto.
+
+---
+
+**Obrigado por contribuir! 🚀**
+
+Sua ajuda torna o Kontrollar melhor para toda a comunidade.
