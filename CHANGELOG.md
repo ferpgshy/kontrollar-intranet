@@ -256,5 +256,3 @@ Ao contribuir, você concorda com a **Licença MIT Personalizada** do projeto. V
 ---
 
 **Obrigado por contribuir!** Sua ajuda melhora o Kontrollar para toda a comunidade. 🚀
-
-```
