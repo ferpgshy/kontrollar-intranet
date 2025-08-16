@@ -1,344 +1,213 @@
-
 # Changelog
 
-## Auth (Login)
+Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
-* **Inputs padronizados**
+O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
+e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
-  * Altura fixa de `44px` e largura `100%` aplicada a todos os campos (`email` e `senha`).
-  * Padding e `line-height` revisados para consistência visual.
-  * Foco com borda preta + leve `box-shadow` para feedback claro.
+## [Não Lançado]
 
-* **Campo de senha**
+### 🔄 Em Desenvolvimento
+- Melhorias de acessibilidade
+- Otimizações de performance
 
-  * Estrutura com `.input-group` criada para abrigar o botão “olho”.
-  * `padding-right` aplicado no input de senha para evitar sobreposição de texto com o ícone.
-  * Garantida altura idêntica ao campo de email.
+---
 
-* **Botão “olho”**
+## [3.0.0] - 2025-01-16
 
-  * Reposicionado com `top: 50%` + `transform: translateY(-50%)` para centralização vertical.
-  * Forçada cor **preta** (`#000`) e `stroke-width: 2.5` no SVG para máxima visibilidade.
-  * `hover` altera suavemente para `#333`, mantendo contraste.
-  * Removida dependência de `.icon` global para não herdar estilos indesejados.
+### ✨ Adicionado
 
-* **Labels e espaçamento**
+#### **Sistema de Autenticação (Login)**
+- **Inputs padronizados**: Altura fixa de `44px` e largura `100%` aplicada a todos os campos
+- **Campo de senha aprimorado**: 
+  - Estrutura com `.input-group` para abrigar o botão "olho"
+  - `padding-right` aplicado para evitar sobreposição de texto com ícone
+- **Botão "olho" melhorado**:
+  - Reposicionado com `top: 50%` + `transform: translateY(-50%)`
+  - Cor preta forçada (`#000`) com `stroke-width: 2.5` no SVG
+  - Hover suave alterando para `#333`
 
-  * `.label` exibida como `block` com espaçamento inferior consistente.
-  * `.form-group` padronizado com `margin-bottom: 14px`.
+#### **Sistema de Configurações**
+- **Confirmações de segurança**: 
+  - Ação de "Limpar dados" com `confirmarModal`
+  - Exclusão de conta com duas confirmações sequenciais
+  - Salvamento de configurações com confirmação
+- **Aba flutuante (Assistente Premium)**:
+  - Botão convertido em aba lateral retrátil com seta
+  - Comportamento acessível: fecha com ESC ou clique fora
 
-* **Compatibilidade**
+#### **Sistema de Avisos**
+- **Vínculo com Equipes e Projetos**:
+  - Novos campos no modal com checkboxes + busca
+  - Renderização de "chips" das equipes/projetos no card
+  - Helpers: `getTeamOptions()`, `getProjectOptions()`, `resolveTeamNamesFromIds()`
+- **Filtros avançados**: `filterNotices()` com re-renderização dinâmica
 
-  * Overrides aplicados em `auth.css`, isolados apenas à tela de login.
-  * Nenhum impacto em outros módulos que usam `.icon` ou `.input`.
+#### **Sistema de Perfil**
+- **Dados reais do usuário**: Departamento, Cargo, Telefone, Fuso, Notificações
+- **Upload de avatar**: Suporte a dataURL e remoção
+- **Métricas pessoais**: `computeUserStats()` com tolerância aprimorada
 
-## Configurações
+#### **Sistema de Notificações Global**
+- **Módulo `Notifs` extraído**: API completa com `initUI()`, `add()`, `addMany()`
+- **Badge dinâmico**: Contador que some quando zero
+- **Painel com ícones**: Ações de "marcar tudo como lido" e "limpar tudo"
+- **Integração com Backlog**: Notificações automáticas para novas tarefas
 
-* **Confirmações adicionadas**
+#### **Sistema de Chats**
+- **Seleção de participantes**: Busca por nome e adição manual
+- **Política de envio**: Modo "apenas administradores podem enviar"
+- **Helpers de usuários**: `getAllKnownUsers()`, `canUserPost()`
 
-  * Ação de **Limpar dados** agora exibe `confirmarModal` antes de prosseguir.
-  * Exclusão de conta exige **duas confirmações** sequenciais, prevenindo ações acidentais.
-  * Salvamento de configurações passa por `confirmarModal`, garantindo intenção do usuário.
+### 🔧 Melhorado
 
-* **Alertas padronizados**
+#### **Gestão de Datas**
+- **Módulo `date-utils.js`**: 
+  - `getDataBrasiliaFormatada()` corrige timezone de Brasília
+  - `formatarDataPtBR()` para formatação consistente
+- **Correção "data -1 dia"**: `publishedAt` usa timezone correto
 
-  * Todos os `alert()` nativos substituídos por `alertModal`, mantendo consistência visual.
-  * Mensagens de sucesso (como “Dados limpos” e “Conta excluída”) agora usam modal estilizado.
-  * Notificação negada pelo navegador exibe `alertModal` com título e descrição claros.
+#### **Dropdowns de Ação**
+- **Equipes**: `toggleTeamMenu()` com fechamento por ESC e clique fora
+- **Projetos**: `abrirMenuProjeto()` com comportamento consistente  
+- **Tarefas**: `abrirMenuTarefas()` com limpeza de listeners
 
-* **Botões**
+#### **Dashboard**
+- **Card "Equipes & Parceiros"**: 
+  - Estatísticas com `getTeamsPartnersStats()`
+  - Chips por equipe com `updateTeamsStatCard()`
 
-  * Criada regra global de `min-width` para `.btn`, assegurando largura mínima consistente.
-  * Botões “Excluir”, “Limpar” e “Exportar” agora mantêm padrão visual e proporcionalidade.
+#### **Estado Global e Persistência**
+- **Inicialização garantida**: `window.equipes`, `window.projetos`, `window.avisos`
+- **Fallback triplo**: Para `getTeamOptions()` e `getProjectOptions()`
 
-* **Entrada de fuso horário**
+### 🐛 Corrigido
 
-  * Campo `#timezoneSelect` recebeu o mesmo estilo aplicado aos outros inputs.
-  * Garantida consistência de altura, borda e espaçamento.
+#### **Autenticação**
+- **Compatibilidade**: Overrides isolados em `auth.css`
+- **Herança de estilos**: Removida dependência de `.icon` global
 
-* **Aba flutuante (Assistente Premium)**
+#### **Configurações**  
+- **Alertas padronizados**: Todos os `alert()` substituídos por `alertModal`
+- **Entrada de fuso horário**: Estilo consistente com outros inputs
 
-  * Botão flutuante convertido em **aba lateral retrátil** com seta.
-  * Ao clicar, seta gira e painel expande lateralmente (`aside`).
-  * Comportamento acessível: fecha ao clicar fora ou pressionar `ESC`.
+#### **Avisos**
+- **Bug de criação**: Agora faz `push` correto no array e persiste
+- **Sanitização**: Fallback `S_NOTICE` para prevenir XSS
+- **Exclusão**: `deleteNotice()` atualiza `window.avisos` e localStorage
 
-# Avisos
+#### **Chats**
+- **Prevenção de nulidade**: Guards em elementos DOM críticos
+- **Bloqueio de envio**: Aplicado corretamente com `canUserPost()`
 
-* Corrigido “data -1 dia”: `publishedAt` agora usa `getDataBrasiliaFormatada()` (yyyy-mm-dd) e exibição via `formatarDataPtBR()`.
-* Vínculo de Avisos com Equipes e Projetos:
+### 🎨 Design
 
-  * Novos campos no modal (criação/edição) com checkboxes + busca.
-  * Renderização de “chips” das equipes/projetos no card do aviso.
-  * Helpers: `getTeamOptions()`, `getProjectOptions()`, `resolveTeamNamesFromIds()`, `resolveProjectNamesFromIds()`.
-* Estado/Persistência:
+#### **Padronização Visual**
+- **Botões**: Regra global de `min-width` para `.btn`
+- **Labels e espaçamento**: `.form-group` padronizado com `margin-bottom: 14px`
+- **Foco**: Borda preta + `box-shadow` para feedback claro
 
-  * `window.equipes`, `window.projetos`, `window.avisos` inicializados a partir do `localStorage`.
-  * `deleteNotice()` refeito para atualizar `window.avisos` + `localStorage`.
-* UI/Segurança:
+### 📋 Estrutura de Arquivos
 
-  * `renderNoticeCard()` unificado para gerar cards.
-  * Sanitização simples via `S_NOTICE` em campos sensíveis.
-* Filtros:
-
-  * `filterNotices()` agora filtra em `window.avisos` e re-renderiza com `generateNoticeCardsFromArray()`.
-
-# Perfil
-
-* Removidas “Preferências” duplicadas (ficam só nas Configurações).
-* “Seu resumo” agora puxa dados reais do usuário:
-
-  * Departamento, Cargo, Telefone, Fuso, Notificações (email/push).
-* Melhorias de base do usuário:
-
-  * `getSafeUser()` (default + `createdAt` + `settings`).
-  * Upload/remoção de avatar (dataURL) e iniciais.
-  * Split/join de nome (`splitName`/`joinName`).
-  * Máscara de telefone `maskPhone()`.
-  * Barra de força de senha (`pwdStrengthScore()` + feedback).
-* Métricas pessoais:
-
-  * `computeUserStats()` mais tolerante (match por nome/email e por formatos variados de membros/responsável).
-
-# Configurações
-
-* Mantido como fonte única de preferências (tema, notificações, idioma/fuso etc.).
-* Perfil exibe os valores salvos, mas não duplica a edição.
-
-# Notificações (módulo global `Notifs`)
-
-* Extraído para **`notificacao.js`**:
-
-  * API: `Notifs.initUI()`, `Notifs.add()`, `Notifs.addMany()`, `Notifs.readAll()`, `Notifs.clear()`.
-  * Badge (contador) dinâmico; some quando 0 (sem “3” hardcoded).
-  * Painel com **ícones** de ação no header: “marcar tudo como lido” e “limpar tudo”.
-  * Clique nas notificações chama callbacks (ex.: navegar para páginas).
-* Integração no app:
-
-  * Em `app.js` trocamos o handler antigo por `Notifs.initUI({ bellSelector, panelSelector, closeSelector, listSelector })`.
-  * Confirm de “limpar todas” passou a usar `confirmarModal(...)` (mesmo padrão dos modais do app).
-
-# Backlog (integração com Notificações)
-
-* Ao criar um novo backlog/tarefa, adiciona notificação via `Notifs.add({ type:'task', title:'Nova tarefa', message:..., onClick: () => ... })`.
-* Ajustes de persistência/estilo mantidos.
-
-# Datas & Utils
-
-* Criado **`date-utils.js`** com:
-
-  * `getDataBrasiliaFormatada()` (corrige timezone de Brasília, yyyy-mm-dd).
-  * `formatarDataPtBR()`.
-* Centralização de helpers de label/estilo/modal separados (conforme seus arquivos `utils`).
-
-# Deleções com modal
-
-* Padronizado o padrão de confirmação assíncrona:
-
-  * `deleteNotice()` e outros handlers agora usam `confirmarModal({ title, message })` antes de executar, como no exemplo de projetos/equipes.
-
-# Ordem de scripts
-
+#### **Ordem de Scripts Recomendada**
 1. `scripts/utils/date-utils.js`
-2. (outros utils) `label.js`, `styles.js`, `modal.js`
+2. `scripts/utils/label.js`, `styles.js`, `modal.js`
 3. `scripts/notificacao.js`
 4. `scripts/app.js`
-5. mains: `dashboard.js`, `projetos.js`, `backlogs.js`, `calendario.js`, `chats.js`, `equipes.js`, `avisos.js`, `perfil.js`, `configs.js`
+5. **Mains**: `dashboard.js`, `projetos.js`, `backlogs.js`, `calendario.js`, `chats.js`, `equipes.js`, `avisos.js`, `perfil.js`, `configs.js`
 
-> Objetivo: garantir que utils e Notifs existam antes do app e das telas.
+### 🔒 Modelo de Dados
 
-# Base / Helpers
+#### **Chat (compatível)**
+\`\`\`javascript
+{
+  id: string,
+  name: string,
+  type: "public" | "private",
+  members: string[],
+  admins: string[], // NOVO
+  policies: { posting: "all" | "admins" }, // NOVO
+  messages: array
+}
+\`\`\`
 
-* **Data de Brasília (corrige “um dia antes”)**
+#### **Avisos**
+\`\`\`javascript
+{
+  teamIds: string[], // NOVO
+  projectIds: string[], // NOVO
+  publishedAt: string, // Corrigido timezone
+  // ... campos existentes
+}
+\`\`\`
 
-  * Trocado uso de `new Date().toISOString().split("T")[0]` por **`getDataBrasiliaFormatada()`** nas criações (equipes, projetos, avisos).
-  * Exibição padronizada com **`formatarDataPtBR(yyyy-mm-dd)`**.
+### ⚠️ Pontos de Atenção
 
-* **Sanitização**
+#### **Após Operações CRUD**
+1. Atualize o array em `window.*`
+2. Execute `localStorage.setItem(...)`
+3. Re-renderize a área correspondente
+4. Se no dashboard, execute `updateTeamsStatCard()`
 
-  * Adicionado fallback `S_NOTICE` para evitar XSS em strings renderizadas nos avisos.
-
-* **Estado global / persistência**
-
-  * Inicialização garantida (antes de usar qualquer função):
-
-    ```js
-    window.equipes  = window.equipes  || JSON.parse(localStorage.getItem("equipes")  || "[]");
-    window.projetos = window.projetos || JSON.parse(localStorage.getItem("projetos") || "[]");
-    window.avisos   = window.avisos   || JSON.parse(localStorage.getItem("avisos")   || "[]");
-    ```
-  * Lembrete: sempre que criar/editar/excluir, fazer `localStorage.setItem("<coleção>", JSON.stringify(window.<coleção>))`.
-
----
-
-# Equipes
-
-* **Dropdown de ações (menu de equipe)**
-
-  * `window.toggleTeamMenu(teamId)` reescrito:
-
-    * Fecha ao clicar fora e ao pressionar **ESC**.
-    * Evita conflitos entre múltiplos menus usando `menu._close`.
-    * Corrigido seletor para cartões com `data-equipe-id` (antes o código misturava `data-team-id`).
-  * Ao confirmar exclusão, chama `deleteTeam(teamId)` (garanta que a função exista com esse nome) e depois re-render:
-
-    * `loadEquipesContent()` e opcionalmente `updateTeamsStatCard()` (dashboard).
-
-* **Criação/edição de equipes**
-
-  * Adicionada lógica (quando implementado no modal) para **selecionar projetos existentes** (checkbox + busca).
-  * Bug “não aparecem projetos na criação de equipe” corrigido ao **buscar projetos** de `window.projetos` com fallback para variável global/localStorage (ver seção *Funções utilitárias*).
+#### **Funções Utilitárias Críticas**
+- **getSafeUser()**: Default + `createdAt` + `settings`
+- **S_NOTICE**: Sanitização simples para HTML
+- **maskPhone()**: Máscara de telefone
+- **pwdStrengthScore()**: Barra de força de senha
 
 ---
 
-# Projetos
+## [2.0.0] - 2025-01-16
 
-* **Dropdown de ações (menu do projeto)**
+### ✨ Adicionado
+- **Navegação lateral fixa**: Índice permanece visível durante o scroll na lateral esquerda
+- **Scroll tracking inteligente**: Navegação automática que acompanha a posição da página
+- **Design moderno preto e branco**: Esquema de cores elegante com alto contraste
+- **Conteúdo expandido**: 4 novas seções adicionadas aos termos de uso
+  - Segurança de Dados e Sistemas
+  - Suporte Técnico e Atendimento
+  - Conformidade Legal e Regulamentações
+  - Casos de Força Maior
+- **Cards informativos**: Elementos visuais destacados para melhor organização
+- **Responsividade aprimorada**: Layout adaptável para diferentes tamanhos de tela
 
-  * `window.abrirMenuProjeto(projectId)` atualizado para:
+### 🔧 Melhorado
+- **Aproveitamento de espaço**: Cards agora utilizam toda a largura disponível da tela
+- **Experiência de navegação**: Transições suaves entre seções
+- **Hierarquia visual**: Melhor organização do conteúdo com tipografia aprimorada
+- **Performance**: Otimização da detecção de seções ativas durante o scroll
 
-    * Fechar ao **clicar fora** e com **ESC**.
-    * Evitar menus múltiplos abertos.
-  * Exclusão mantém confirmação e re-render da lista.
-
----
-
-# Tarefas
-
-* **Dropdown de ações (menu da tarefa)**
-
-  * `window.abrirMenuTarefas(taskId)` idem: fecha ao clicar fora/ESC e garante limpeza de listeners.
-
----
-
-# Dashboard
-
-* **Novo card “Equipes & Parceiros”**
-
-  * Card com `<span id="totalTeams">` e `<strong id="totalPartners">` + chips por equipe.
-  * Novas funções:
-
-    * `_sanitize` (fallback).
-    * `getTeamsPartnersStats(equipes)` – total de equipes, soma de membros e breakdown por equipe.
-    * `updateTeamsStatCard()` – injeta totais e chips no card.
-  * **Chamar** `updateTeamsStatCard()` após `carregarConteudoDashboard()` e sempre que criar/editar/excluir equipes.
+### 🐛 Corrigido
+- **Movimentação bugada**: Resolvido problema de scroll que voltava posições aleatoriamente
+- **Índice não fixo**: Corrigido posicionamento para manter visibilidade constante
+- **Conflitos de scroll**: Removido listener temporariamente durante navegação por clique
 
 ---
 
-# Avisos
-
-* **Renderização**
-
-  * `renderNoticeCard(notice)` agora:
-
-    * Mostra **chips de equipes** e **chips de projetos** vinculados.
-    * Datas via `formatarDataPtBR`.
-    * Sanitização via `S_NOTICE`.
-
-* **Seleção de Equipes/Projetos nos modais**
-
-  * `showNewNoticeModal()` e `editNotice()` agora exibem **listas com busca** (checkbox) para vincular **equipes** e **projetos**.
-  * IDs salvos em `notice.teamIds` e `notice.projectIds`.
-
-* **Busca de dados confiável**
-
-  * `getTeamOptions()` e `getProjectOptions()` passaram a ter **fallback**:
-
-    * Usam `window.equipes`/`window.projetos` se existirem e tiverem itens;
-    * Senão, usam variáveis globais `equipes`/`projetos` (se existirem);
-    * Senão, carregam do `localStorage`.
-  * Isso resolveu o “não mostra nada na lista” quando `window.*` ainda não estava populado.
-
-* **Criação de aviso**
-
-  * Corrigido **bug**: agora faz **push** no array e persiste:
-
-    ```js
-    (window.avisos ||= []);
-    window.avisos.push(newNotice);
-    localStorage.setItem("avisos", JSON.stringify(window.avisos));
-    ```
-  * `publishedAt` agora com **`getDataBrasiliaFormatada()`**.
-  * Mantida `expiresAt` do `<input type="date">`.
-
-* **Edição de aviso**
-
-  * Atualiza campos + `teamIds` e `projectIds`.
-  * Re-render ao salvar.
-
-* **Filtro e exclusão**
-
-  * `filterNotices()` agora usa `(window.avisos || [])`.
-  * `deleteNotice()` atualiza `window.avisos`, **persiste no localStorage** e re-renderiza.
+## [1.0.0] - Data anterior
+### Inicial
+- Versão básica da página de termos
+- Estrutura HTML, CSS e JS simples
+- Conteúdo básico de termos de uso
 
 ---
 
-# Funções utilitárias adicionadas/ajustadas
+## 🚀 Guia de Migração
 
-* **getTeamOptions() / getProjectOptions()** (com fallback triplo).
-* **resolveTeamNamesFromIds() / resolveProjectNamesFromIds()** (mapeiam IDs → nomes).
-* **S\_NOTICE** (sanitização simples para HTML).
+### De 2.x para 3.x
+- **Chats**: Novos campos `admins` e `policies` são opcionais (defaults aplicados)
+- **Avisos**: Campos `teamIds` e `projectIds` são opcionais
+- **Scripts**: Seguir nova ordem de carregamento recomendada
+
+### De 1.x para 2.x
+- **CSS**: Verificar compatibilidade com novo esquema de cores
+- **JavaScript**: Atualizar referências de navegação se customizadas
 
 ---
 
-# Pontos de atenção (para não esquecer)
+## 📞 Suporte
 
-* Depois de **criar/editar/excluir** qualquer coisa em `equipes`, `projetos` ou `avisos`, sempre:
-
-  1. Atualize o array em `window.*`;
-  2. Faça `localStorage.setItem(...)`;
-  3. Re-renderize a área correspondente (`loadEquipesContent()`, filtros de projetos/avisos, etc.);
-  4. Se estiver no dashboard, rode `updateTeamsStatCard()`.
-
-## Adicionado
-
-* **Seleção de participantes na criação do chat**
-
-  * Busca por nome e **adição manual** de usuários.
-  * Checkboxes por usuário: **Participa** e **Adm**.
-  * O criador entra **automaticamente** e fica **travado como administrador**.
-* **Política de envio (“apenas leitura”)**
-
-  * Opção **Apenas administradores podem enviar** (modo leitura) no modal de criação.
-  * Envio é bloqueado para não-admins quando ativo.
-* **Helpers**
-
-  * `getAllKnownUsers()` — consolida nomes de `localStorage.users`, dos chats existentes e do usuário atual.
-  * `canUserPost(chat, userName)` — checa permissão de envio conforme a política.
-  * `showToast(msg)` — placeholder para feedback (substituível pelo seu sistema de toast).
-
-## Alterado
-
-* **UI do input de mensagens**
-
-  * Desativa **input** e **botão Enviar** quando o chat está em modo somente admins, com placeholder explicativo.
-* **Criação de chat**
-
-  * Persistência dos novos campos no objeto do chat: `admins` e `policies.posting`.
-  * Persistência de `chatGrupos` no `localStorage` após criar.
-* **Indicador de tipo**
-
-  * Badge do tipo do chat agora possui **tooltip** (“Público” / “Privado”).
-
-## Corrigido / Robustez
-
-* **Prevenção de nulidade no DOM**
-
-  * Guards adicionados em elementos como `currentChatName`, `chatMessages`, `chatInput`, `leaveChatBtn`, evitando erros do tipo “Cannot set properties of null”.
-
-## Modelo de Dados (compatível)
-
-* Objeto `chat` agora inclui:
-
-  * `admins: string[]`
-  * `policies: { posting: "all" | "admins" }`
-* Campos existentes (`id`, `name`, `type`, `members`, `messages`) **inalterados**.
-
-## Notas de Implementação
-
-* **Fonte de usuários**: `getAllKnownUsers()` usa `localStorage.users` (string\[] ou `{name:string}[]`) + membros/admins dos grupos existentes + usuário atual.
-* **Bloqueio de envio**: aplicado em `setupMessageSending()` usando `canUserPost()`.
-* **UX**: Em `chatSelecionado()`, input/Enviar são (des)ativados de acordo com a política do chat.
-
-## Quebra de Compatibilidade
-
-* **Nenhuma.** Funciona com dados antigos após a migração acima (ou com defaults implícitos).
+Para questões sobre este changelog ou implementação:
+- Consulte a documentação técnica do projeto
+- Verifique os comentários no código para detalhes específicos
+- Teste em ambiente de desenvolvimento antes de produção
