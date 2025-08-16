@@ -1,6 +1,67 @@
 
 # Changelog
 
+## Auth (Login)
+
+* **Inputs padronizados**
+
+  * Altura fixa de `44px` e largura `100%` aplicada a todos os campos (`email` e `senha`).
+  * Padding e `line-height` revisados para consistência visual.
+  * Foco com borda preta + leve `box-shadow` para feedback claro.
+
+* **Campo de senha**
+
+  * Estrutura com `.input-group` criada para abrigar o botão “olho”.
+  * `padding-right` aplicado no input de senha para evitar sobreposição de texto com o ícone.
+  * Garantida altura idêntica ao campo de email.
+
+* **Botão “olho”**
+
+  * Reposicionado com `top: 50%` + `transform: translateY(-50%)` para centralização vertical.
+  * Forçada cor **preta** (`#000`) e `stroke-width: 2.5` no SVG para máxima visibilidade.
+  * `hover` altera suavemente para `#333`, mantendo contraste.
+  * Removida dependência de `.icon` global para não herdar estilos indesejados.
+
+* **Labels e espaçamento**
+
+  * `.label` exibida como `block` com espaçamento inferior consistente.
+  * `.form-group` padronizado com `margin-bottom: 14px`.
+
+* **Compatibilidade**
+
+  * Overrides aplicados em `auth.css`, isolados apenas à tela de login.
+  * Nenhum impacto em outros módulos que usam `.icon` ou `.input`.
+
+## Configurações
+
+* **Confirmações adicionadas**
+
+  * Ação de **Limpar dados** agora exibe `confirmarModal` antes de prosseguir.
+  * Exclusão de conta exige **duas confirmações** sequenciais, prevenindo ações acidentais.
+  * Salvamento de configurações passa por `confirmarModal`, garantindo intenção do usuário.
+
+* **Alertas padronizados**
+
+  * Todos os `alert()` nativos substituídos por `alertModal`, mantendo consistência visual.
+  * Mensagens de sucesso (como “Dados limpos” e “Conta excluída”) agora usam modal estilizado.
+  * Notificação negada pelo navegador exibe `alertModal` com título e descrição claros.
+
+* **Botões**
+
+  * Criada regra global de `min-width` para `.btn`, assegurando largura mínima consistente.
+  * Botões “Excluir”, “Limpar” e “Exportar” agora mantêm padrão visual e proporcionalidade.
+
+* **Entrada de fuso horário**
+
+  * Campo `#timezoneSelect` recebeu o mesmo estilo aplicado aos outros inputs.
+  * Garantida consistência de altura, borda e espaçamento.
+
+* **Aba flutuante (Assistente Premium)**
+
+  * Botão flutuante convertido em **aba lateral retrátil** com seta.
+  * Ao clicar, seta gira e painel expande lateralmente (`aside`).
+  * Comportamento acessível: fecha ao clicar fora ou pressionar `ESC`.
+
 # Avisos
 
 * Corrigido “data -1 dia”: `publishedAt` agora usa `getDataBrasiliaFormatada()` (yyyy-mm-dd) e exibição via `formatarDataPtBR()`.

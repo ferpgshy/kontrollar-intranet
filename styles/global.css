@@ -229,10 +229,13 @@ a {
 }
 
 .label {
-  font-size: 0.875rem;
+  display: block;           /* força ocupar a linha toda */
+  margin-bottom: 6px;       /* espaço entre label e input */
+  font-size: 0.875rem;      /* 14px */
   font-weight: 500;
-  color: #374151;
+  color: #374151;           /* cinza escuro */
 }
+
 
 .input {
   padding: 0.5rem 0.75rem;
@@ -254,20 +257,25 @@ a {
 
 .input-button {
   position: absolute;
-  right: 0;
-  top: 0;
-  height: 100%;
+  right: 0.5rem;            /* afastado da borda */
+  top: 50%;                 /* centraliza verticalmente */
+  transform: translateY(-50%);
+  height: auto;             /* deixa o botão só do tamanho do conteúdo */
   padding: 0 0.75rem;
   background: transparent;
   border: none;
   cursor: pointer;
   color: #666666;
+  display: flex;            /* centraliza ícone dentro */
+  align-items: center;
+  justify-content: center;
   transition: color 0.2s ease;
 }
 
 .input-button:hover {
-  color: #000000;
+  color: #000;              /* preto ao passar o mouse */
 }
+
 
 .checkbox-group {
   display: flex;

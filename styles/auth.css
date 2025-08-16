@@ -130,3 +130,147 @@
     gap: 0.5rem;
   }
 }
+
+/* === Login: inputs consistentes e olho alinhado === */
+
+/* Garante cálculo consistente */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+/* Labels */
+.label{display:block;margin-bottom:6px;font-size:.875rem;font-weight:500;color:#374151}
+
+/* Grupo com espaçamento */
+.form .form-group{ margin-bottom:14px; }
+
+/* Inputs com mesmo tamanho (email e senha) */
+.auth-card .input,
+.auth-card input[type="email"],
+.auth-card input[type="password"],
+.auth-card input[type="text"]{
+  width:100%;
+  height:44px;                 /* altura única */
+  padding:10px 14px;
+  font-size:14px;
+  line-height:1.4;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  background:#fff;
+  color:#0f172a;
+  outline:none;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.auth-card .input:focus{
+  border-color:#000;
+  box-shadow:0 0 0 3px rgba(0,0,0,.08);
+}
+
+/* Wrapper do campo de senha (para o botão olho) */
+.input-group{
+  position:relative;
+  width:100%;
+}
+
+/* Reserva espaço pro olho sem alterar largura total */
+.input-group .input{
+  padding-right:44px;          /* área do botão */
+  height:44px;                 /* reforça altura */
+}
+
+.input-button {
+  position: absolute;
+  inset-inline-end: .5rem;     /* distancia da borda direita */
+  inset-block-start: 50%;      /* centralizado vertical */
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: #000;                 /* preto para ficar visível */
+  transition: color 0.2s ease;
+}
+.input-button:hover {
+  color: #333;                 /* tom de preto mais suave no hover */
+}
+
+/* Força o ícone do olho a ficar maior e visível */
+.input-button .icon {
+  width: 24px !important;
+  height: 24px !important;
+  stroke: #000 !important;
+  stroke-width: 2.5 !important;
+  opacity: 1 !important;
+}
+
+
+/* Evita “estouro” visual com autofill do Chrome */
+input:-webkit-autofill{
+  -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+  -webkit-text-fill-color:#0f172a;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Força o ícone a ficar visível dentro do botão */
+.input-button {
+  color: #000 !important;                /* currentColor = preto */
+}
+
+.input-button .icon {
+  width: 20px !important;
+  height: 20px !important;
+  opacity: 1 !important;
+  stroke: #000 !important;               /* ignora heranças fracas */
+  stroke-width: 2.25 !important;         /* mais grosso */
+  fill: none !important;
+  vector-effect: non-scaling-stroke;     /* stroke nítido */
+}
+
+/* Se algum framework estiver colorindo os paths, força herdar o stroke acima */
+.input-button .icon path,
+.input-button .icon circle,
+.input-button .icon line,
+.input-button .icon polyline {
+  stroke: inherit !important;
+  fill: none !important;
+  opacity: 1 !important;
+}
+
+/* === Fix definitivo do olho (login) === */
+
+/* Garante espaço suficiente no input para o botão maior */
+.input-group .input {
+  padding-right: 56px !important; /* antes 44px; evita sobreposição */
+}
+
+/* Botão do olho: remove padding herdado e aumenta hit-area */
+.input-button {
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;               /* sobrescreve o padding do global.css */
+  color: #0f172a !important;           /* cor do traço do ícone via currentColor */
+}
+
+/* Tamanho real do ícone (SVG) — GRANDE e nítido */
+#eyeIcon,
+.input-button .icon {
+  width: 14px !important;              /* ajuste fino: 26px (pode ir a 28/30 se quiser maior) */
+  height: 14px !important;
+  display: block !important;
+}
+
+/* Traço forte e visível, sem fill */
+#eyeIcon path,
+#eyeIcon circle,
+.input-button .icon path,
+.input-button .icon circle {
+  stroke: currentColor !important;
+  stroke-width: 2.5 !important;
+  fill: none !important;
+  opacity: 1 !important;
+}
