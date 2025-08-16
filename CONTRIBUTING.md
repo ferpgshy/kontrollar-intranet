@@ -6,7 +6,6 @@ Bem-vindo ao **Kontrollar**! Este guia te ajudará a contribuir de forma efetiva
 
 ### Configuração do Ambiente
 
-\`\`\`bash
 # 1. Fork e clone o repositório
 git clone https://github.com/ferpgshy/kontrollar.git
 cd kontrollar
@@ -20,11 +19,9 @@ cp .env.example .env
 
 # 4. Inicie o servidor
 node server.js
-\`\`\`
 
 ### Estrutura do Projeto
 
-\`\`\`
 KONTROLLAR-INTRANET/
 ├── ia/            # Servidor e script IA
 ├── public/                # Arquivos estáticos
@@ -33,7 +30,6 @@ KONTROLLAR-INTRANET/
 │   └── utils/            # Utilitários (modal, data-bus, etc.)
 ├── styles/               # CSS modularizado
 └── *.html               # Páginas da aplicação
-\`\`\`
 
 ## 🎯 Como Contribuir
 
@@ -45,7 +41,7 @@ KONTROLLAR-INTRANET/
 - Reproduza o erro consistentemente
 
 **Template de Bug:**
-\`\`\`markdown
+
 ## 🐛 Bug Report
 
 **Descrição:** O que aconteceu?
@@ -54,33 +50,29 @@ KONTROLLAR-INTRANET/
 **Ambiente:** Navegador, OS, versão
 
 **Screenshots/Logs:** (se aplicável)
-\`\`\`
+
 
 ### ✨ Sugerindo Funcionalidades
 
-\`\`\`markdown
 ## 💡 Feature Request
 
 **Problema:** Que problema isso resolve?
 **Solução:** Como você imagina a funcionalidade?
 **Benefício:** Por que isso é importante?
 **Alternativas:** Outras opções consideradas?
-\`\`\`
 
 ### 🔧 Desenvolvendo
 
 #### 1. Preparação
-\`\`\`bash
+
 # Crie uma branch para sua feature
 git checkout -b feature/nome-da-feature
 # ou para correções
 git checkout -b fix/nome-do-bug
-\`\`\`
 
 #### 2. Padrões de Código
 
 **JavaScript:**
-\`\`\`javascript
 // ✅ Use camelCase para variáveis e funções
 const userName = 'fernando';
 const getUserData = () => { /* ... */ };
@@ -94,10 +86,8 @@ const handleClick = (event) => {
     event.preventDefault();
     // lógica aqui
 };
-\`\`\`
 
 **CSS:**
-\`\`\`css
 /* ✅ Use kebab-case para classes */
 .user-dashboard {
     background: var(--bg-primary);
@@ -107,10 +97,8 @@ const handleClick = (event) => {
 .dashboard-header { /* ... */ }
 .dashboard-content { /* ... */ }
 .dashboard-sidebar { /* ... */ }
-\`\`\`
 
 **HTML:**
-\`\`\`html
 <!-- ✅ Use HTML semântico -->
 <main class="dashboard-main">
     <header class="dashboard-header">
@@ -120,13 +108,11 @@ const handleClick = (event) => {
         <!-- conteúdo -->
     </section>
 </main>
-\`\`\`
 
 #### 3. Commits
 
 Use [Conventional Commits](https://conventionalcommits.org/):
 
-\`\`\`bash
 # Tipos principais
 feat: nova funcionalidade
 fix: correção de bug
@@ -140,7 +126,6 @@ test: testes
 git commit -m "feat: adiciona filtro de data no dashboard"
 git commit -m "fix: corrige bug de login no mobile"
 git commit -m "style: melhora responsividade da página de termos"
-\`\`\`
 
 #### 4. Pull Request
 
@@ -151,7 +136,6 @@ git commit -m "style: melhora responsividade da página de termos"
 - [ ] Commits organizados e descritivos
 
 **Template de PR:**
-\`\`\`markdown
 ## 📋 Resumo
 Breve descrição das mudanças.
 
@@ -172,7 +156,6 @@ Breve descrição das mudanças.
 
 ## 📝 Notas Adicionais
 Informações extras para os reviewers.
-\`\`\`
 
 ## 🎨 Diretrizes de Design
 
