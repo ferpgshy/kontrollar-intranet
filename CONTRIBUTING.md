@@ -1,218 +1,261 @@
+perfeito — segue uma versão **refatorada e mais completa** do `CONTRIBUTING.md`, pronta pra **substituir** o arquivo atual. Foquei em clareza, passo a passo, padrões de código, fluxo de Git/PR e checklists práticos.
+
+````md
 # 🤝 Contribuindo para o Kontrollar
 
-Bem-vindo ao **Kontrollar**! Este guia te ajudará a contribuir de forma efetiva para nosso sistema de intranet.
+Obrigado por querer contribuir com o **Kontrollar**! Este guia explica **como preparar o ambiente, o fluxo de contribuição, padrões de código, qualidade e PRs**.
 
-## 🚀 Início Rápido
-
-### Configuração do Ambiente
-
-# 1. Fork e clone o repositório
-git clone https://github.com/ferpgshy/kontrollar.git
-cd kontrollar
-
-# 2. Instale as dependências
-npm install
-
-# 3. Configure o ambiente
-cp .env.example .env
-# Edite o .env com suas configurações
-
-# 4. Inicie o servidor
-node server.js
-
-### Estrutura do Projeto
-
-KONTROLLAR-INTRANET/
-├── ia/            # Servidor e script IA
-├── public/                # Arquivos estáticos
-├── scripts/
-│   ├── main/             # Scripts principais (dashboard, termos, etc.)
-│   └── utils/            # Utilitários (modal, data-bus, etc.)
-├── styles/               # CSS modularizado
-└── *.html               # Páginas da aplicação
-
-## 🎯 Como Contribuir
-
-### 🐛 Reportando Bugs
-
-**Antes de reportar:**
-- Verifique se já existe uma issue similar
-- Teste na versão mais recente
-- Reproduza o erro consistentemente
-
-**Template de Bug:**
-
-## 🐛 Bug Report
-
-**Descrição:** O que aconteceu?
-**Esperado:** O que deveria acontecer?
-**Passos:** Como reproduzir?
-**Ambiente:** Navegador, OS, versão
-
-**Screenshots/Logs:** (se aplicável)
-
-
-### ✨ Sugerindo Funcionalidades
-
-## 💡 Feature Request
-
-**Problema:** Que problema isso resolve?
-**Solução:** Como você imagina a funcionalidade?
-**Benefício:** Por que isso é importante?
-**Alternativas:** Outras opções consideradas?
-
-### 🔧 Desenvolvendo
-
-#### 1. Preparação
-
-# Crie uma branch para sua feature
-git checkout -b feature/nome-da-feature
-# ou para correções
-git checkout -b fix/nome-do-bug
-
-#### 2. Padrões de Código
-
-**JavaScript:**
-// ✅ Use camelCase para variáveis e funções
-const userName = 'fernando';
-const getUserData = () => { /* ... */ };
-
-// ✅ Use const/let, evite var
-const API_URL = 'https://api.example.com';
-let currentUser = null;
-
-// ✅ Funções arrow quando apropriado
-const handleClick = (event) => {
-    event.preventDefault();
-    // lógica aqui
-};
-
-**CSS:**
-/* ✅ Use kebab-case para classes */
-.user-dashboard {
-    background: var(--bg-primary);
-}
-
-/* ✅ Organize por componente */
-.dashboard-header { /* ... */ }
-.dashboard-content { /* ... */ }
-.dashboard-sidebar { /* ... */ }
-
-**HTML:**
-<!-- ✅ Use HTML semântico -->
-<main class="dashboard-main">
-    <header class="dashboard-header">
-        <h1>Dashboard</h1>
-    </header>
-    <section class="dashboard-content">
-        <!-- conteúdo -->
-    </section>
-</main>
-
-#### 3. Commits
-
-Use [Conventional Commits](https://conventionalcommits.org/):
-
-# Tipos principais
-feat: nova funcionalidade
-fix: correção de bug
-docs: documentação
-style: formatação/CSS
-refactor: refatoração de código
-perf: melhoria de performance
-test: testes
-
-# Exemplos
-git commit -m "feat: adiciona filtro de data no dashboard"
-git commit -m "fix: corrige bug de login no mobile"
-git commit -m "style: melhora responsividade da página de termos"
-
-#### 4. Pull Request
-
-**Checklist antes do PR:**
-- [ ] Código testado localmente
-- [ ] Segue padrões do projeto
-- [ ] Documentação atualizada (se necessário)
-- [ ] Commits organizados e descritivos
-
-**Template de PR:**
-## 📋 Resumo
-Breve descrição das mudanças.
-
-## 🔄 Tipo de Mudança
-- [ ] 🐛 Bug fix
-- [ ] ✨ Nova funcionalidade  
-- [ ] 💄 Melhoria de UI/UX
-- [ ] 📚 Documentação
-- [ ] ⚡ Performance
-- [ ] 🔧 Refatoração
-
-## 🧪 Como Testar
-1. Passos para testar
-2. Comportamento esperado
-
-## 📸 Screenshots
-(se aplicável)
-
-## 📝 Notas Adicionais
-Informações extras para os reviewers.
-
-## 🎨 Diretrizes de Design
-
-### Cores
-- **Primária:** Preto (#000000)
-- **Secundária:** Branco (#FFFFFF)  
-- **Acentos:** Tons de cinza (#333, #666, #999)
-- **Estados:** Verde (sucesso), Vermelho (erro), Azul (info)
-
-### Tipografia
-- **Títulos:** Font-weight 600-700
-- **Corpo:** Font-weight 400-500
-- **Hierarquia:** h1 > h2 > h3 > p
-
-### Layout
-- **Mobile-first:** Sempre comece pelo mobile
-- **Espaçamento:** Use múltiplos de 8px (8, 16, 24, 32)
-- **Breakpoints:** 768px (tablet), 1024px (desktop)
-
-## 🧪 Testes
-
-### Testes Manuais
-- Teste em diferentes navegadores (Chrome, Firefox, Safari)
-- Verifique responsividade (mobile, tablet, desktop)
-- Teste funcionalidades críticas (login, dashboard, etc.)
-
-### Checklist de Qualidade
-- [ ] Funciona em mobile
-- [ ] Funciona em diferentes navegadores
-- [ ] Performance adequada
-- [ ] Acessibilidade básica
-- [ ] Sem erros no console
-
-## 📞 Suporte
-
-### Contato
-- **Email:** fernando.garcia2505@hotmail.com
-- **Issues:** Para bugs e sugestões
-- **Discussions:** Para dúvidas gerais
-
-### Tempo de Resposta
-- **Issues/PRs:** 24-48 horas
-- **Dúvidas:** 1-3 dias úteis
-
-## 🏆 Reconhecimento
-
-Contribuidores são reconhecidos:
-- 📝 Lista no README
-- 🏷️ Menção em releases
-- 🌟 Badge de contribuidor
-
-## 📄 Licença
-
-Ao contribuir, você concorda que suas contribuições seguirão a licença MIT Personalizada do projeto.
+> **Resumo rápido:** abra uma *issue* → crie uma *branch* → desenvolva seguindo os padrões → teste → abra um PR pequeno, descritivo e com prints/GIFs.
 
 ---
 
-**Obrigado por contribuir! 🚀**
+## 🚀 Começando
 
-Sua ajuda torna o Kontrollar melhor para toda a comunidade.
+### Pré-requisitos
+- **Git** 2.40+
+- **Node.js** LTS (18 ou 20) + **npm** (ou **pnpm/yarn**, se preferir)
+- Conta no GitHub com acesso ao repositório
+
+### Clonar e instalar
+```bash
+# 1) Fork (recomendado) e clone seu fork
+git clone https://github.com/ferpgshy/kontrollar-intranet.git
+cd kontrollar-intranet
+
+# 2) Instalar dependências
+npm install
+
+# 3) Variáveis de ambiente (se aplicável)
+cp .env.example .env
+# edite o .env com seus valores locais
+
+# 4) Rodar em dev
+# Use o script do projeto, se existir:
+npm run dev
+# ou, se o projeto usar um servidor simples:
+node server.js
+````
+
+> Se o repo “principal” estiver em `ferpgshy/kontrollar-intranet`, você também pode clonar direto dele:
+> `git clone https://github.com/ferpgshy/kontrollar-intranet.git`
+
+---
+
+## 🗂️ Estrutura do projeto (visão geral)
+
+```
+kontrollar-intranet/
+├── ia/                  # servidor/integrações de IA (Node/Express)
+├── public/              # assets estáticos
+├── scripts/
+│   ├── main/            # módulos principais (dashboard, termos, chat, etc.)
+│   └── utils/           # utilitários (modal, sanitizer, data-bus, helpers)
+├── styles/              # CSS organizado por componente/página
+└── *.html               # páginas estáticas
+```
+
+---
+
+## 🎯 Onde contribuir
+
+* **Issues abertas** com labels `good first issue`, `help wanted` ou `bug`.
+* Pequenas melhorias de **UX**, **acessibilidade**, **performance** e **documentação** são muito bem-vindas.
+* Antes de grandes mudanças, **abra uma issue** para alinharmos escopo.
+
+---
+
+## 🌿 Fluxo de Git
+
+### Branching
+
+* `main`: estável / produção.
+* `feature/<slug-descritivo>` para features.
+* `fix/<slug-descritivo>` para correções.
+* `chore/<slug-descritivo>` para tarefas de manutenção.
+
+```bash
+git checkout -b feature/filtro-data-dashboard
+# ...codar...
+git commit -m "feat(dashboard): adiciona filtro de data com ordenação estável"
+git push -u origin feature/filtro-data-dashboard
+```
+
+### Commits — Conventional Commits
+
+Tipos comuns: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`.
+
+**Exemplos**
+
+```
+feat(chat): suporte a grupos privados com badge de não lido
+fix(termos): corrige índice com scroll em iOS
+docs: adiciona seção de a11y ao CONTRIBUTING
+style(css): ajusta espaçamentos (8/16/24px) e tokens de cor
+perf(projects): memoiza cards de projetos recentes
+```
+
+---
+
+## 🧰 Padrões de código
+
+### JavaScript/TypeScript
+
+* **ESM** + `const`/`let`. Evite `var`.
+* **camelCase** para variáveis/funções; **PascalCase** para construtores.
+* **Funções puras** e helpers em `scripts/utils`.
+* Evite globais; exporte/import módulos.
+* **DOM**: `data-attributes` para seleção/estado; sanitize entradas visíveis ao usuário.
+* Comentários **curtos e úteis** (o *porquê*, não o *o que*).
+
+```ts
+// ✅ Exemplo curto
+type TeamId = number;
+
+export const getTeamName = (id: TeamId, map: Map<number, { name: string }>) =>
+  map.get(id)?.name ?? "—";
+```
+
+### CSS
+
+* Classes em **kebab-case**; agrupar por componente.
+* Tokens (cores/spacing) centralizados; escala de **8px** (8, 16, 24, 32).
+* Evite `!important`; favoreça especificidade clara.
+* Responsividade **mobile-first**.
+
+```css
+.notice-card { padding: 16px; border-radius: 12px; }
+.notice-card__title { font-weight: 600; }
+@media (min-width: 768px) { .notice-grid { grid-template-columns: 1fr 1fr; } }
+```
+
+### HTML
+
+* **Semântico** (use `<main>`, `<header>`, `<section>`…).
+* Atributos `aria-*` para componentes interativos.
+* Texto visível para ícones com `aria-label`/`title` quando aplicável.
+
+---
+
+## 🧪 Qualidade e testes manuais
+
+### Checklist mínimo (marque antes do PR)
+
+* [ ] Sem erros no console.
+* [ ] Responsivo: **320px**, **768px**, **1024px+**.
+* [ ] Acessibilidade básica: foco visível, navegação por **tab**, `aria-label` em botões icônicos.
+* [ ] Performance: sem *layouts thrashing*; imagens otimizadas; listas grandes com renderização eficiente.
+* [ ] Dados sensíveis **não** commitados (`.env`, tokens); use placeholders em `.env.example`.
+* [ ] Sem regressões nas áreas: **login**, **dashboard**, **avisos**, **projetos**, **chat**.
+
+### Como testar (exemplos)
+
+* **Dashboard/Projetos**: cards populam com dados do `localStorage`? filtros/sort aplicam corretamente?
+* **Avisos**: criação/edição exclusão persistem? chips de equipes/projetos renderizam ok?
+* **Chat**: criação de grupos, última mensagem na listagem, badges de não lido e persistência.
+* **Termos**: índice acompanha o scroll (sem `position: fixed` indevido).
+
+---
+
+## 🐛 Reportando bugs (template)
+
+```md
+## 🐛 Bug Report
+**Descrição:** o que aconteceu?
+**Esperado:** o que deveria acontecer?
+**Passos para reproduzir:**
+1. …
+2. …
+3. …
+**Ambiente:** navegador/versão, OS
+**Evidências:** screenshots/logs
+```
+
+## 💡 Sugerindo funcionalidades (template)
+
+```md
+## 💡 Feature Request
+**Problema a resolver:** …
+**Proposta:** (o que muda, UX resumida, impacto)
+**Alternativas consideradas:** …
+**Notas adicionais:** mocks/links se houver
+```
+
+---
+
+## 🔁 Pull Requests
+
+**Antes de abrir o PR**
+
+* [ ] Rebase/sync com `main` e resolva conflitos.
+* [ ] PR **pequeno e focado** (ideal: < 300 LoC).
+* [ ] Inclua **prints/GIF** do antes/depois quando for UI.
+* [ ] Atualize docs/`CHANGELOG` se relevante.
+
+**Descrição do PR (modelo)**
+
+```md
+## 📋 Resumo
+Breve descrição do que foi feito e por quê.
+
+## 🔄 Tipo
+- [ ] 🐛 Bug fix
+- [ ] ✨ Feature
+- [ ] 💄 UI/UX
+- [ ] 📚 Docs
+- [ ] ⚡ Perf
+- [ ] 🔧 Refactor
+
+## 🧪 Como testar
+Passos claros de validação.
+
+## 📸 Evidências
+(coloque imagens/GIFs)
+
+## 📝 Notas
+Riscos, limitações, próximos passos.
+```
+
+---
+
+## 🎨 Diretrizes de design (rápidas)
+
+* **Cores**: Primária **#000**, secundária **#FFF**, cinzas `#111/#333/#666/#999`; estados padrão (verde sucesso, vermelho erro, azul info).
+* **Tipografia**: Títulos 600–700, corpo 400–500.
+* **Espaçamento**: **8/16/24/32px**.
+* **Dark mode**: priorizar contraste AA+.
+
+---
+
+## 🔐 Segurança & privacidade
+
+* Nunca comitar **secrets** (tokens, chaves, cookies).
+* Não logar dados sensíveis no console.
+* Sanitizar entradas/HTML gerado; evitar `innerHTML` sem necessidade.
+* Dados de sessão temporários → `sessionStorage`; persistentes e não sensíveis → `localStorage`.
+
+---
+
+## 🗣️ Comunicação
+
+* **Issues/PRs**: resposta em **24–48h**.
+* Dúvidas arquiteturais: abra uma **Discussion** curta com contexto e proposta.
+
+---
+
+## 🏆 Reconhecimento
+
+Contribuidores são reconhecidos em:
+
+* README (seção de contribuidores)
+* Notas de release
+* Badges/menções
+
+---
+
+## 📄 Licença
+
+Ao contribuir, você concorda com a **Licença MIT Personalizada** do projeto. Veja `LICENSE`.
+
+---
+
+**Obrigado por contribuir!** Sua ajuda melhora o Kontrollar para toda a comunidade. 🚀
