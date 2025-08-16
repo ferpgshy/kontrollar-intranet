@@ -62,13 +62,25 @@ function carregarConteudoDashboard() {
       inicioMes
   ).length;
 
-  const prazoProximos7Dias = projetos.filter((p) => {
-    const prazo = new Date(p.deadline || "2999-12-31");
-    return (
-      prazo >= hoje &&
-      prazo <= new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 7)
-    );
-  }).length;
+  const limite7 = new Date(
+    hoje.getFullYear(),
+    hoje.getMonth(),
+    hoje.getDate() + 7
+  );
+
+  const proximoPrazo =
+    projetos
+      .map((p) => ({ ...p, _deadline: new Date(p.deadline || "2999-12-31") }))
+      .filter((p) => p._deadline >= hoje && p._deadline <= limite7)
+      .sort((a, b) => a._deadline - b._deadline)[0] || null;
+
+  const prazoProximos7Dias = proximoPrazo
+    ? `${proximoPrazo._deadline.toLocaleDateString("pt-BR")}`
+    : "Nenhum prazo próximo";
+
+  const prazoProximos7DiasChange = proximoPrazo
+    ? proximoPrazo.name || "Sem nome"
+    : "próximos 7 dias";
 
   conteudoPagina.innerHTML = `
     <div class="welcome-section">
@@ -143,7 +155,7 @@ function carregarConteudoDashboard() {
           <div class="stat-info">
             <h3>Prazo Próximo</h3>
             <div class="stat-value">${prazoProximos7Dias}</div>
-            <div class="stat-change">próximos 7 dias</div>
+            <div class="stat-change">${prazoProximos7DiasChange}</div>
           </div>
           <div class="stat-icon orange">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -153,6 +165,7 @@ function carregarConteudoDashboard() {
           </div>
         </div>
       </div>
+
     </div>
 
     <div class="content-grid">
@@ -544,10 +557,10 @@ function gerarCalendario() {
   return cal;
 }
 
-// eventos customizados disparados pelas outras abas (projetos/backlogs/equipes/calendário)
-["projetos", "tarefas", "equipes", "eventos"].forEach((k) => {
-  document.addEventListener(`data:${k}:changed`, _refreshDashboard);
-});
+// // eventos customizados disparados pelas outras abas (projetos/backlogs/equipes/calendário)
+// ["projetos", "tarefas", "equipes", "eventos"].forEach((k) => {
+//   document.addEventListener(`data:${k}:changed`, _refreshDashboard);
+// });
 
 // sincroniza quando localStorage muda (outra aba/janela)
 window.addEventListener("storage", (e) => {
