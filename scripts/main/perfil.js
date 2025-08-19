@@ -504,7 +504,11 @@ function setupProfileFunctionality() {
       localStorage.setItem("user", JSON.stringify(user));
       applyTheme(user.settings?.theme || "system");
 
-      alert("Perfil atualizado com sucesso!");
+      alertModal({
+        title: "Sucesso",
+        message: "Perfil atualizado com sucesso!",
+      });
+
       loadPerfilContent();
     });
   }
