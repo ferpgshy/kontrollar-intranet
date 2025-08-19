@@ -37,7 +37,6 @@ function loadEquipesContent() {
   renderEquipesStats();
 }
 
-/* ===================== Helpers de fallback (usados pelos pickers) ===================== */
 if (typeof window.sanitizeHTML !== "function") {
   window.sanitizeHTML = function (str) {
     const div = document.createElement("div");
@@ -75,7 +74,6 @@ if (typeof window.getKnownUsersForEvents !== "function") {
 if (typeof window.getKnownProjects !== "function") {
   window.getKnownProjects = function () {
     try {
-      // garante que pega global mesmo se não estiver em window
       const globProjetos = Array.isArray(window.projetos)
         ? window.projetos
         : typeof projetos !== "undefined" && Array.isArray(projetos)
@@ -126,8 +124,6 @@ function renderEquipesStats() {
   if (valueEl) valueEl.textContent = `${totalMembros}`;
   if (changeEl) changeEl.textContent = `${totalEquipes} equipe(s)`;
 }
-
-/* ===================================================================================== */
 
 function setupTeamsFunctionality() {
   const newTeamBtn = document.getElementById("newTeamBtn");
@@ -247,13 +243,12 @@ function setupTeamCardActions() {
   });
 }
 
-/* ===================== MODAL: NOVA EQUIPE (com pickers) ===================== */
 function showNewTeamModal() {
   const knownUsers = getKnownUsersForEvents();
   const knownProjects = getKnownProjects();
 
-  const selectedMembers = new Map(); // name -> boolean
-  let selectedLeader = ""; // string (um só)
+  const selectedMembers = new Map(); 
+  let selectedLeader = "";
   const selectedProjects = new Set();
 
   createModal(
@@ -302,7 +297,6 @@ function showNewTeamModal() {
     `
   );
 
-  // ----- Membros/Líder -----
   function upsertUserRow(name) {
     const list = document.getElementById("teamUserList");
     if (!list || list.querySelector(`[data-row-user="${CSS.escape(name)}"]`))
@@ -395,7 +389,6 @@ function showNewTeamModal() {
     input.focus();
   });
 
-  // ----- Projetos -----
   function upsertProjectRow(p) {
     const list = document.getElementById("teamProjectList");
     if (!list || list.querySelector(`[data-row-project="${CSS.escape(p)}"]`))
@@ -461,7 +454,6 @@ function showNewTeamModal() {
       input.focus();
     });
 
-  // ----- submit -----
   document.getElementById("newTeamForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -482,12 +474,10 @@ function showNewTeamModal() {
       leader: leader || "",
       members: leader ? Array.from(new Set([leader, ...members])) : members,
       projetos: Array.from(selectedProjects),
-      // armazena "YYYY-MM-DD" — compatível com seu helper e evita o bug do UTC ao exibir:
       createdAt: getDataBrasiliaFormatada(),
     };
 
     equipes.push(newTeam);
-    // persiste (opcional, útil para outras abas) e atualiza card do dashboard se aberto
     try {
       localStorage.setItem("equipes", JSON.stringify(equipes));
     } catch {}
@@ -502,9 +492,7 @@ function showNewTeamModal() {
     loadEquipesContent();
   });
 }
-/* ========================================================================== */
 
-/* ===================== MODAL: EDITAR EQUIPE (com pickers) ===================== */
 function editTeam(teamId) {
   const equipe = equipes.find((t) => t.id === teamId);
   if (!equipe) return;
@@ -567,12 +555,10 @@ function editTeam(teamId) {
     `
   );
 
-  // set valores simples
   document.getElementById("editTeamName").value = equipe.name || "";
   document.getElementById("editTeamDescription").value =
     equipe.description || "";
 
-  // ----- Membros/Líder -----
   function upsertUserRow(name, listId) {
     const list = document.getElementById(listId);
     if (!list || list.querySelector(`[data-row-user="${CSS.escape(name)}"]`))
@@ -635,7 +621,6 @@ function editTeam(teamId) {
     });
   }
 
-  // popula lista
   for (const u of selectedMembers.keys()) upsertUserRow(u, "editTeamUserList");
   for (const u of knownUsers)
     if (!selectedMembers.has(u)) {
@@ -674,7 +659,6 @@ function editTeam(teamId) {
       input.focus();
     });
 
-  // ----- Projetos -----
   function upsertProjectRow(p, listId) {
     const list = document.getElementById(listId);
     if (!list || list.querySelector(`[data-row-project="${CSS.escape(p)}"]`))
@@ -711,7 +695,7 @@ function editTeam(teamId) {
 
   const projListId = "editTeamProjectList";
   getKnownProjects().forEach((p) => upsertProjectRow(p, projListId));
-  (equipe.projetos || []).forEach((p) => upsertProjectRow(p, projListId)); // garante presença
+  (equipe.projetos || []).forEach((p) => upsertProjectRow(p, projListId));
 
   document
     .getElementById("editTeamProjectSearch")
@@ -742,7 +726,6 @@ function editTeam(teamId) {
       input.focus();
     });
 
-  // ----- submit -----
   document.getElementById("editTeamForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -765,7 +748,7 @@ function editTeam(teamId) {
       ? Array.from(new Set([leader, ...members]))
       : members;
     equipe.projetos = Array.from(selectedProjects);
-    // persiste (opcional) e atualiza card do dashboard se aberto
+
     try {
       localStorage.setItem("equipes", JSON.stringify(equipes));
     } catch {}
@@ -780,16 +763,14 @@ function editTeam(teamId) {
     loadEquipesContent();
   });
 }
-/* =========================================================================== */
 
 function viewTeamDetails(teamId) {
   const equipe = equipes.find((t) => t.id === teamId);
   if (!equipe) return;
 
-  // Corrige exibição da data (sem "voltar um dia")
   const criadaEm =
     typeof equipe.createdAt === "string"
-      ? formatarDataPtBR(equipe.createdAt) // "YYYY-MM-DD" -> dd/mm/yyyy
+      ? formatarDataPtBR(equipe.createdAt)
       : new Date(equipe.createdAt).toLocaleDateString("pt-BR", {
           timeZone: "America/Sao_Paulo",
         });
@@ -862,7 +843,6 @@ function viewTeamDetails(teamId) {
   );
 }
 
-// Remove equipe por ID, atualiza UI e dashboard
 function deleteTeam(teamId) {
   const id = Number(teamId);
   if (!Array.isArray(equipes)) {
@@ -878,14 +858,10 @@ function deleteTeam(teamId) {
   }
 
   const [removida] = equipes.splice(idx, 1);
-
-  // Atualiza a tela se estiver na página de equipes
   if (typeof loadEquipesContent === "function") {
-    // Se quiser manter o filtro/scroll, pode chamar algo mais fino aqui
     loadEquipesContent();
   }
 
-  // Atualiza card do dashboard (se estiver visível)
   if (
     typeof updateTeamsStatCard === "function" &&
     document.getElementById("teamsStatCard")
@@ -898,7 +874,6 @@ function deleteTeam(teamId) {
   }
 }
 
-// (Opcional) compatibilidade se você tinha outra função com nome diferente
 if (
   typeof window.deletarEquipe === "function" &&
   typeof window.deleteTeam !== "function"
@@ -914,7 +889,6 @@ window.toggleTeamMenu = (teamId) => {
 
   let menu = card.querySelector(".team-menu-dropdown");
 
-  // Fecha outros menus (chamando o _close se existir)
   document.querySelectorAll(".team-menu-dropdown").forEach((el) => {
     if (el !== menu) {
       if (typeof el._close === "function") el._close();
@@ -922,23 +896,20 @@ window.toggleTeamMenu = (teamId) => {
     }
   });
 
-  // Se já existe esse menu aberto, fecha e sai
   if (menu) {
     if (typeof menu._close === "function") menu._close();
     else menu.remove();
     return;
   }
 
-  // Contêiner onde o menu vai ficar
   const menuContainer =
     card.querySelector(".team-menu") ||
-    card.querySelector(".task-menu") || // fallback
+    card.querySelector(".task-menu") ||
     card;
 
   const cs = getComputedStyle(menuContainer);
   if (cs.position === "static") menuContainer.style.position = "relative";
 
-  // Cria o menu
   menu = document.createElement("div");
   menu.className = "team-menu-dropdown";
   menu.style.position = "absolute";
@@ -950,7 +921,6 @@ window.toggleTeamMenu = (teamId) => {
   menu.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
   menu.style.zIndex = "999";
 
-  // --- helpers: fechar + listeners de fora/ESC ---
   const onClickOutside = (ev) => {
     if (!menu) return;
     if (!menu.contains(ev.target)) closeMenu();
@@ -965,13 +935,9 @@ window.toggleTeamMenu = (teamId) => {
     document.removeEventListener("keydown", onEsc);
     menu = null;
   }
-  // expõe para que outros fechamentos consigam limpar os listeners
   menu._close = closeMenu;
-
-  // Evita que cliques dentro do menu disparem o "click fora"
   menu.addEventListener("click", (e) => e.stopPropagation());
 
-  // Botão "Apagar equipe"
   const apagarBtn = document.createElement("div");
   apagarBtn.innerHTML = `
     <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;">
@@ -982,7 +948,7 @@ window.toggleTeamMenu = (teamId) => {
   apagarBtn.style.color = "#b91c1c";
 
   apagarBtn.addEventListener("click", async () => {
-    closeMenu(); // fecha antes de abrir modal
+    closeMenu();
     const confirmar = await confirmarModal({
       title: "Excluir equipe?",
       message:
@@ -996,8 +962,6 @@ window.toggleTeamMenu = (teamId) => {
 
   menu.appendChild(apagarBtn);
   menuContainer.appendChild(menu);
-
-  // Adiciona listeners globais *após* o click atual concluir
   setTimeout(() => {
     document.addEventListener("click", onClickOutside);
     document.addEventListener("keydown", onEsc);

@@ -23,7 +23,7 @@ function getAllKnownUsers() {
 }
 
 function canUserPost(chat, userName) {
-  const posting = chat?.policies?.posting || "all"; // "all" | "admins"
+  const posting = chat?.policies?.posting || "all";
   if (posting === "admins") {
     return Array.isArray(chat.admins) && chat.admins.includes(userName);
   }
@@ -31,7 +31,6 @@ function canUserPost(chat, userName) {
 }
 
 function showToast(msg) {
-  // troque por seu sistema de toast/snackbar, se tiver
   console.log(msg);
 }
 
@@ -109,7 +108,6 @@ function configChatFuncionalidade() {
     .getElementById("newChatBtn")
     ?.addEventListener("click", showNewChatModal);
 
-  // Busca de conversas
   document.getElementById("chatSearch")?.addEventListener("input", (e) => {
     const term = e.target.value.toLowerCase();
     document.querySelectorAll(".chat-room-item").forEach((item) => {
@@ -118,7 +116,6 @@ function configChatFuncionalidade() {
     });
   });
 
-  // Delegação de eventos para lista de conversas
   document.getElementById("chatGruposList")?.addEventListener("click", (e) => {
     const chatItem = e.target.closest(".chat-room-item");
     if (chatItem) {
@@ -137,7 +134,6 @@ function gerarListaChats() {
         ? room.messages[room.messages.length - 1].content
         : "Sem mensagens ainda";
 
-      // Calcular mensagens não lidas
       const unreadCount = room.messages.reduce((count, msg) => {
         return msg.sender !== user.name && !msg.read ? count + 1 : count;
       }, 0);
@@ -187,10 +183,8 @@ function chatSelecionado(roomId) {
   const room = chatGrupos.find((r) => r.id === roomId);
   if (!room) return;
 
-  // Salvar último chat aberto
   localStorage.setItem("ultimoChat", roomId);
 
-  // Marcar mensagens como lidas
   room.messages.forEach((msg) => {
     if (msg.sender !== user.name) msg.read = true;
   });
@@ -202,14 +196,11 @@ function chatSelecionado(roomId) {
 
   document.getElementById("chatInput").style.display = "block";
 
-  // Mostrar botão de sair
   const leaveBtn = document.getElementById("leaveChatBtn");
   leaveBtn.style.display = "block";
   leaveBtn.onclick = () => sairDaConversa(roomId);
 
   setupMessageSending(roomId);
-
-  // Atualizar lista de chats
   atualizarListaChats();
 }
 
@@ -217,10 +208,8 @@ function sairDaConversa(roomId) {
   const roomIndex = chatGrupos.findIndex((r) => r.id === roomId);
   if (roomIndex === -1) return;
 
-  // Remover a conversa
   chatGrupos.splice(roomIndex, 1);
 
-  // Resetar a interface do chat
   document.getElementById("currentChatName").textContent =
     "Selecione uma conversa";
   document.getElementById("chatMessages").innerHTML = `
@@ -231,10 +220,8 @@ function sairDaConversa(roomId) {
   document.getElementById("chatInput").style.display = "none";
   document.getElementById("leaveChatBtn").style.display = "none";
 
-  // Limpar último chat salvo
   localStorage.removeItem("ultimoChat");
 
-  // Atualizar a lista de conversas
   atualizarListaChats();
 }
 
@@ -306,7 +293,6 @@ function generateChatMessages(messages) {
   return html;
 }
 
-// Prevenção contra XSS
 function sanitizeHTML(str) {
   const div = document.createElement("div");
   div.textContent = str;
@@ -319,7 +305,6 @@ function setupMessageSending(roomId) {
   const clearButton = document.getElementById("clearMessage");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // Função para limpar o campo
   clearButton.onclick = () => {
     messageInput.value = "";
     messageInput.focus();
@@ -345,12 +330,10 @@ function setupMessageSending(roomId) {
     messageInput.value = "";
     messageInput.focus();
 
-    // Atualizar apenas as mensagens
     const chatMessages = document.getElementById("chatMessages");
     chatMessages.innerHTML = generateChatMessages(room.messages);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    // Atualizar lista de chats
     atualizarListaChats();
   };
 
@@ -417,8 +400,7 @@ function showNewChatModal() {
     `
   );
 
-  // estado interno
-  const selected = new Map(); // name -> { included, admin, locked? }
+  const selected = new Map();
 
   function ensureCreator() {
     selected.set(currentName, { included: true, admin: true, locked: true });
@@ -548,9 +530,9 @@ function showNewChatModal() {
     const newChat = {
       id: Date.now(),
       name: chatName,
-      type: chatType, // "public" | "private"
-      members,        // array de strings
-      admins,         // array de strings
+      type: chatType,
+      members,      
+      admins,       
       policies: {
         posting: onlyAdminsPost ? "admins" : "all",
       },
@@ -567,7 +549,6 @@ function showNewChatModal() {
   });
 }
 
-// Função para atualizar apenas a lista de chats
 function atualizarListaChats() {
   const container = document.getElementById("chatGruposList");
   if (container) {

@@ -88,7 +88,6 @@
                 
                 const email = emailInput.value.trim();
                 
-                // Clear previous errors
                 errorMessage.style.display = 'none';
                 errorMessage.textContent = '';
                 
@@ -97,11 +96,9 @@
                     return;
                 }
                 
-                // Show loading state
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Enviando...';
                 
-                // Simulate email sending
                 setTimeout(() => {
                     sentEmail.textContent = email;
                     recoveryCard.style.display = 'none';

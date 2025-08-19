@@ -1,4 +1,3 @@
-// Estilo por prioridade
 function getNoticePriorityColor(priority) {
   switch (priority) {
     case "alta": return "#dc2626";
@@ -35,7 +34,6 @@ function getPriorityBorderColor(priority) {
   }
 }
 
-// Estilo por tipo de aviso
 function getNoticeTypeBgColor(type) {
   switch (type) {
     case "policy": return "#dbeafe";
@@ -56,7 +54,6 @@ function getNoticeTypeTextColor(type) {
   }
 }
 
-// Estilo por status de tarefa
 function getTaskStatusBgColor(status) {
   switch (status) {
     case "todo": return "#f3f4f6";
@@ -79,7 +76,6 @@ function getTaskStatusTextColor(status) {
   }
 }
 
-// Estilo por status de projeto
 function getStatusBgColor(status) {
   switch (status) {
     case "Planejamento": return "#eff6ff";
@@ -120,38 +116,38 @@ function getPriorityStyle(priority) {
 function getTaskPriorityBgColor(priority) {
   switch (priority) {
     case "alta":
-      return "#fef2f2"; // Red
+      return "#fef2f2"; 
     case "media":
-      return "#fef3c7"; // Yellow/Orange
+      return "#fef3c7"; 
     case "baixa":
-      return "#f0fdf4"; // Green
+      return "#f0fdf4"; 
     default:
-      return "#f3f4f6"; // Gray
+      return "#f3f4f6"; 
   }
 }
 
 function getTaskPriorityTextColor(priority) {
   switch (priority) {
     case "alta":
-      return "#dc2626"; // Red
+      return "#dc2626"; 
     case "media":
-      return "#d97706"; // Yellow/Orange
+      return "#d97706"; 
     case "baixa":
-      return "#16a34a"; // Green
+      return "#16a34a"; 
     default:
-      return "#374151"; // Gray
+      return "#374151"; 
   }
 }
 
 function getTaskPriorityColor(priority) {
   switch (priority) {
     case "alta":
-      return "#dc2626"; // Red
+      return "#dc2626"; 
     case "media":
-      return "#d97706"; // Yellow/Orange
+      return "#d97706"; 
     case "baixa":
-      return "#16a34a"; // Green
+      return "#16a34a"; 
     default:
-      return "#6b7280"; // Gray
+      return "#6b7280"; 
   }
 }

@@ -7,10 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("iaInputPago");
   const sendBtn = document.getElementById("iaSendPago");
 
-  // Segurança básica: sair silencioso se algo não existir
   if (!iaBtn || !iaBox || !iaClose || !messagesContainer || !input || !sendBtn) return;
 
-  // Abrir/fechar
   iaBtn.addEventListener("click", () => {
     iaBox.classList.toggle("ia-hidden");
     iaBox.classList.toggle("ia-visible");
@@ -21,7 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
     iaBox.classList.add("ia-hidden");
   });
 
-  // Util
   function adicionarMensagemPremium(texto, autor = "ia") {
     const msg = document.createElement("div");
     msg.classList.add(autor === "user" ? "user-premium-message" : "ia-premium-response", "ia-premium-message");
@@ -54,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
     messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: "smooth" });
   }
 
-  // Ações rápidas
   iaBox.querySelectorAll(".ia-quick-actions button").forEach((button) => {
     button.addEventListener("click", () => {
       const map = {
@@ -70,12 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Enviar com Enter
   input.addEventListener("keypress", (e) => {
     if (e.key === "Enter") sendBtn.click();
   });
 
-  // Envio
   sendBtn.addEventListener("click", async () => {
     const message = input.value.trim();
     if (!message) return;

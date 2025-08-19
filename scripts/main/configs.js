@@ -1,4 +1,3 @@
-// Helpers (usam os já existentes se houver)
 const _getUser =
   typeof getSafeUser === "function"
     ? getSafeUser
@@ -34,12 +33,10 @@ const _applyTheme =
       };
 
 function applyFontSize(size) {
-  // small 93.75% (15px), medium 100% (16px), large 112.5% (18px) — ajuste à vontade
   const map = { small: "93.75%", medium: "100%", large: "112.5%" };
   document.documentElement.style.fontSize = map[size] || "100%";
 }
 
-// Beep simples para testar som
 function playBeep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -62,7 +59,6 @@ function playBeep() {
 function loadConfiguracoesContent() {
   const conteudoPagina = document.getElementById("conteudoPagina");
   const user = _getUser();
-  // aplica preferências atuais
   _applyTheme(user.settings.theme);
   applyFontSize(user.settings.fontSize);
 
@@ -250,7 +246,6 @@ function loadConfiguracoesContent() {
 function setupSettingsFunctionality() {
   const user = _getUser();
 
-  // Live-preview de tema e fonte
   document.getElementById("themeSelect")?.addEventListener("change", (e) => {
     _applyTheme(e.target.value);
   });
@@ -258,7 +253,6 @@ function setupSettingsFunctionality() {
     applyFontSize(e.target.value);
   });
 
-  // Detectar fuso horário
   document.getElementById("detectTZ")?.addEventListener("click", () => {
     const tz =
       Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo";
@@ -266,10 +260,8 @@ function setupSettingsFunctionality() {
     if (tzEl) tzEl.value = tz;
   });
 
-  // Testar som
   document.getElementById("testSoundBtn")?.addEventListener("click", playBeep);
 
-  // Solicitar permissão de push quando marcar
   const pushEl = document.getElementById("pushNotifications");
   if (pushEl) {
     pushEl.addEventListener("change", async (e) => {
@@ -290,9 +282,7 @@ function setupSettingsFunctionality() {
     });
   }
 
-  // Salvar
-  document
-    .getElementById("saveSettings")
+  document.getElementById("saveSettings")
     ?.addEventListener("click", async () => {
       const confirmar = await confirmarModal({
         title: "Confirmação",
@@ -328,7 +318,6 @@ function setupSettingsFunctionality() {
 
       localStorage.setItem("user", JSON.stringify(user));
 
-      // aplica imediatamente
       _applyTheme(user.settings?.theme || "system");
       applyFontSize(fontSize);
 
@@ -338,7 +327,6 @@ function setupSettingsFunctionality() {
       });
     });
 
-  // Exportar
   document.getElementById("exportBtn")?.addEventListener("click", () => {
     const payload = {
       savedAt: new Date().toISOString(),
@@ -370,7 +358,6 @@ function setupSettingsFunctionality() {
     URL.revokeObjectURL(url);
   });
 
-  // Limpar cache seletivo
   document.getElementById("clearBtn")?.addEventListener("click", async () => {
     const checks = Array.from(document.querySelectorAll(".cc:checked")).map(
       (c) => c.value
@@ -390,7 +377,6 @@ function setupSettingsFunctionality() {
     });
     if (!confirmar) return;
 
-    // limpa dados
     if (checks.includes("equipes")) {
       localStorage.removeItem("equipes");
       window.equipes = [];
@@ -434,7 +420,6 @@ async function confirmDeleteAccount() {
   });
   if (!confirmar2) return;
 
-  // Limpa tudo e volta pra index
   localStorage.clear();
 
   await alertModal({

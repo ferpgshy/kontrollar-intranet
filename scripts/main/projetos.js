@@ -2,7 +2,6 @@ const S_PROJ = typeof sanitizeHTML === "function"
   ? sanitizeHTML
   : (s) => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
 
-/* Helpers: pessoas (nomes) vindas de equipes, tarefas, projetos e usuário atual */
 function getPeopleOptions() {
   const set = new Set();
   const u = JSON.parse(localStorage.getItem("user") || "{}");
@@ -32,8 +31,6 @@ function getPeopleOptions() {
 
   return Array.from(set).filter(Boolean).sort((a,b) => a.localeCompare(b, 'pt-BR'));
 }
-
-/* ====== Página Projetos ====== */
 
 function carregarConteudoProjetos() {
   const conteudoPagina = document.getElementById("conteudoPagina");
@@ -127,7 +124,6 @@ function configAcoesCardProjetos() {
   });
 }
 
-/* ====== Criação ====== */
 
 function mostrarModalProjetoNovo() {
   const people = getPeopleOptions();
@@ -205,7 +201,6 @@ function mostrarModalProjetoNovo() {
   `
   );
 
-  // listeners do modal
   setTimeout(() => {
     const search = document.getElementById("projectMemberSearch");
     if (search) {
@@ -235,15 +230,14 @@ function mostrarModalProjetoNovo() {
         priority: document.getElementById("projectPriority").value,
         deadline: document.getElementById("projectDeadline").value,
         progress: 0,
-        equipe: membros,       // mantém o campo usado nos cards
-        gestor: gestor || "",  // novo campo
+        equipe: membros,    
+        gestor: gestor || "", 
         createdAt: typeof getDataBrasiliaFormatada === "function" ? getDataBrasiliaFormatada() : new Date().toISOString().slice(0,10),
       };
 
       (window.projetos ||= []).push(novoProjeto);
       try { localStorage.setItem("projetos", JSON.stringify(window.projetos)); } catch {}
 
-      // Notificação
       const u = JSON.parse(localStorage.getItem("user") || "{}");
       const msg = `${novoProjeto.name} criado${novoProjeto.gestor ? ` • Gestor: ${novoProjeto.gestor}` : ""}`;
       if (window.Notifs && typeof Notifs.notify === "function") {
@@ -264,7 +258,6 @@ function mostrarModalProjetoNovo() {
   }, 0);
 }
 
-/* ====== Edição ====== */
 
 function editarProjetos(projectId) {
   const projeto = (window.projetos || []).find(p => p.id === projectId);
@@ -383,7 +376,6 @@ function editarProjetos(projectId) {
   }, 0);
 }
 
-/* ====== Visualização ====== */
 
 function viewProjectDetails(projectId) {
   const projeto = (window.projetos || []).find(p => p.id === projectId);
@@ -444,7 +436,6 @@ function viewProjectDetails(projectId) {
   );
 }
 
-/* ====== Remoção ====== */
 
 function deletarProjeto(projectId) {
   window.projetos = (window.projetos || []).filter(p => p.id !== projectId);
@@ -453,7 +444,6 @@ function deletarProjeto(projectId) {
   if (typeof showToast === "function") showToast("Projeto excluído com sucesso!");
 }
 
-/* ====== Render ====== */
 
 function gerarArrayProjetosCards(arr) {
   return (arr || []).map(p => `
@@ -525,7 +515,6 @@ function getStatusLabel(status) {
   return labels[status] || status;
 }
 
-/* menu de três pontos com confirmarModal já existe no seu arquivo original */
 window.abrirMenuProjeto = (projectId) => {
   const card = document.querySelector(`[data-projetos-id="${projectId}"]`);
   if (!card) return;
@@ -559,7 +548,7 @@ window.abrirMenuProjeto = (projectId) => {
   Object.assign(apagarBtn.style, { padding:"0.5rem", cursor:"pointer", color:"#b91c1c" });
 
   apagarBtn.addEventListener("click", async () => {
-    closeMenu(); // fecha antes do modal
+    closeMenu();
     const confirmar = await confirmarModal({
       title: "Excluir projeto?",
       message: "Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.",

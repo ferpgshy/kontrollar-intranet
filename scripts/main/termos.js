@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentSectionId = ""
     const scrollPosition = window.scrollY + 150
 
-    // Encontra a seção atual baseada na posição do scroll
     for (let i = sections.length - 1; i >= 0; i--) {
       const section = sections[i]
       const sectionTop = section.offsetTop - 200
@@ -18,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Se não encontrou nenhuma seção, usa a primeira
     if (!currentSectionId && sections.length > 0) {
       currentSectionId = `#${sections[0].getAttribute("id")}`
     }
@@ -41,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const headerHeight = document.querySelector(".header").offsetHeight
         const offset = headerHeight + 30
 
-        // Remove temporariamente o listener de scroll para evitar conflitos
         window.removeEventListener("scroll", scrollHandler)
 
         window.scrollTo({
@@ -49,11 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
           behavior: "smooth",
         })
 
-        // Atualiza imediatamente o link ativo
         navLinks.forEach((a) => a.classList.remove("active"))
         this.classList.add("active")
 
-        // Reativa o listener após um delay
         setTimeout(() => {
           window.addEventListener("scroll", scrollHandler)
         }, 1000)
@@ -70,7 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
     scrollTimeout = setTimeout(() => {
       updateActiveLink()
 
-      // Controle do botão de voltar ao topo
       if (window.scrollY > 400) {
         scrollTopBtn.classList.add("show")
       } else {
@@ -81,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("scroll", scrollHandler)
 
-  // Botão de voltar ao topo
   scrollTopBtn.addEventListener("click", () => {
     window.scrollTo({
       top: 0,
@@ -113,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }, observerOptions)
 
-  // Aplicar observer a todas as seções
   sections.forEach((section) => {
     section.style.opacity = 0
     section.style.transform = "translateY(30px)"
@@ -143,7 +135,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Chama uma vez para definir o estado inicial
   updateActiveLink()
 })
 

@@ -37,26 +37,18 @@ const S =
             }[m])
         );
 
-// Mapeadores rápidos
 function maps() {
   const projMap = new Map(DS.projetos.map((p) => [Number(p.id), p]));
   const teamMap = new Map(DS.equipes.map((t) => [Number(t.id), t]));
   return { projMap, teamMap };
 }
 
-
-
-
-
-
-
-// ===== Equipes & Parceiros (100% compatível com data.js) =====
-
-// Fonte única de verdade: data.js usa `const equipes = [...]`.
-// Aqui, tentamos nesta ordem: window.equipes -> (global) equipes -> localStorage.
 function getEquipesArray() {
   if (Array.isArray(window?.equipes)) return window.equipes;
-  try { if (typeof equipes !== "undefined" && Array.isArray(equipes)) return equipes; } catch {}
+  try {
+    if (typeof equipes !== "undefined" && Array.isArray(equipes))
+      return equipes;
+  } catch {}
   try {
     const ls = JSON.parse(localStorage.getItem("equipes") || "[]");
     if (Array.isArray(ls)) return ls;
@@ -74,7 +66,6 @@ function computeTeamsPartnersStats() {
   const byTeam = [];
 
   for (const eq of arr) {
-    // só conta se o usuário é líder ou membro
     const isMyTeam =
       eq?.leader === userName ||
       (Array.isArray(eq?.members) && eq.members.includes(userName));
@@ -82,16 +73,19 @@ function computeTeamsPartnersStats() {
     if (!isMyTeam) continue;
 
     const name = eq?.name ? String(eq.name) : "Sem nome";
-    const count = Array.isArray(eq?.members) ? eq.members.filter(Boolean).length : 0;
+    const count = Array.isArray(eq?.members)
+      ? eq.members.filter(Boolean).length
+      : 0;
     byTeam.push({ id: Number(eq?.id) || 0, name, count });
     totalTeams += 1;
     totalPartners += count;
   }
 
-  byTeam.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "pt-BR"));
+  byTeam.sort(
+    (a, b) => b.count - a.count || a.name.localeCompare(b.name, "pt-BR")
+  );
   return { totalTeams, totalPartners, byTeam };
 }
-
 
 function makeTeamChip({ name, count }) {
   const chip = document.createElement("span");
@@ -124,9 +118,9 @@ function updateTeamsStatCard() {
   const card = document.getElementById("teamsStatCard");
   if (!card) return;
 
-  const totalTeamsEl    = card.querySelector("#totalTeams");
+  const totalTeamsEl = card.querySelector("#totalTeams");
   const totalPartnersEl = card.querySelector("#totalPartners");
-  const breakdownEl     = card.querySelector("#teamPartnerBreakdown");
+  const breakdownEl = card.querySelector("#teamPartnerBreakdown");
   if (!totalTeamsEl || !totalPartnersEl || !breakdownEl) return;
 
   const { totalTeams, totalPartners, byTeam } = computeTeamsPartnersStats();
@@ -134,7 +128,8 @@ function updateTeamsStatCard() {
   totalTeamsEl.textContent = String(totalTeams);
   totalPartnersEl.textContent = String(totalPartners);
 
-  while (breakdownEl.firstChild) breakdownEl.removeChild(breakdownEl.firstChild);
+  while (breakdownEl.firstChild)
+    breakdownEl.removeChild(breakdownEl.firstChild);
 
   if (byTeam.length === 0) {
     const empty = document.createElement("div");
@@ -150,21 +145,6 @@ function updateTeamsStatCard() {
   breakdownEl.appendChild(frag);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ---------- UI principal ----------
 function carregarConteudoDashboard() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const conteudoPagina = document.getElementById("conteudoPagina");
@@ -364,8 +344,6 @@ function carregarConteudoDashboard() {
   updateTeamsStatCard();
 }
 
-
-// --------- Blocos de conteúdo ----------
 function gerarProjetosRecentes() {
   const { teamMap } = maps();
   const recentes = DS.projetos
@@ -431,12 +409,19 @@ function gerarProjetosRecentes() {
 }
 
 function gerarTarefasRecentes() {
-  // fonte robusta: DS -> window -> global const -> localStorage
   let arr = [];
   if (Array.isArray(DS?.tarefas) && DS.tarefas.length) arr = DS.tarefas;
-  else if (Array.isArray(window?.tarefas) && window.tarefas.length) arr = window.tarefas;
+  else if (Array.isArray(window?.tarefas) && window.tarefas.length)
+    arr = window.tarefas;
   else {
-    try { if (typeof tarefas !== "undefined" && Array.isArray(tarefas) && tarefas.length) arr = tarefas; } catch {}
+    try {
+      if (
+        typeof tarefas !== "undefined" &&
+        Array.isArray(tarefas) &&
+        tarefas.length
+      )
+        arr = tarefas;
+    } catch {}
     if (!arr.length) {
       try {
         const ls = JSON.parse(localStorage.getItem("tarefas") || "[]");
@@ -445,68 +430,83 @@ function gerarTarefasRecentes() {
     }
   }
 
-  if (!arr.length) return `<p style="color:#9ca3af;">Nenhuma tarefa encontrada.</p>`;
+  if (!arr.length)
+    return `<p style="color:#9ca3af;">Nenhuma tarefa encontrada.</p>`;
 
-  // ---- helpers de normalização
   const norm = (s) =>
     String(s || "")
-      .normalize("NFD").replace(/\p{Diacritic}/gu, "") // remove acento
-      .toLowerCase().trim();
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .toLowerCase()
+      .trim();
 
   const isFinalizadaOuBloqueada = (status) => {
-    const n = norm(status).replace(/[^a-z]/g, ""); // remove espaços/traços
+    const n = norm(status).replace(/[^a-z]/g, "");
     return n === "concluida" || n === "bloqueada";
   };
 
-  // filtra: não exibir concluídas ou bloqueadas
-  const ativas = arr.filter(t => !isFinalizadaOuBloqueada(t.status));
+  const ativas = arr.filter((t) => !isFinalizadaOuBloqueada(t.status));
 
   if (!ativas.length)
     return `<p style="color:#9ca3af;">Nenhuma tarefa ativa encontrada.</p>`;
 
-  // ordenar por prazo mais próximo (asc)
-  const ord = ativas.slice().sort((a, b) => {
-    const da = new Date(a.deadline || a.createdAt || 0);
-    const db = new Date(b.deadline || b.createdAt || 0);
-    return da - db;
-  }).slice(0, 5);
+  const ord = ativas
+    .slice()
+    .sort((a, b) => {
+      const da = new Date(a.deadline || a.createdAt || 0);
+      const db = new Date(b.deadline || b.createdAt || 0);
+      return da - db;
+    })
+    .slice(0, 5);
 
-  const S = typeof sanitizeHTML === "function" ? sanitizeHTML : (s)=>String(s);
-  const { projMap, teamMap } = typeof maps === "function" ? maps() : { projMap: new Map(), teamMap: new Map() };
+  const S =
+    typeof sanitizeHTML === "function" ? sanitizeHTML : (s) => String(s);
+  const { projMap, teamMap } =
+    typeof maps === "function"
+      ? maps()
+      : { projMap: new Map(), teamMap: new Map() };
 
   function getPriorityStyleFallback(p) {
     const pr = norm(p);
-    if (pr === "alta")  return "background:#fee2e2;color:#b91c1c;";
+    if (pr === "alta") return "background:#fee2e2;color:#b91c1c;";
     if (pr === "media") return "background:#fef3c7;color:#92400e;";
     if (pr === "baixa") return "background:#dcfce7;color:#166534;";
     return "background:#f3f4f6;color:#111827;";
-    }
+  }
 
-  return ord.map((t) => {
-    const projNome =
-      (t.projetos && String(t.projetos)) ||
-      (t.projetoId && projMap.get(Number(t.projetoId))?.name) ||
-      "—";
+  return ord
+    .map((t) => {
+      const projNome =
+        (t.projetos && String(t.projetos)) ||
+        (t.projetoId && projMap.get(Number(t.projetoId))?.name) ||
+        "—";
 
-    const equipeNome =
-      (typeof resolveTeamNameById === "function" && resolveTeamNameById(t.teamId)) ||
-      (t.teamId && teamMap.get(Number(t.teamId))?.name) ||
-      t.equipe || "";
+      const equipeNome =
+        (typeof resolveTeamNameById === "function" &&
+          resolveTeamNameById(t.teamId)) ||
+        (t.teamId && teamMap.get(Number(t.teamId))?.name) ||
+        t.equipe ||
+        "";
 
-    const who = S(t.assignee || t.responsavel || "—");
-    const prioridade = String(t.priority || "média");
+      const who = S(t.assignee || t.responsavel || "—");
+      const prioridade = String(t.priority || "média");
 
-    const prioStyle = (typeof getPriorityStyle === "function")
-      ? getPriorityStyle(norm(prioridade))
-      : getPriorityStyleFallback(prioridade);
+      const prioStyle =
+        typeof getPriorityStyle === "function"
+          ? getPriorityStyle(norm(prioridade))
+          : getPriorityStyleFallback(prioridade);
 
-    const extra = equipeNome ? ` • ${S(equipeNome)}` : "";
+      const extra = equipeNome ? ` • ${S(equipeNome)}` : "";
 
-    return `
+      return `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;border:1px solid #e5e7eb;border-radius:0.5rem;margin-bottom:1rem;">
         <div style="flex:1;">
-          <h4 style="font-weight:500;color:#000;margin-bottom:0.25rem;">${S(t.title || "Sem título")}</h4>
-          <p style="font-size:0.875rem;color:#666;margin-bottom:0.25rem;">${S(projNome)}${extra}</p>
+          <h4 style="font-weight:500;color:#000;margin-bottom:0.25rem;">${S(
+            t.title || "Sem título"
+          )}</h4>
+          <p style="font-size:0.875rem;color:#666;margin-bottom:0.25rem;">${S(
+            projNome
+          )}${extra}</p>
           <p style="font-size:0.75rem;color:#9ca3af;">Atribuído a: ${who}</p>
         </div>
         <span style="padding:0.25rem 0.5rem;border-radius:0.25rem;font-size:0.75rem;font-weight:500;${prioStyle}">
@@ -514,10 +514,9 @@ function gerarTarefasRecentes() {
         </span>
       </div>
     `;
-  }).join("");
+    })
+    .join("");
 }
-
-
 
 function atualizarCardTarefasConcluidas() {
   const t = DS.tarefas;
@@ -544,19 +543,18 @@ function atualizarCardTarefasConcluidas() {
   ).textContent = `+${concluidasSemana.length} esta semana`;
 }
 
-// Dashboard -> Próximos Eventos: use a mesma função da aba Calendário
 function gerarEventosFuturos() {
-  // se a função oficial já estiver carregada, reusa 1:1
   if (typeof gerarProximoEvento === "function") {
-    return gerarProximoEvento(); // mesma UI da aba, mesmo sort, mesmo limite, etc.
+    return gerarProximoEvento();
   }
 
-  // fallback (copia fiel) caso calendario.js ainda não tenha sido avaliado
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
   const eventosFuturos = (Array.isArray(window.eventos) ? window.eventos : [])
     .filter((event) => {
       const [ano, mes, dia] = (event.date || "").split("-");
-      const dataEvento = new Date(+ano, +mes - 1, +dia); dataEvento.setHours(0,0,0,0);
+      const dataEvento = new Date(+ano, +mes - 1, +dia);
+      dataEvento.setHours(0, 0, 0, 0);
       return dataEvento >= hoje;
     })
     .sort((a, b) => {
@@ -566,38 +564,56 @@ function gerarEventosFuturos() {
     })
     .slice(0, 5);
 
-  const S = typeof sanitizeHTML === "function" ? sanitizeHTML : (s)=>String(s);
+  const S =
+    typeof sanitizeHTML === "function" ? sanitizeHTML : (s) => String(s);
 
-  return eventosFuturos.map((event) => {
-    const [ano, mes, dia] = (event.date || "").split("-");
-    const dataFormatada = new Date(+ano, +mes - 1, +dia).toLocaleDateString("pt-BR");
-    const desc = (event.description || "").trim();
-    const preview = desc.length > 160 ? desc.slice(0, 160) + "…" : desc;
+  return eventosFuturos
+    .map((event) => {
+      const [ano, mes, dia] = (event.date || "").split("-");
+      const dataFormatada = new Date(+ano, +mes - 1, +dia).toLocaleDateString(
+        "pt-BR"
+      );
+      const desc = (event.description || "").trim();
+      const preview = desc.length > 160 ? desc.slice(0, 160) + "…" : desc;
 
-    return `
+      return `
       <div style="padding:0.75rem;border:1px solid #e5e7eb;border-radius:0.375rem;margin-bottom:0.5rem;">
-        <h4 style="font-weight:500;margin-bottom:0.25rem;">${S(event.title || "")}</h4>
+        <h4 style="font-weight:500;margin-bottom:0.25rem;">${S(
+          event.title || ""
+        )}</h4>
         <p style="font-size:0.875rem;color:#666;margin-bottom:0.25rem;">
           ${dataFormatada} às ${event.time || "--:--"}
         </p>
-        ${preview ? `<p style="font-size:0.75rem;color:#4b5563;margin-bottom:0.25rem;white-space:pre-wrap;overflow:hidden;">${S(preview)}</p>` : ``}
-        <p style="font-size:0.75rem;color:#9ca3af;">${(event.participants?.length || 0)} participantes</p>
+        ${
+          preview
+            ? `<p style="font-size:0.75rem;color:#4b5563;margin-bottom:0.25rem;white-space:pre-wrap;overflow:hidden;">${S(
+                preview
+              )}</p>`
+            : ``
+        }
+        <p style="font-size:0.75rem;color:#9ca3af;">${
+          event.participants?.length || 0
+        } participantes</p>
         <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.5rem;">
-          <button type="button" class="btn btn-outline" onclick="typeof showEventParticipantsModal==='function' && showEventParticipantsModal(${event.id})">
+          <button type="button" class="btn btn-outline" onclick="typeof showEventParticipantsModal==='function' && showEventParticipantsModal(${
+            event.id
+          })">
             Ver participantes
           </button>
         </div>
       </div>`;
-  }).join("");
+    })
+    .join("");
 }
 
-
 function gerarCalendario() {
-  // Fonte de eventos: DS.eventos -> window.eventos -> (global) eventos -> localStorage
   function getEventosArray() {
     if (Array.isArray(DS?.eventos)) return DS.eventos;
     if (Array.isArray(window?.eventos)) return window.eventos;
-    try { if (typeof eventos !== "undefined" && Array.isArray(eventos)) return eventos; } catch {}
+    try {
+      if (typeof eventos !== "undefined" && Array.isArray(eventos))
+        return eventos;
+    } catch {}
     try {
       const ls = JSON.parse(localStorage.getItem("eventos") || "[]");
       if (Array.isArray(ls)) return ls;
@@ -605,7 +621,10 @@ function gerarCalendario() {
     return [];
   }
 
-  const baseData = (window.dataAtualCalendario instanceof Date) ? window.dataAtualCalendario : new Date();
+  const baseData =
+    window.dataAtualCalendario instanceof Date
+      ? window.dataAtualCalendario
+      : new Date();
   const anoAtual = baseData.getFullYear();
   const mesAtual = baseData.getMonth();
   const primeiroDia = new Date(anoAtual, mesAtual, 1).getDay();
@@ -613,31 +632,55 @@ function gerarCalendario() {
   const hoje = new Date();
 
   const monthNames = [
-    "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
   ];
 
   const evts = getEventosArray();
   const temEventoNoDia = (diaNum) => {
-    const yy = anoAtual, mm = mesAtual + 1, dd = diaNum;
-    const chave = `${yy}-${String(mm).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;
-    return evts.some(ev => ev?.date === chave);
+    const yy = anoAtual,
+      mm = mesAtual + 1,
+      dd = diaNum;
+    const chave = `${yy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(
+      2,
+      "0"
+    )}`;
+    return evts.some((ev) => ev?.date === chave);
   };
 
   let cal = `
     <div style="text-align:center;margin-bottom:1rem;">
-      <h3 style="font-weight:600;color:#000;">${monthNames[mesAtual]} ${anoAtual}</h3>
+      <h3 style="font-weight:600;color:#000;">${
+        monthNames[mesAtual]
+      } ${anoAtual}</h3>
     </div>
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:0.25rem;text-align:center;">
-      ${["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(
-        d => `<div style="font-weight:500;color:#666;padding:0.5rem;font-size:0.75rem;">${d}</div>`
-      ).join("")}
+      ${["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
+        .map(
+          (d) =>
+            `<div style="font-weight:500;color:#666;padding:0.5rem;font-size:0.75rem;">${d}</div>`
+        )
+        .join("")}
   `;
 
-  for (let i = 0; i < primeiroDia; i++) cal += `<div style="padding:0.5rem;"></div>`;
+  for (let i = 0; i < primeiroDia; i++)
+    cal += `<div style="padding:0.5rem;"></div>`;
 
   for (let dia = 1; dia <= diasNoMes; dia++) {
-    const eHoje = (dia === hoje.getDate() && mesAtual === hoje.getMonth() && anoAtual === hoje.getFullYear());
+    const eHoje =
+      dia === hoje.getDate() &&
+      mesAtual === hoje.getMonth() &&
+      anoAtual === hoje.getFullYear();
     const temEvento = temEventoNoDia(dia);
 
     let style = `
@@ -648,10 +691,11 @@ function gerarCalendario() {
       transition:background-color .2s ease;
       position:relative;`;
 
-    // risco VERMELHO quando tem evento
     if (temEvento) style += `border-bottom:3px solid #ef4444;`;
 
-    const hover = !eHoje ? `onmouseover="this.style.backgroundColor='#f3f4f6'" onmouseout="this.style.backgroundColor='transparent'"` : "";
+    const hover = !eHoje
+      ? `onmouseover="this.style.backgroundColor='#f3f4f6'" onmouseout="this.style.backgroundColor='transparent'"`
+      : "";
 
     cal += `
       <div style="${style}" ${hover}
@@ -664,26 +708,13 @@ function gerarCalendario() {
   return cal;
 }
 
-
-// // eventos customizados disparados pelas outras abas (projetos/backlogs/equipes/calendário)
-// ["projetos", "tarefas", "equipes", "eventos"].forEach((k) => {
-//   document.addEventListener(`data:${k}:changed`, _refreshDashboard);
-// });
-
-// sincroniza quando localStorage muda (outra aba/janela)
 window.addEventListener("storage", (e) => {
   if (!e.key) return;
   if (["projetos", "tarefas", "equipes", "eventos"].includes(e.key)) {
-    // Se você quer re-renderizar TUDO:
-    // carregarConteudoDashboard();
-
-    // Se quer só atualizar o que mudou:
     if (e.key === "equipes") updateTeamsStatCard();
     if (e.key === "tarefas") atualizarCardTarefasConcluidas();
-    // adicione outros updates pontuais se necessário
   }
 });
-
 
 window.addEventListener("storage", (e) => {
   if (e.key === "equipes") updateTeamsStatCard();

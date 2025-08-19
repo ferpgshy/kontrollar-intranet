@@ -2,7 +2,7 @@ let dataAtualCalendario = new Date();
 
 function getDataBrasiliaFormatada() {
   const agoraUTC = new Date();
-  const offsetBrasilia = -3 * 60; // minutos
+  const offsetBrasilia = -3 * 60;
   const horaBrasilia = new Date(agoraUTC.getTime() + offsetBrasilia * 60 * 1000);
   const ano = horaBrasilia.getFullYear();
   const mes = String(horaBrasilia.getMonth() + 1).padStart(2, "0");

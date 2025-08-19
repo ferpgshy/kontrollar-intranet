@@ -42,7 +42,6 @@
         opts.closeSelector || "#fecharNotificacao"
       );
 
-      // usar lista existente (".notification-list") ou criar #listaNotificacoes
       el.list =
         document.querySelector(opts.listSelector || "#listaNotificacoes") ||
         el.panel?.querySelector("#listaNotificacoes") ||
@@ -51,7 +50,6 @@
       if (!el.panel) return this;
 
       if (el.list) {
-        // se for a lista mock do HTML, limpamos e padronizamos id
         el.list.id = "listaNotificacoes";
         el.list.innerHTML = "";
       } else {
@@ -59,8 +57,6 @@
         el.list.id = "listaNotificacoes";
         el.panel.appendChild(el.list);
       }
-
-      // header + ações
       el.header = el.panel.querySelector(".notification-header");
       if (el.header && !el.header.querySelector(".notif-actions")) {
         const actions = document.createElement("div");
@@ -85,7 +81,6 @@
   `;
         el.header.appendChild(actions);
 
-        // CSS leve p/ ícones (adiciona 1x)
         if (!document.getElementById("notifIconBtnCSS")) {
           const css = document.createElement("style");
           css.id = "notifIconBtnCSS";
@@ -104,11 +99,9 @@
         el.header
           .querySelector("#notifMarkAll")
           ?.addEventListener("click", () => this.markAllRead());
-        // depois (usa confirmarModal)
         el.header
           .querySelector("#notifClearAll")
           ?.addEventListener("click", async () => {
-            // fecha o painel antes de abrir o modal, igual ao closeMenu()
             if (el.panel) el.panel.style.display = "none";
 
             const confirmar = await confirmarModal({
@@ -120,24 +113,19 @@
             if (confirmar) {
               this.clear();
             } else {
-              // se cancelar, você pode reabrir o painel se quiser
               if (el.panel) el.panel.style.display = "block";
             }
           });
       }
 
-      // badge estático antigo -> escondemos (ideal é remover do HTML)
       el.badge = document.querySelector(".notification-badge");
       if (el.badge) el.badge.style.display = "none";
 
-      // toggle do sino
       el.bell?.addEventListener("click", (e) => {
         e.stopPropagation();
         this.toggle();
       });
-      // fechar (X)
       el.close?.addEventListener("click", () => this.hide());
-      // clicar fora -> fecha
       document.addEventListener("click", (e) => {
         if (!el.panel) return;
         const insidePanel = el.panel.contains(e.target);
@@ -154,7 +142,7 @@
       if (!el.panel) return;
       const show = el.panel.style.display !== "block";
       el.panel.style.display = show ? "block" : "none";
-      if (show) this.markAllRead(); // abrir = marcar tudo como lido
+      if (show) this.markAllRead();
     },
     show() {
       if (el.panel) {
@@ -166,7 +154,6 @@
       if (el.panel) el.panel.style.display = "none";
     },
 
-    // nova: marcar todas como lidas
     markAllRead() {
       const now = new Date().toISOString();
       let changed = false;
@@ -184,7 +171,6 @@
       this.updateBell();
     },
 
-    // adicionar notificação
     push({ title, body = "", type = "notice", page, when } = {}) {
       const item = {
         id: Date.now(),
@@ -202,7 +188,7 @@
       return item.id;
     },
 
-    // pintar lista no painel
+
     render() {
       if (!el.list) return;
       if (!this.items.length) {
@@ -240,7 +226,6 @@
         })
         .join("");
 
-      // clique: navega e fecha
       el.list.querySelectorAll(".notification-item").forEach((div) => {
         div.addEventListener("click", () => {
           const idx = Number(div.getAttribute("data-idx"));
@@ -265,7 +250,6 @@
       this.updateBell();
     },
 
-    // badge (dot) no sino baseado em não lidas
     getUnreadCount() {
       return (this.items || []).filter((n) => !n.readAt).length;
     },

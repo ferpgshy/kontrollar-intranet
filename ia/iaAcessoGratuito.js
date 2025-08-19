@@ -7,10 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const messagesContainer = document.getElementById("iaChatFreeMessages");
   const typingIndicator = iaBox.querySelector(".ia-typing-indicator");
 
-  // Segurança: se faltar algo, não quebra a página
   if (!iaBtn || !iaBox || !closeBtn || !input || !sendBtn || !messagesContainer) return;
 
-  // Abrir/fechar
   iaBtn.addEventListener("click", () => {
     iaBox.classList.toggle("ia-hidden");
     iaBox.classList.toggle("ia-visible");
@@ -23,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
     iaBtn.style.opacity = "1";
   });
 
-  // Util: adicionar mensagem com animação
   function adicionarMensagem(texto, autor = "ia") {
     const msg = document.createElement("div");
     msg.classList.add(autor === "user" ? "user-message" : "ia-message", "ia-message-bubble");
@@ -42,12 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
     messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: "smooth" });
   }
 
-  // Enviar com Enter
   input.addEventListener("keypress", (e) => {
     if (e.key === "Enter") sendBtn.click();
   });
 
-  // Envio
   sendBtn.addEventListener("click", async () => {
     const message = input.value.trim();
     if (!message) return;
@@ -89,7 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Sugestões rápidas
   document.querySelectorAll(".ia-suggestions span").forEach((el) => {
     el.addEventListener("click", () => {
       input.value = el.textContent;

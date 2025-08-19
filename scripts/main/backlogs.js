@@ -71,16 +71,13 @@ function carregarConteudoBacklog() {
         </div>
     `;
 
-  // Setup backlog functionality
   configPaginaBacklog();
 }
 
 function configPaginaBacklog() {
-  // New task button
   const newTaskBtn = document.getElementById("newTaskBtn");
   if (newTaskBtn) newTaskBtn.addEventListener("click", showNewTaskModal);
 
-  // Search/filter
   const taskSearch = document.getElementById("taskSearch");
   if (taskSearch) taskSearch.addEventListener("input", filterTasks);
 
@@ -92,10 +89,9 @@ function configPaginaBacklog() {
   if (taskPriorityFilter)
     taskPriorityFilter.addEventListener("change", filterTasks);
 
-  const taskTeamFilter = document.getElementById("taskTeamFilter"); // <—
-  if (taskTeamFilter) taskTeamFilter.addEventListener("change", filterTasks); // <—
+  const taskTeamFilter = document.getElementById("taskTeamFilter");
+  if (taskTeamFilter) taskTeamFilter.addEventListener("change", filterTasks);
 
-  // Task status change functionality
   setupTaskStatusChanges();
 }
 
@@ -144,7 +140,6 @@ function setupTaskStatusChanges() {
     });
   });
 
-  // Edit task buttons
   document.querySelectorAll(".edit-task-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const taskId = Number.parseInt(
@@ -154,7 +149,6 @@ function setupTaskStatusChanges() {
     });
   });
 
-  // Delete task buttons
   document.querySelectorAll(".delete-task-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const taskId = Number.parseInt(
@@ -293,7 +287,7 @@ function showNewTaskModal() {
       priority: document.getElementById("taskPriority").value,
       status: document.getElementById("taskStatus").value,
       projetos: document.getElementById("taskProject").value,
-      teamId: teamIdVal ? Number(teamIdVal) : null, // << novo campo
+      teamId: teamIdVal ? Number(teamIdVal) : null,
       assignee: document.getElementById("taskAssignee").value,
       deadline:
         document.getElementById("taskDeadline").value ||
@@ -307,7 +301,6 @@ function showNewTaskModal() {
       persistTarefasENotificar();
     } catch (e) {}
 
-    // 🔔 Notificação de nova tarefa
     if (window.Notifs) {
       const teamName = resolveTeamNameById(newTask.teamId) || "—";
       Notifs.push({
@@ -465,7 +458,7 @@ function editTask(taskId) {
 
 function deleteTask(taskId) {
   tarefas = tarefas.filter((t) => t.id !== taskId);
-  filterTasks(); // Atualiza a exibição
+  filterTasks();
   showToast("Tarefa excluída com sucesso!", "success");
 }
 
@@ -475,7 +468,6 @@ window.abrirMenuTarefas = (taskId) => {
 
   let menu = card.querySelector(".tarefas-menu-dropdown");
 
-  // Fecha outros menus abertos (com limpeza de listeners)
   document.querySelectorAll(".tarefas-menu-dropdown").forEach((el) => {
     if (el !== menu) {
       if (typeof el._close === "function") el._close();
@@ -483,19 +475,16 @@ window.abrirMenuTarefas = (taskId) => {
     }
   });
 
-  // Se já existe esse menu aberto, fecha e sai
   if (menu) {
     if (typeof menu._close === "function") menu._close();
     else menu.remove();
     return;
   }
 
-  // Contêiner onde o menu vai ficar
   const menuContainer = card.querySelector(".task-menu") || card;
   const cs = getComputedStyle(menuContainer);
   if (cs.position === "static") menuContainer.style.position = "relative";
 
-  // Cria o menu
   menu = document.createElement("div");
   menu.className = "tarefas-menu-dropdown";
   menu.style.position = "absolute";
@@ -507,7 +496,6 @@ window.abrirMenuTarefas = (taskId) => {
   menu.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
   menu.style.zIndex = "999";
 
-  // Helpers de fechar
   const onClickOutside = (ev) => {
     if (!menu) return;
     if (!menu.contains(ev.target)) closeMenu();
@@ -524,10 +512,8 @@ window.abrirMenuTarefas = (taskId) => {
   }
   menu._close = closeMenu;
 
-  // Evita propagar clique dentro do menu
   menu.addEventListener("click", (e) => e.stopPropagation());
 
-  // Ação: Apagar
   const apagarBtn = document.createElement("div");
   apagarBtn.innerHTML = `
     <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;">
@@ -538,7 +524,7 @@ window.abrirMenuTarefas = (taskId) => {
   apagarBtn.style.color = "#b91c1c";
 
   apagarBtn.addEventListener("click", async () => {
-    closeMenu(); // fecha antes de abrir o modal
+    closeMenu();
     const confirmar = await confirmarModal({
       title: "Excluir tarefa?",
       message:
@@ -553,7 +539,6 @@ window.abrirMenuTarefas = (taskId) => {
   menu.appendChild(apagarBtn);
   menuContainer.appendChild(menu);
 
-  // Listeners globais (adicionados após o clique atual)
   setTimeout(() => {
     document.addEventListener("click", onClickOutside);
     document.addEventListener("keydown", onEsc);

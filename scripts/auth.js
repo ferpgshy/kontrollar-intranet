@@ -1,4 +1,3 @@
-// Funcionalidade de login
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm")
   const emailInput = document.getElementById("email")
@@ -7,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const submitBtn = document.getElementById("submitBtn")
   const errorMessage = document.getElementById("errorMessage")
 
-  // Alternar visibilidade da senha
   if (togglePasswordBtn) {
     togglePasswordBtn.addEventListener("click", () => {
       const type = passwordInput.getAttribute("type") === "password" ? "text" : "password"
@@ -28,7 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Envio do formulário
   if (loginForm) {
     loginForm.addEventListener("submit", (e) => {
       e.preventDefault()
@@ -36,24 +33,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const email = emailInput.value.trim()
       const password = passwordInput.value.trim()
 
-      // Limpar erros anteriores
       errorMessage.style.display = "none"
       errorMessage.textContent = ""
 
-      // Validação básica
       if (!email || !password) {
         showError("Email e senha são obrigatórios")
         return
       }
 
-      // Estado de carregamento
       submitBtn.disabled = true
       submitBtn.textContent = "Entrando..."
 
-      // Simulação de autenticação
       setTimeout(() => {
         if (email === "admin@kontrollar.com" && password === "admin123") {
-          // Login como administrador
           const user = {
             id: 1,
             name: "Administrador",
@@ -63,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
           localStorage.setItem("user", JSON.stringify(user))
           window.location.href = "dashboard.html"
         } else if (email && password) {
-          // Login como usuário comum
           const user = {
             id: 2,
             name: "Usuário Demo",

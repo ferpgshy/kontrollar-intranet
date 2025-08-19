@@ -1,4 +1,3 @@
-/* Auth Container */
 .auth-container {
   min-height: 100vh;
   background-color: #f9fafb;
@@ -37,7 +36,6 @@
   margin-top: 0.5rem;
 }
 
-/* Form Styles */
 .form-actions {
   display: flex;
   justify-content: space-between;
@@ -54,7 +52,6 @@
   color: #666666;
 }
 
-/* Demo Info */
 .demo-info {
   margin-top: 1rem;
   padding: 0.75rem;
@@ -78,13 +75,11 @@
   margin-bottom: 0;
 }
 
-/* Loading State */
 .loading {
   opacity: 0.7;
   pointer-events: none;
 }
 
-/* Success State */
 .success-container {
   text-align: center;
 }
@@ -118,7 +113,6 @@
   margin-bottom: 1.5rem;
 }
 
-/* Responsive */
 @media (max-width: 480px) {
   .auth-container {
     padding: 0.5rem;
@@ -131,26 +125,21 @@
   }
 }
 
-/* === Login: inputs consistentes e olho alinhado === */
-
-/* Garante cálculo consistente */
 *,
 *::before,
 *::after { box-sizing: border-box; }
 
-/* Labels */
 .label{display:block;margin-bottom:6px;font-size:.875rem;font-weight:500;color:#374151}
 
-/* Grupo com espaçamento */
+
 .form .form-group{ margin-bottom:14px; }
 
-/* Inputs com mesmo tamanho (email e senha) */
 .auth-card .input,
 .auth-card input[type="email"],
 .auth-card input[type="password"],
 .auth-card input[type="text"]{
   width:100%;
-  height:44px;                 /* altura única */
+  height:44px;                 
   padding:10px 14px;
   font-size:14px;
   line-height:1.4;
@@ -167,22 +156,20 @@
   box-shadow:0 0 0 3px rgba(0,0,0,.08);
 }
 
-/* Wrapper do campo de senha (para o botão olho) */
 .input-group{
   position:relative;
   width:100%;
 }
 
-/* Reserva espaço pro olho sem alterar largura total */
 .input-group .input{
-  padding-right:44px;          /* área do botão */
-  height:44px;                 /* reforça altura */
+  padding-right:44px;       
+  height:44px;                
 }
 
 .input-button {
   position: absolute;
-  inset-inline-end: .5rem;     /* distancia da borda direita */
-  inset-block-start: 50%;      /* centralizado vertical */
+  inset-inline-end: .5rem;     
+  inset-block-start: 50%;      
   transform: translateY(-50%);
   width: 28px;
   height: 28px;
@@ -192,14 +179,13 @@
   background: transparent;
   border: 0;
   cursor: pointer;
-  color: #000;                 /* preto para ficar visível */
+  color: #000;               
   transition: color 0.2s ease;
 }
 .input-button:hover {
-  color: #333;                 /* tom de preto mais suave no hover */
+  color: #333;              
 }
 
-/* Força o ícone do olho a ficar maior e visível */
 .input-button .icon {
   width: 24px !important;
   height: 24px !important;

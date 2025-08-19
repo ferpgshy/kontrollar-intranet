@@ -1,12 +1,9 @@
 function getSafeUser() {
   let u = JSON.parse(localStorage.getItem("user") || "{}");
   if (!u || !u.name) {
-    // fallback básico caso não exista usuário logado
     u = { name: "Usuário", email: "usuario@example.com", role: "user" };
   }
-  // garante campos
   if (!u.createdAt) {
-    // guarda "membro desde" (yyyy-mm-dd em São Paulo)
     if (typeof getDataBrasiliaFormatada === "function") {
       u.createdAt = getDataBrasiliaFormatada();
     } else {
@@ -15,7 +12,7 @@ function getSafeUser() {
     localStorage.setItem("user", JSON.stringify(u));
   }
   if (!u.settings) u.settings = {};
-  if (!u.settings.theme) u.settings.theme = "system"; // system|light|dark
+  if (!u.settings.theme) u.settings.theme = "system";
   if (!u.settings.timezone) u.settings.timezone = "America/Sao_Paulo";
   if (typeof u.settings.notifyEmail !== "boolean")
     u.settings.notifyEmail = true;
@@ -56,7 +53,6 @@ function getInitials(name = "") {
 }
 
 function maskPhone(v = "") {
-  // máscara rapidinha pt-BR (11) 99999-9999
   return v
     .replace(/\D/g, "")
     .replace(/^(\d{2})(\d)/, "($1) $2")
@@ -150,7 +146,6 @@ function loadPerfilContent() {
   const { first, last } = splitName(user.name);
   const stats = computeUserStats(user);
 
-  // aplica tema salvo
   applyTheme(user.settings?.theme || "system");
 
   const avatarStyle = user.avatarDataUrl
@@ -387,7 +382,6 @@ function loadPerfilContent() {
 function setupProfileFunctionality() {
   const user = getSafeUser();
 
-  // avatar upload
   const avatarInput = document.getElementById("avatarInput");
   const avatarPreview = document.getElementById("avatarPreview");
   const removeAvatarBtn = document.getElementById("removeAvatarBtn");
@@ -412,7 +406,6 @@ function setupProfileFunctionality() {
     });
   }
 
-  // máscara telefone
   const phoneEl = document.getElementById("profilePhone");
   if (phoneEl) {
     phoneEl.addEventListener("input", () => {
@@ -420,7 +413,6 @@ function setupProfileFunctionality() {
     });
   }
 
-  // força da senha
   const newPwdEl = document.getElementById("newPassword");
   const bar = document.getElementById("pwdBar");
   const tip = document.getElementById("pwdTip");
@@ -451,12 +443,11 @@ function setupProfileFunctionality() {
     updateStrength();
   }
 
-  // cancelar
+
   document.getElementById("cancelProfileBtn")?.addEventListener("click", () => {
     loadPerfilContent();
   });
 
-  // submit
   const profileForm = document.getElementById("profileForm");
   if (profileForm) {
     profileForm.addEventListener("submit", (e) => {
@@ -490,10 +481,8 @@ function setupProfileFunctionality() {
           });
           return;
         }
-        // aqui você faria a chamada de API para trocar senha; localmente só ignoramos.
       }
 
-      // atualiza usuário
       user.name = name || user.name;
       user.email = email || user.email;
       user.phone = phone;

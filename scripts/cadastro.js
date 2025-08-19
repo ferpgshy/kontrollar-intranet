@@ -1,4 +1,3 @@
-// Funcionalidade de cadastro
 document.addEventListener("DOMContentLoaded", () => {
   const cadastroForm = document.getElementById("cadastroForm")
   const nameInput = document.getElementById("name")
@@ -11,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const submitBtn = document.getElementById("submitBtn")
   const errorMessage = document.getElementById("errorMessage")
 
-  // Alternar visibilidade dos campos de senha
   function setupPasswordToggle(button, input) {
     if (button && input) {
       button.addEventListener("click", () => {
@@ -37,7 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setupPasswordToggle(togglePasswordBtn, passwordInput)
   setupPasswordToggle(toggleConfirmPasswordBtn, confirmPasswordInput)
 
-  // Envio do formulário
   if (cadastroForm) {
     cadastroForm.addEventListener("submit", (e) => {
       e.preventDefault()
@@ -48,11 +45,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const confirmPassword = confirmPasswordInput.value.trim()
       const acceptTerms = acceptTermsCheckbox.checked
 
-      // Limpar mensagens de erro anteriores
       errorMessage.style.display = "none"
       errorMessage.textContent = ""
 
-      // Validações básicas
       if (!name || !email || !password || !confirmPassword) {
         showError("Todos os campos são obrigatórios")
         return
@@ -73,11 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return
       }
 
-      // Estado de carregamento
       submitBtn.disabled = true
       submitBtn.textContent = "Criando conta..."
 
-      // Simulação de cadastro
       setTimeout(() => {
         const user = {
           id: Date.now(),
@@ -91,7 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Exibe a mensagem de erro
   function showError(message) {
     errorMessage.textContent = message
     errorMessage.style.display = "block"

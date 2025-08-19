@@ -6,7 +6,6 @@ window.equipes  = window.equipes  || JSON.parse(localStorage.getItem("equipes") 
 window.projetos = window.projetos || JSON.parse(localStorage.getItem("projetos") || "[]");
 window.avisos   = window.avisos   || JSON.parse(localStorage.getItem("avisos")   || "[]");
 
-// Equipes e Projetos do estado global
 function getTeamOptions() {
   const src = (Array.isArray(window.equipes) && window.equipes.length)
     ? window.equipes
@@ -79,7 +78,6 @@ function setupNoticesFunctionality() {
     newNoticeBtn.addEventListener("click", showNewNoticeModal);
   }
 
-  // Filters
   const priorityFilter = document.getElementById("noticePriorityFilter");
   const typeFilter = document.getElementById("noticeTypeFilter");
 
@@ -179,7 +177,6 @@ function generateNoticeCardsFromArray(arr) {
 
 
 function setupNoticeActions() {
-  // Edit notice buttons
   document.querySelectorAll(".edit-notice-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const noticeId = Number.parseInt(
@@ -189,7 +186,6 @@ function setupNoticeActions() {
     });
   });
 
-  // Delete notice buttons
   document.querySelectorAll(".delete-notice-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const noticeId = Number.parseInt(
@@ -301,7 +297,6 @@ function showNewNoticeModal() {
     `
   );
 
-  // busca equipes
   const teamSearch = document.getElementById("noticeTeamSearch");
   if (teamSearch) {
     teamSearch.addEventListener("input", (e) => {
@@ -314,7 +309,6 @@ function showNewNoticeModal() {
     });
   }
 
-  // busca projetos
   const projSearch = document.getElementById("noticeProjectSearch");
   if (projSearch) {
     projSearch.addEventListener("input", (e) => {
@@ -327,7 +321,6 @@ function showNewNoticeModal() {
     });
   }
 
-  // submit
   document.getElementById("newNoticeForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -342,11 +335,8 @@ function showNewNoticeModal() {
       priority: document.getElementById("noticePriority").value,
       type: document.getElementById("noticeType").value,
       author: user.name,
-      // ✅ usa horário de Brasília (yyyy-mm-dd)
       publishedAt: getDataBrasiliaFormatada(),
-      // vem de <input type="date">, já está yyyy-mm-dd
       expiresAt: document.getElementById("noticeExpires").value,
-      // vínculos
       teamIds,
       projectIds,
     };
@@ -453,7 +443,6 @@ function editNotice(noticeId) {
     `
   );
 
-  // buscas
   document.getElementById("editNoticeTeamSearch")?.addEventListener("input", (e) => {
     const q = e.target.value.trim().toLowerCase();
     document.querySelectorAll("#editNoticeTeamList [data-row-team]").forEach(row => {
@@ -472,7 +461,6 @@ function editNotice(noticeId) {
     });
   });
 
-  // submit
   document.getElementById("editNoticeForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -490,8 +478,6 @@ function editNotice(noticeId) {
   });
 }
 
-
-// Substitua sua função deleteNotice por esta
 async function deleteNotice(noticeId) {
   const confirmar = (typeof confirmarModal === "function")
     ? await confirmarModal({
@@ -507,7 +493,7 @@ async function deleteNotice(noticeId) {
   localStorage.setItem("avisos", JSON.stringify(window.avisos));
 
   if (typeof loadAvisosContent === "function") {
-    loadAvisosContent(); // Refresh avisos
+    loadAvisosContent();
   } else {
     console.warn("loadAvisosContent() não encontrado.");
   }

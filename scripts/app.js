@@ -8,13 +8,10 @@ function getCurrentPage() {
 }
 
 function navigate(page) {
-  // navegação centralizada: só mexe no hash;
-  // o handler de 'hashchange' vai carregar o conteúdo.
   const target = "#" + page;
   if (location.hash !== target) {
     location.hash = target;
   } else {
-    // se já estamos no mesmo hash, força só o refresh
     definirPaginaAtiva(page);
     carregarConteudoPagina(page);
   }
@@ -31,7 +28,6 @@ function atualizarDashboardSeVisivel() {
 }
 window.atualizarDashboardSeVisivel = atualizarDashboardSeVisivel;
 
-// Inicializa a UI de notificações quando o DOM estiver pronto
 (function bootNotifs() {
   const start = () => {
     if (!window.Notifs) {
@@ -42,7 +38,7 @@ window.atualizarDashboardSeVisivel = atualizarDashboardSeVisivel;
       bellSelector: "#botaoNotificacao",
       panelSelector: "#painelNotificacao",
       closeSelector: "#fecharNotificacao",
-      listSelector: "#listaNotificacoes", // será criado se não existir
+      listSelector: "#listaNotificacoes", 
     });
   };
   if (document.readyState === "loading") {
@@ -53,7 +49,6 @@ window.atualizarDashboardSeVisivel = atualizarDashboardSeVisivel;
 })();
 
 function configurarEventos() {
-  // Barra Lateral
   const controleSidebar = document.getElementById("controleSidebar");
   const celularcontroleSidebar = document.getElementById(
     "celularcontroleSidebar"
@@ -67,7 +62,6 @@ function configurarEventos() {
     sidebar.classList.toggle("celular-open");
   });
 
-  // Navegação
   document.querySelectorAll(".nav-link").forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
@@ -76,10 +70,8 @@ function configurarEventos() {
     });
   });
 
-  // Botão "Novo" (cabeçalho)
   configurarBotaoNovoCabecalho();
 
-  // Logout
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
@@ -96,7 +88,6 @@ function configurarEventos() {
 }
 
 function configurarBotaoNovoCabecalho() {
-  // Criar o botão "Novo" no cabeçalho
   const cabecalhoDireita = document.querySelector(".header-right");
   if (cabecalhoDireita) {
     const botaoNovo = cabecalhoDireita.querySelector(".btn-primary");
@@ -110,13 +101,11 @@ function configurarBotaoNovoCabecalho() {
 }
 
 function exibirDropdownNovoItem(botao) {
-  // Remover dropdown existente, se houver
   const dropdownExistente = document.getElementById("newItemDropdown");
   if (dropdownExistente) {
     dropdownExistente.remove();
   }
 
-  // Cria dropdown
   const dropdown = document.createElement("div");
   dropdown.id = "newItemDropdown";
   dropdown.style.cssText = `
@@ -161,7 +150,6 @@ function exibirDropdownNovoItem(botao) {
     </div>
     `;
 
-  // CSS dos itens do dropdown
   const style = document.createElement("style");
   style.textContent = `
     .dropdown-item {
@@ -188,13 +176,11 @@ function exibirDropdownNovoItem(botao) {
   `;
   document.head.appendChild(style);
 
-  // Posicionamento do dropdown
   const retanguloBotao = botao.getBoundingClientRect();
   const cabecalhoDireita = botao.closest(".header-right");
   cabecalhoDireita.style.position = "relative";
   cabecalhoDireita.appendChild(dropdown);
 
-  // Clique nos itens do dropdown
   dropdown.querySelectorAll(".dropdown-item").forEach((item) => {
     item.addEventListener("click", (e) => {
       const acao = e.currentTarget.getAttribute("data-action");
@@ -229,17 +215,15 @@ function definirPaginaAtiva(page) {
       link.classList.add("active");
     }
   });
-  // ✅ guarda aba ativa (fallback se recarregar sem hash)
   localStorage.setItem("activePage", page);
 }
 
 
-// Boot do roteador baseado no hash
 (function bootRouter() {
   const load = () => {
-    const page = pageFromHash();           // lê #aba-atual
-    definirPaginaAtiva(page);              // pinta item do menu
-    carregarConteudoPagina(page);          // carrega o conteúdo da aba
+    const page = pageFromHash();          
+    definirPaginaAtiva(page);              
+    carregarConteudoPagina(page);       
   };
   window.addEventListener("hashchange", load);
   if (document.readyState === "loading") {

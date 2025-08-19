@@ -11,7 +11,6 @@ app.use(cors({
 
 app.use(express.json());
 
-// Configuração do cliente OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -20,14 +19,12 @@ app.post("/chat", async (req, res) => {
   const { messages } = req.body;
   
   try {
-    // Chamada direta à API da OpenAI
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: messages,
       max_tokens: 1000,
     });
 
-    // Formata a resposta para manter compatibilidade com o frontend
     const formattedResponse = {
       id: response.id,
       created: response.created,
@@ -47,7 +44,6 @@ app.post("/chat", async (req, res) => {
   } catch (error) {
     console.error("Erro ao chamar OpenAI:", error);
     
-    // Tratamento detalhado de erros
     let errorMessage = "Internal server error";
     let statusCode = 500;
     

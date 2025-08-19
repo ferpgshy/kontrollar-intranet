@@ -29,14 +29,13 @@ function createModal(title, content) {
 
   const contentEl = document.createElement("div");
   contentEl.innerHTML = content;
-  contentEl.style.marginBottom = "0rem"; // deixa controle total para o content
+  contentEl.style.marginBottom = "0rem";
 
   modal.appendChild(titleEl);
   modal.appendChild(contentEl);
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
-  // ✅ Fechar ao clicar fora do modal
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) {
       fecharModal();
@@ -86,7 +85,6 @@ function confirmarModal({ title, message }) {
     modalOverlay.appendChild(modal);
     document.body.appendChild(modalOverlay);
 
-    // Eventos
     modal.querySelector("#fecharModalBtn").onclick =
     modal.querySelector("#cancelarBtn").onclick = () => {
       document.body.removeChild(modalOverlay);
@@ -179,7 +177,6 @@ function alertModal({ title, message }) {
     modalOverlay.appendChild(modal);
     document.body.appendChild(modalOverlay);
 
-    // Fechar com X ou OK
     modal.querySelector("#fecharModalBtn").onclick =
     modal.querySelector("#okBtn").onclick = () => {
       document.body.removeChild(modalOverlay);

@@ -1,20 +1,14 @@
-// Helper global para montar a lista de usuários conhecida pelo app
 if (typeof window.getKnownUsersForEvents !== "function") {
   window.getKnownUsersForEvents = function () {
     try {
-      // Reaproveita do chat, se existir
       const base = typeof window.getAllKnownUsers === "function" ? window.getAllKnownUsers() : [];
-
-      // users do localStorage (string[] ou {name:string}[])
       const fromLocalRaw = JSON.parse(localStorage.getItem("users") || "[]");
       const fromLocal = Array.isArray(fromLocalRaw)
         ? fromLocalRaw.map(u => (typeof u === "string" ? u : u?.name)).filter(Boolean)
         : [];
 
-      // usuário atual
       const currentName = (JSON.parse(localStorage.getItem("user") || "{}") || {}).name;
 
-      // membros conhecidos de chats e equipes
       const chatUsers = Array.isArray(window.chatGrupos)
         ? window.chatGrupos.flatMap(g => [...(g.members || []), ...(g.admins || [])])
         : [];
@@ -150,13 +144,11 @@ function gerarGridCalendario(mes, ano) {
       <div style="background-color: #f9fafb; padding: 0.75rem; text-align: center; font-weight: 500; font-size: 0.875rem;">Sáb</div>
     `;
 
-  // Empty cells for days before the first dia of the mes
   for (let i = 0; i < primeiroDia; i++) {
     calendarioHTML +=
       '<div style="background-color: #ffffff; padding: 0.75rem; min-height: 80px;"></div>';
   }
 
-  // Days of the mes
   for (let dia = 1; dia <= diasNoMes; dia++) {
     const eHoje =
       dia === hoje.getDate() &&
@@ -299,7 +291,7 @@ return `
 
 function mostrarNovoEventoModal() {
   const knownUsers = getKnownUsersForEvents();
-  const selected = new Map(); // name -> { included: boolean }
+  const selected = new Map();
 
   createModal(
     "Criar Novo Evento",
@@ -394,13 +386,11 @@ function mostrarNovoEventoModal() {
     });
   }
 
-  // popular lista
   for (const u of knownUsers) {
     if (!selected.has(u)) selected.set(u, { included: false });
     upsertRow(u);
   }
 
-  // busca
   document.getElementById("eventUserSearch").addEventListener("input", (e) => {
     const q = e.target.value.trim().toLowerCase();
     document.querySelectorAll("#eventUserList [data-row]").forEach((r) => {
@@ -409,7 +399,7 @@ function mostrarNovoEventoModal() {
     });
   });
 
-  // adicionar manualmente
+
   document.getElementById("eventAddManualBtn").addEventListener("click", () => {
     const input = document.getElementById("eventManualUser");
     const name = (input.value || "").trim();
@@ -424,7 +414,6 @@ function mostrarNovoEventoModal() {
     input.focus();
   });
 
-  // submit
   document.getElementById("newEventForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -459,11 +448,10 @@ function showEditEventModal(eventId) {
   if (!ev) return;
 
   const knownUsers = getKnownUsersForEvents();
-  const selected = new Map(); // name -> { included: boolean }
+  const selected = new Map();
   (Array.isArray(ev.participants) ? ev.participants : []).forEach(p => {
     selected.set(p, { included: true });
   });
-  // garante que todos os conhecidos existam no map
   for (const u of knownUsers) if (!selected.has(u)) selected.set(u, { included: false });
 
   createModal(

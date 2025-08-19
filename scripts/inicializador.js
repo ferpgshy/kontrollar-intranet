@@ -1,29 +1,22 @@
-// ---------- Inicialização da Dashboard ----------
 document.addEventListener("DOMContentLoaded", () => {
-  // Verificar Auth
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user) {
     window.location.href = "login.html";
     return;
   }
 
-  // Preenche header do usuário
   IniciarDashboard(user);
 
-  // Eventos de UI (menu, botão Novo, logout, etc.)
   if (typeof configurarEventos === "function") {
     configurarEventos();
   }
 
-  // Deixe o roteador do app.js carregar a página atual pelo hash.
-  // Se não houver hash, use a última aba salva ou "dashboard".
   if (!location.hash) {
     const saved = localStorage.getItem("activePage") || "dashboard";
     if (typeof navigate === "function") navigate(saved);
   }
 });
 
-// ---------- Header (nome/cargo/avatar) ----------
 function IniciarDashboard(user) {
   const userName   = document.getElementById("userName");
   const userRole   = document.getElementById("userRole");
@@ -34,7 +27,6 @@ function IniciarDashboard(user) {
   if (userAvatar) userAvatar.textContent = getInitials(user.name);
 }
 
-// ---------- Helpers seguros (evita redefinir se já existem) ----------
 if (typeof window.cargosLabel !== "function") {
   window.cargosLabel = function cargosLabel(role) {
     const roles = {
@@ -59,7 +51,6 @@ if (typeof window.getInitials !== "function") {
   };
 }
 
-// ---------- Dispatcher de páginas (usado pelo roteador) ----------
 function carregarConteudoPagina(page) {
   const conteudoPagina = document.getElementById("conteudoPagina");
   if (!conteudoPagina) return;
