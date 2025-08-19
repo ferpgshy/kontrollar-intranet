@@ -17,8 +17,10 @@ function getSafeUser() {
   if (!u.settings) u.settings = {};
   if (!u.settings.theme) u.settings.theme = "system"; // system|light|dark
   if (!u.settings.timezone) u.settings.timezone = "America/Sao_Paulo";
-  if (typeof u.settings.notifyEmail !== "boolean") u.settings.notifyEmail = true;
-  if (typeof u.settings.notifyDesktop !== "boolean") u.settings.notifyDesktop = false;
+  if (typeof u.settings.notifyEmail !== "boolean")
+    u.settings.notifyEmail = true;
+  if (typeof u.settings.notifyDesktop !== "boolean")
+    u.settings.notifyDesktop = false;
   return u;
 }
 
@@ -30,11 +32,11 @@ function applyTheme(theme) {
   }
 }
 
-function splitName(fullName="") {
+function splitName(fullName = "") {
   const parts = String(fullName).trim().split(/\s+/);
   return {
     first: parts[0] || "",
-    last: parts.length > 1 ? parts.slice(1).join(" ") : ""
+    last: parts.length > 1 ? parts.slice(1).join(" ") : "",
   };
 }
 
@@ -42,11 +44,18 @@ function joinName(first, last) {
   return [first || "", last || ""].filter(Boolean).join(" ").trim();
 }
 
-function getInitials(name="") {
-  return String(name).trim().split(/\s+/).slice(0,2).map(s => s[0]?.toUpperCase()||"").join("") || "U";
+function getInitials(name = "") {
+  return (
+    String(name)
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((s) => s[0]?.toUpperCase() || "")
+      .join("") || "U"
+  );
 }
 
-function maskPhone(v="") {
+function maskPhone(v = "") {
   // máscara rapidinha pt-BR (11) 99999-9999
   return v
     .replace(/\D/g, "")
@@ -55,7 +64,7 @@ function maskPhone(v="") {
     .slice(0, 15);
 }
 
-function pwdStrengthScore(p="") {
+function pwdStrengthScore(p = "") {
   let s = 0;
   if (p.length >= 8) s++;
   if (/[A-Z]/.test(p)) s++;
@@ -66,9 +75,14 @@ function pwdStrengthScore(p="") {
 }
 
 function computeUserStats(userOrName) {
-  const user = typeof userOrName === "object" ? userOrName : { name: userOrName };
-  const name = String(user.name || "").trim().toLowerCase();
-  const email = String(user.email || "").trim().toLowerCase();
+  const user =
+    typeof userOrName === "object" ? userOrName : { name: userOrName };
+  const name = String(user.name || "")
+    .trim()
+    .toLowerCase();
+  const email = String(user.email || "")
+    .trim()
+    .toLowerCase();
 
   const matches = (m) => {
     if (!m) return false;
@@ -77,8 +91,12 @@ function computeUserStats(userOrName) {
       return s && (s === name || (email && s === email));
     }
     if (typeof m === "object") {
-      const n = String(m.name || "").trim().toLowerCase();
-      const e = String(m.email || "").trim().toLowerCase();
+      const n = String(m.name || "")
+        .trim()
+        .toLowerCase();
+      const e = String(m.email || "")
+        .trim()
+        .toLowerCase();
       return (n && n === name) || (email && e === email);
     }
     return false;
@@ -88,17 +106,26 @@ function computeUserStats(userOrName) {
   const projs = Array.isArray(window.projetos) ? window.projetos : [];
   const tasks = Array.isArray(window.tarefas) ? window.tarefas : [];
 
-  const equipesDoUsuario = eqs.filter(e => Array.isArray(e.members) && e.members.some(matches));
-
-  const projetosDoUsuario = projs.filter(p =>
-    (Array.isArray(p.members) && p.members.some(matches)) ||
-    (Array.isArray(p.equipe)  && p.equipe.some(matches))  ||
-    (matches(p.responsavel)) ||
-    (matches(p.owner))
+  const equipesDoUsuario = eqs.filter(
+    (e) => Array.isArray(e.members) && e.members.some(matches)
   );
 
-  const tarefasUsuario = tasks.filter(t => matches(t.assignee || t.responsavel || t.atribuidoA));
-  const concluidas = tarefasUsuario.filter(t => String(t.status || "").toLowerCase().includes("concl")).length;
+  const projetosDoUsuario = projs.filter(
+    (p) =>
+      (Array.isArray(p.members) && p.members.some(matches)) ||
+      (Array.isArray(p.equipe) && p.equipe.some(matches)) ||
+      matches(p.responsavel) ||
+      matches(p.owner)
+  );
+
+  const tarefasUsuario = tasks.filter((t) =>
+    matches(t.assignee || t.responsavel || t.atribuidoA)
+  );
+  const concluidas = tarefasUsuario.filter((t) =>
+    String(t.status || "")
+      .toLowerCase()
+      .includes("concl")
+  ).length;
   const pendentes = tarefasUsuario.length - concluidas;
 
   return {
@@ -107,12 +134,11 @@ function computeUserStats(userOrName) {
     tarefasConcluidas: concluidas,
     tarefasPendentes: pendentes,
     equipesDoUsuario,
-    projetosDoUsuario
+    projetosDoUsuario,
   };
 }
 
-
-function formatarDataPtBR(dataIso="") {
+function formatarDataPtBR(dataIso = "") {
   const [ano, mes, dia] = String(dataIso).split("-");
   if (!ano || !mes || !dia) return dataIso || "";
   return `${dia}/${mes}/${ano}`;
@@ -151,12 +177,24 @@ function loadPerfilContent() {
             Alterar foto
             <input id="avatarInput" type="file" accept="image/*" style="display:none">
           </label>
-          ${user.avatarDataUrl ? `<button id="removeAvatarBtn" class="btn btn-outline" style="margin-left:0.5rem;">Remover</button>` : ""}
+          ${
+            user.avatarDataUrl
+              ? `<button id="removeAvatarBtn" class="btn btn-outline" style="margin-left:0.5rem;">Remover</button>`
+              : ""
+          }
         </div>
 
-        <h2 style="font-size:1.25rem;font-weight:600;color:#000;margin-bottom:0.25rem;text-align:center;">${user.name}</h2>
-        <p style="color:#666;text-align:center;margin-bottom:0.25rem;">${user.email}</p>
-        <p style="color:#666;text-align:center;font-size:0.875rem;margin-bottom:1rem;">${typeof cargosLabel === "function" ? cargosLabel(user.role) : (user.role || "Usuário")}</p>
+        <h2 style="font-size:1.25rem;font-weight:600;color:#000;margin-bottom:0.25rem;text-align:center;">${
+          user.name
+        }</h2>
+        <p style="color:#666;text-align:center;margin-bottom:0.25rem;">${
+          user.email
+        }</p>
+        <p style="color:#666;text-align:center;font-size:0.875rem;margin-bottom:1rem;">${
+          typeof cargosLabel === "function"
+            ? cargosLabel(user.role)
+            : user.role || "Usuário"
+        }</p>
 
         <div style="display:grid;gap:0.5rem;">
           <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid #f3f4f6;">
@@ -167,11 +205,15 @@ function loadPerfilContent() {
             <span style="font-weight:500;">Membro desde:</span>
             <span>${formatarDataPtBR(user.createdAt)}</span>
           </div>
-          ${user.lastLoginAt ? `
+          ${
+            user.lastLoginAt
+              ? `
           <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid #f3f4f6;">
             <span style="font-weight:500;">Último acesso:</span>
             <span>${formatarDataPtBR(user.lastLoginAt)}</span>
-          </div>` : ""}
+          </div>`
+              : ""
+          }
         </div>
 
         <!-- Stats Pessoais -->
@@ -182,34 +224,49 @@ function loadPerfilContent() {
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.75rem;">
             <div style="border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.75rem;">
               <div style="font-size:0.8rem;color:#6b7280;">Equipes</div>
-              <div style="font-weight:700;font-size:1.2rem;">${stats.equipesCount}</div>
+              <div style="font-weight:700;font-size:1.2rem;">${
+                stats.equipesCount
+              }</div>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.75rem;">
               <div style="font-size:0.8rem;color:#6b7280;">Projetos</div>
-              <div style="font-weight:700;font-size:1.2rem;">${stats.projetosCount}</div>
+              <div style="font-weight:700;font-size:1.2rem;">${
+                stats.projetosCount
+              }</div>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.75rem;">
               <div style="font-size:0.8rem;color:#6b7280;">Tarefas concl.</div>
-              <div style="font-weight:700;font-size:1.2rem;">${stats.tarefasConcluidas}</div>
+              <div style="font-weight:700;font-size:1.2rem;">${
+                stats.tarefasConcluidas
+              }</div>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.75rem;">
               <div style="font-size:0.8rem;color:#6b7280;">Tarefas pend.</div>
-              <div style="font-weight:700;font-size:1.2rem;">${stats.tarefasPendentes}</div>
+              <div style="font-weight:700;font-size:1.2rem;">${
+                stats.tarefasPendentes
+              }</div>
             </div>
           </div>
 
           <!-- Detalhes do perfil (puxa dos campos) -->
           <div style="border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.75rem;">
             <div style="display:grid;row-gap:0.35rem;font-size:0.9rem;color:#374151;">
-              <div><strong>Departamento:</strong> ${user.department || "—"}</div>
+              <div><strong>Departamento:</strong> ${
+                user.department || "—"
+              }</div>
               <div><strong>Cargo:</strong> ${user.role || "—"}</div>
               <div><strong>Telefone:</strong> ${user.phone || "—"}</div>
-              <div><strong>Fuso horário:</strong> ${(user.settings && user.settings.timezone) || "America/Sao_Paulo"}</div>
+              <div><strong>Fuso horário:</strong> ${
+                (user.settings && user.settings.timezone) || "America/Sao_Paulo"
+              }</div>
               <div><strong>Notificações:</strong>
                 ${
-                  (user.settings?.notifyEmail ? "E-mail" : "")
-                  + (user.settings?.notifyDesktop ? (user.settings?.notifyEmail ? " + Push" : "Push") : "")
-                  || "—"
+                  (user.settings?.notifyEmail ? "E-mail" : "") +
+                    (user.settings?.notifyDesktop
+                      ? user.settings?.notifyEmail
+                        ? " + Push"
+                        : "Push"
+                      : "") || "—"
                 }
               </div>
             </div>
@@ -237,11 +294,15 @@ function loadPerfilContent() {
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
               <div>
                 <label style="display:block;margin-bottom:0.5rem;font-weight:500;">E-mail</label>
-                <input type="email" id="profileEmail" value="${user.email}" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+                <input type="email" id="profileEmail" value="${
+                  user.email
+                }" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
               </div>
               <div>
                 <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Telefone</label>
-                <input type="tel" id="profilePhone" value="${user.phone || ""}" placeholder="(11) 99999-9999" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+                <input type="tel" id="profilePhone" value="${
+                  user.phone || ""
+                }" placeholder="(11) 99999-9999" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
               </div>
             </div>
 
@@ -250,19 +311,36 @@ function loadPerfilContent() {
                 <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Departamento</label>
                 <select id="profileDepartment" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
                   <option value="">Selecione</option>
-                  ${["desenvolvimento","design","marketing","vendas","rh","financeiro"]
-                    .map(dep => `<option value="${dep}" ${user.department===dep?"selected":""}>${dep[0].toUpperCase()+dep.slice(1)}</option>`).join("")}
+                  ${[
+                    "desenvolvimento",
+                    "design",
+                    "marketing",
+                    "vendas",
+                    "rh",
+                    "financeiro",
+                  ]
+                    .map(
+                      (dep) =>
+                        `<option value="${dep}" ${
+                          user.department === dep ? "selected" : ""
+                        }>${dep[0].toUpperCase() + dep.slice(1)}</option>`
+                    )
+                    .join("")}
                 </select>
               </div>
               <div>
                 <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Cargo</label>
-                <input type="text" id="profileRole" value="${user.role || ""}" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+                <input type="text" id="profileRole" value="${
+                  user.role || ""
+                }" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
               </div>
             </div>
 
             <div style="margin-bottom:1rem;">
               <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Bio</label>
-              <textarea id="profileBio" placeholder="Conte um pouco sobre você..." style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:80px;resize:vertical;">${user.bio || ""}</textarea>
+              <textarea id="profileBio" placeholder="Conte um pouco sobre você..." style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:80px;resize:vertical;">${
+                user.bio || ""
+              }</textarea>
             </div>
 
             <hr style="border:none;border-top:1px solid #e5e7eb;margin:1rem 0;">
@@ -349,7 +427,8 @@ function setupProfileFunctionality() {
   const togglePwd = document.getElementById("togglePwd");
   if (togglePwd && newPwdEl) {
     togglePwd.addEventListener("click", () => {
-      const t = newPwdEl.getAttribute("type") === "password" ? "text" : "password";
+      const t =
+        newPwdEl.getAttribute("type") === "password" ? "text" : "password";
       newPwdEl.setAttribute("type", t);
       togglePwd.textContent = t === "password" ? "Mostrar" : "Ocultar";
     });
@@ -359,8 +438,14 @@ function setupProfileFunctionality() {
       const s = pwdStrengthScore(newPwdEl.value);
       const pct = (s / 5) * 100;
       bar.style.width = pct + "%";
-      bar.style.background = s >= 4 ? "#10b981" : s >= 3 ? "#f59e0b" : "#ef4444";
-      tip.textContent = s >= 4 ? "Senha forte" : s >= 3 ? "Senha média" : "Use 8+ caracteres, maiúsculas, números e símbolos";
+      bar.style.background =
+        s >= 4 ? "#10b981" : s >= 3 ? "#f59e0b" : "#ef4444";
+      tip.textContent =
+        s >= 4
+          ? "Senha forte"
+          : s >= 3
+          ? "Senha média"
+          : "Use 8+ caracteres, maiúsculas, números e símbolos";
     };
     newPwdEl.addEventListener("input", updateStrength);
     updateStrength();
@@ -378,7 +463,7 @@ function setupProfileFunctionality() {
       e.preventDefault();
 
       const first = document.getElementById("profileName").value.trim();
-      const last  = document.getElementById("profileLastName").value.trim();
+      const last = document.getElementById("profileLastName").value.trim();
       const name = joinName(first, last);
 
       const email = document.getElementById("profileEmail").value.trim();
@@ -387,16 +472,22 @@ function setupProfileFunctionality() {
       const role = document.getElementById("profileRole").value.trim();
       const bio = document.getElementById("profileBio").value.trim();
       const newPassword = document.getElementById("newPassword").value;
-      const confirmNewPassword = document.getElementById("confirmNewPassword").value;
+      const confirmNewPassword =
+        document.getElementById("confirmNewPassword").value;
 
-      // valida senha (opcional)
       if (newPassword || confirmNewPassword) {
         if (newPassword !== confirmNewPassword) {
-          alert("As senhas não coincidem");
+          alertModal({
+            title: "Erro",
+            message: "As senhas não coincidem",
+          });
           return;
         }
         if (newPassword.length < 8) {
-          alert("A nova senha deve ter pelo menos 8 caracteres");
+          alertModal({
+            title: "Atenção",
+            message: "A nova senha deve ter pelo menos 8 caracteres",
+          });
           return;
         }
         // aqui você faria a chamada de API para trocar senha; localmente só ignoramos.
