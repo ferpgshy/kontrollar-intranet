@@ -5,17 +5,39 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  document.body.dataset.userId = String(user.id);
+  
   IniciarDashboard(user);
+  if (typeof configurarEventos === "function") configurarEventos();
 
-  if (typeof configurarEventos === "function") {
-    configurarEventos();
-  }
+  // NOVO: resolve página inicial de forma determinística
+  const pageFromHash = (location.hash || "").replace("#", "");
+  const saved = localStorage.getItem("activePage");
+  const page = pageFromHash || saved || "dashboard";
 
-  if (!location.hash) {
-    const saved = localStorage.getItem("activePage") || "dashboard";
-    if (typeof navigate === "function") navigate(saved);
-  }
+  if (typeof navigate === "function") navigate(page);
+  else carregarConteudoPagina(page);
 });
+
+// NOVO: única função de navegação
+if (typeof window.navigate !== "function") {
+  window.navigate = function(page) {
+    // marca a aba ativa para outros módulos (ex.: perfil.js)
+    document.body.dataset.activeTab = page;
+
+    // persiste a última aba
+    localStorage.setItem("activePage", page);
+
+    // mantém o hash sincronizado (bom para recarregar direto na aba)
+    const hash = "#" + page;
+    if (location.hash !== hash) {
+      try { history.replaceState(null, "", hash); } catch {}
+    }
+
+    // renderiza o conteúdo da aba
+    carregarConteudoPagina(page);
+  };
+}
 
 function IniciarDashboard(user) {
   const userName   = document.getElementById("userName");
@@ -39,17 +61,24 @@ if (typeof window.cargosLabel !== "function") {
   };
 }
 
-if (typeof window.getInitials !== "function") {
-  window.getInitials = function getInitials(name) {
-    return String(name)
-      .trim()
-      .split(/\s+/)
-      .map(n => n[0] || "")
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "U";
+if (typeof window.cargosLabel !== "function") {
+  window.cargosLabel = function cargosLabel(role) {
+    const map = {
+      admin: "Administrador",
+      manager: "Gestor",
+      developer: "Desenvolvedor",
+      client: "Cliente",
+      user: "Usuário",
+      "Administrador":"Administrador",
+      "Gestor":"Gestor",
+      "Desenvolvedor":"Desenvolvedor",
+      "Cliente":"Cliente",
+      "Usuário":"Usuário"
+    };
+    return map[role] || "Usuário";
   };
 }
+
 
 function carregarConteudoPagina(page) {
   const conteudoPagina = document.getElementById("conteudoPagina");
@@ -86,4 +115,15 @@ function carregarConteudoPagina(page) {
     default:
       if (typeof carregarConteudoDashboard === "function") carregarConteudoDashboard();
   }
+}
+
+if (typeof window.loadPerfilContent !== 'function') {
+  window.loadPerfilContent = function () {
+    // garante que o perfil saiba quem é o usuário
+    if (!document.body.dataset.userId) {
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (u?.id) document.body.dataset.userId = String(u.id);
+    }
+    window.renderPerfil?.({ userId: document.body.dataset.userId });
+  };
 }
