@@ -1,35 +1,47 @@
-const S_NOTICE = typeof sanitizeHTML === "function"
-  ? sanitizeHTML
-  : (s) => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const S_NOTICE =
+  typeof sanitizeHTML === "function"
+    ? sanitizeHTML
+    : (s) =>
+        String(s).replace(
+          /[&<>"']/g,
+          (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m])
+        );
 
-window.equipes  = window.equipes  || JSON.parse(localStorage.getItem("equipes")  || "[]");
-window.projetos = window.projetos || JSON.parse(localStorage.getItem("projetos") || "[]");
-window.avisos   = window.avisos   || JSON.parse(localStorage.getItem("avisos")   || "[]");
+window.equipes =
+  window.equipes || JSON.parse(localStorage.getItem("equipes") || "[]");
+window.projetos =
+  window.projetos || JSON.parse(localStorage.getItem("projetos") || "[]");
+window.avisos =
+  window.avisos || JSON.parse(localStorage.getItem("avisos") || "[]");
 
 function getTeamOptions() {
-  const src = (Array.isArray(window.equipes) && window.equipes.length)
-    ? window.equipes
-    : (typeof equipes !== "undefined" ? equipes : JSON.parse(localStorage.getItem("equipes") || "[]"));
-  return src.map(e => ({ id: Number(e.id), name: e.name || "Sem nome" }));
+  const src =
+    Array.isArray(window.equipes) && window.equipes.length
+      ? window.equipes
+      : typeof equipes !== "undefined"
+      ? equipes
+      : JSON.parse(localStorage.getItem("equipes") || "[]");
+  return src.map((e) => ({ id: Number(e.id), name: e.name || "Sem nome" }));
 }
 
 function getProjectOptions() {
-  const src = (Array.isArray(window.projetos) && window.projetos.length)
-    ? window.projetos
-    : (typeof projetos !== "undefined" ? projetos : JSON.parse(localStorage.getItem("projetos") || "[]"));
-  return src.map(p => ({ id: Number(p.id), name: p.name || "Sem nome" }));
+  const src =
+    Array.isArray(window.projetos) && window.projetos.length
+      ? window.projetos
+      : typeof projetos !== "undefined"
+      ? projetos
+      : JSON.parse(localStorage.getItem("projetos") || "[]");
+  return src.map((p) => ({ id: Number(p.id), name: p.name || "Sem nome" }));
 }
 
-
-function resolveTeamNamesFromIds(ids=[]) {
-  const map = new Map(getTeamOptions().map(t => [t.id, t.name]));
-  return ids.map(id => map.get(Number(id))).filter(Boolean);
+function resolveTeamNamesFromIds(ids = []) {
+  const map = new Map(getTeamOptions().map((t) => [t.id, t.name]));
+  return ids.map((id) => map.get(Number(id))).filter(Boolean);
 }
-function resolveProjectNamesFromIds(ids=[]) {
-  const map = new Map(getProjectOptions().map(p => [p.id, p.name]));
-  return ids.map(id => map.get(Number(id))).filter(Boolean);
+function resolveProjectNamesFromIds(ids = []) {
+  const map = new Map(getProjectOptions().map((p) => [p.id, p.name]));
+  return ids.map((id) => map.get(Number(id))).filter(Boolean);
 }
-
 
 function loadAvisosContent() {
   const conteudoPagina = document.getElementById("conteudoPagina");
@@ -98,40 +110,80 @@ function renderNoticeCard(notice) {
 
   const teamsChips = teamNames.length
     ? `<div style="display:flex;flex-wrap:wrap;gap:0.25rem;margin-top:0.5rem;">
-         ${teamNames.map(n => `<span style="background:#eef2ff;color:#3730a3;padding:0.125rem 0.5rem;border-radius:999px;font-size:0.7rem;">${S_NOTICE(n)}</span>`).join("")}
+         ${teamNames
+           .map(
+             (n) =>
+               `<span style="background:#eef2ff;color:#3730a3;padding:0.125rem 0.5rem;border-radius:999px;font-size:0.7rem;">${S_NOTICE(
+                 n
+               )}</span>`
+           )
+           .join("")}
        </div>`
     : "";
 
   const projectsChips = projectNames.length
     ? `<div style="display:flex;flex-wrap:wrap;gap:0.25rem;margin-top:0.25rem;">
-         ${projectNames.map(n => `<span style="background:#ecfeff;color:#155e75;padding:0.125rem 0.5rem;border-radius:999px;font-size:0.7rem;">${S_NOTICE(n)}</span>`).join("")}
+         ${projectNames
+           .map(
+             (n) =>
+               `<span style="background:#ecfeff;color:#155e75;padding:0.125rem 0.5rem;border-radius:999px;font-size:0.7rem;">${S_NOTICE(
+                 n
+               )}</span>`
+           )
+           .join("")}
        </div>`
     : "";
 
   return `
     <div data-notice-id="${notice.id}"
-         style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid ${getNoticePriorityColor(notice.priority)};border-radius:0.5rem;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.1);">
+         style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid ${getNoticePriorityColor(
+           notice.priority
+         )};border-radius:0.5rem;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.1);">
       <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem;">
         <div style="flex:1;">
           <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
-            <h3 style="font-size:1.25rem;font-weight:600;color:#000;">${S_NOTICE(notice.title)}</h3>
-            <span style="padding:0.25rem 0.5rem;background:${getNoticePriorityBgColor(notice.priority)};color:${getNoticePriorityTextColor(notice.priority)};border-radius:0.25rem;font-size:0.75rem;font-weight:500;">
+            <h3 style="font-size:1.25rem;font-weight:600;color:#000;">${S_NOTICE(
+              notice.title
+            )}</h3>
+            <span style="padding:0.25rem 0.5rem;background:${getNoticePriorityBgColor(
+              notice.priority
+            )};color:${getNoticePriorityTextColor(
+    notice.priority
+  )};border-radius:0.25rem;font-size:0.75rem;font-weight:500;">
               ${notice.priority.toUpperCase()}
             </span>
-            <span style="padding:0.25rem 0.5rem;background:${getNoticeTypeBgColor(notice.type)};color:${getNoticeTypeTextColor(notice.type)};border-radius:0.25rem;font-size:0.75rem;">
+            <span style="padding:0.25rem 0.5rem;background:${getNoticeTypeBgColor(
+              notice.type
+            )};color:${getNoticeTypeTextColor(
+    notice.type
+  )};border-radius:0.25rem;font-size:0.75rem;">
               ${getNoticeTypeLabel(notice.type)}
             </span>
           </div>
 
-          <p style="color:#666;margin-bottom:0.75rem;line-height:1.5;">${S_NOTICE(notice.content)}</p>
+          <p style="color:#666;margin-bottom:0.75rem;line-height:1.5;">${S_NOTICE(
+            notice.content
+          )}</p>
 
-          ${teamNames.length || projectNames.length ? `
+          ${
+            teamNames.length || projectNames.length
+              ? `
             <div style="margin:0.25rem 0 0.5rem;color:#6b7280;font-size:0.85rem;">
-              ${teamNames.length ? `<div><strong>Equipes:</strong> ${teamNames.length}</div>` : ``}
+              ${
+                teamNames.length
+                  ? `<div><strong>Equipes:</strong> ${teamNames.length}</div>`
+                  : ``
+              }
               ${teamsChips}
-              ${projectNames.length ? `<div style="margin-top:0.35rem;"><strong>Projetos:</strong> ${projectNames.length}</div>` : ``}
+              ${
+                projectNames.length
+                  ? `<div style="margin-top:0.35rem;"><strong>Projetos:</strong> ${projectNames.length}</div>`
+                  : ``
+              }
               ${projectsChips}
-            </div>` : ``}
+            </div>`
+              : ``
+          }
 
           <div style="display:flex;align-items:center;gap:1rem;font-size:0.875rem;color:#9ca3af;margin-top:0.5rem;">
             <div style="display:flex;align-items:center;gap:0.25rem;">
@@ -174,7 +226,6 @@ function generateNoticeCards() {
 function generateNoticeCardsFromArray(arr) {
   return (arr || []).map(renderNoticeCard).join("");
 }
-
 
 function setupNoticeActions() {
   document.querySelectorAll(".edit-notice-btn").forEach((btn) => {
@@ -221,79 +272,97 @@ function showNewNoticeModal() {
   const projects = getProjectOptions();
 
   const teamsList = teams.length
-    ? teams.map(t => `
-        <label data-row-team="${t.id}" style="display:flex;align-items:center;gap:0.5rem;">
-          <input type="checkbox" class="noticeTeamChk" value="${t.id}"> ${S_NOTICE(t.name)}
-        </label>`).join("")
+    ? teams
+        .map(
+          (t) => `
+        <label data-row-team="${
+          t.id
+        }" style="display:flex;align-items:center;gap:0.5rem;">
+          <input type="checkbox" class="noticeTeamChk" value="${
+            t.id
+          }"> ${S_NOTICE(t.name)}
+        </label>`
+        )
+        .join("")
     : `<div style="color:#6b7280;">Nenhuma equipe cadastrada.</div>`;
 
   const projectsList = projects.length
-    ? projects.map(p => `
-        <label data-row-project="${p.id}" style="display:flex;align-items:center;gap:0.5rem;">
-          <input type="checkbox" class="noticeProjectChk" value="${p.id}"> ${S_NOTICE(p.name)}
-        </label>`).join("")
+    ? projects
+        .map(
+          (p) => `
+        <label data-row-project="${
+          p.id
+        }" style="display:flex;align-items:center;gap:0.5rem;">
+          <input type="checkbox" class="noticeProjectChk" value="${
+            p.id
+          }"> ${S_NOTICE(p.name)}
+        </label>`
+        )
+        .join("")
     : `<div style="color:#6b7280;">Nenhum projeto cadastrado.</div>`;
 
   createModal(
     "Criar Novo Aviso",
     `
-      <form id="newNoticeForm">
-        <div style="margin-bottom:1rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Título do Aviso</label>
-          <input type="text" id="noticeTitle" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-        </div>
-
-        <div style="margin-bottom:1rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Conteúdo</label>
-          <textarea id="noticeContent" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:120px;resize:vertical;"></textarea>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
-          <div>
-            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Prioridade</label>
-            <select id="noticePriority" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-              <option value="baixa">Baixa</option>
-              <option value="media" selected>Média</option>
-              <option value="alta">Alta</option>
-            </select>
+      <div style="max-width: 90vw; width: 600px; margin: 0 auto;">
+        <form id="newNoticeForm" style="max-height: 80vh; overflow-y: auto; padding: 0.5rem;">
+          <div style="margin-bottom:1rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Título do Aviso</label>
+            <input type="text" id="noticeTitle" required style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
           </div>
-          <div>
-            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tipo</label>
-            <select id="noticeType" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-              <option value="announcement">Anúncio</option>
-              <option value="policy">Política</option>
-              <option value="maintenance">Manutenção</option>
-              <option value="urgent">Urgente</option>
-            </select>
+
+          <div style="margin-bottom:1rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Conteúdo</label>
+            <textarea id="noticeContent" required style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:120px;resize:vertical;box-sizing: border-box;"></textarea>
           </div>
-        </div>
 
-        <div style="margin-bottom:1rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Data de Expiração</label>
-          <input type="date" id="noticeExpires" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-        </div>
+          <div style="display:grid;grid-template-columns:1fr;gap:1rem;margin-bottom:1rem;">
+            <div>
+              <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Prioridade</label>
+              <select id="noticePriority" style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
+                <option value="baixa">Baixa</option>
+                <option value="media" selected>Média</option>
+                <option value="alta">Alta</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tipo</label>
+              <select id="noticeType" style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
+                <option value="announcement">Anúncio</option>
+                <option value="policy">Política</option>
+                <option value="maintenance">Manutenção</option>
+                <option value="urgent">Urgente</option>
+              </select>
+            </div>
+          </div>
 
-        <div style="margin:1rem 0 0.5rem;font-weight:600;">Equipes</div>
-        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
-          <input type="text" id="noticeTeamSearch" placeholder="Buscar equipes..." style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-        </div>
-        <div id="noticeTeamList" style="max-height:180px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
-          ${teamsList}
-        </div>
+          <div style="margin-bottom:1rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Data de Expiração</label>
+            <input type="date" id="noticeExpires" required style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
+          </div>
 
-        <div style="margin:1rem 0 0.5rem;font-weight:600;">Projetos</div>
-        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
-          <input type="text" id="noticeProjectSearch" placeholder="Buscar projetos..." style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-        </div>
-        <div id="noticeProjectList" style="max-height:180px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
-          ${projectsList}
-        </div>
+          <div style="margin:1rem 0 0.5rem;font-weight:600;">Equipes</div>
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+            <input type="text" id="noticeTeamSearch" placeholder="Buscar equipes..." style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
+          </div>
+          <div id="noticeTeamList" style="height:100%;width:95%;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+            ${teamsList}
+          </div>
 
-        <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
-          <button type="button" onclick="fecharModal()" class="btn btn-outline">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Publicar Aviso</button>
-        </div>
-      </form>
+          <div style="margin:1rem 0 0.5rem;font-weight:600;">Projetos</div>
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+            <input type="text" id="noticeProjectSearch" placeholder="Buscar projetos..." style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
+          </div>
+          <div id="noticeProjectList" style="height:100%;width:95%;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+            ${projectsList}
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;width:95%;gap:1rem;justify-content:flex-end;margin-top:1rem;">
+            <button type="button" onclick="fecharModal()" class="btn btn-outline" style="flex:1;min-width:120px;">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="flex:1;min-width:120px;">Publicar Aviso</button>
+          </div>
+        </form>
+      </div>
     `
   );
 
@@ -301,11 +370,15 @@ function showNewNoticeModal() {
   if (teamSearch) {
     teamSearch.addEventListener("input", (e) => {
       const q = e.target.value.trim().toLowerCase();
-      document.querySelectorAll("#noticeTeamList [data-row-team]").forEach(row => {
-        const id = Number(row.getAttribute("data-row-team"));
-        const name = (teams.find(t => t.id === id)?.name || "").toLowerCase();
-        row.style.display = name.includes(q) ? "flex" : "none";
-      });
+      document
+        .querySelectorAll("#noticeTeamList [data-row-team]")
+        .forEach((row) => {
+          const id = Number(row.getAttribute("data-row-team"));
+          const name = (
+            teams.find((t) => t.id === id)?.name || ""
+          ).toLowerCase();
+          row.style.display = name.includes(q) ? "flex" : "none";
+        });
     });
   }
 
@@ -313,20 +386,30 @@ function showNewNoticeModal() {
   if (projSearch) {
     projSearch.addEventListener("input", (e) => {
       const q = e.target.value.trim().toLowerCase();
-      document.querySelectorAll("#noticeProjectList [data-row-project]").forEach(row => {
-        const id = Number(row.getAttribute("data-row-project"));
-        const name = (projects.find(p => p.id === id)?.name || "").toLowerCase();
-        row.style.display = name.includes(q) ? "flex" : "none";
-      });
+      document
+        .querySelectorAll("#noticeProjectList [data-row-project]")
+        .forEach((row) => {
+          const id = Number(row.getAttribute("data-row-project"));
+          const name = (
+            projects.find((p) => p.id === id)?.name || ""
+          ).toLowerCase();
+          row.style.display = name.includes(q) ? "flex" : "none";
+        });
     });
   }
 
   document.getElementById("newNoticeForm").addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const user = JSON.parse(localStorage.getItem("user")) || { name: "Sistema" };
-    const teamIds = Array.from(document.querySelectorAll(".noticeTeamChk:checked")).map(c => Number(c.value));
-    const projectIds = Array.from(document.querySelectorAll(".noticeProjectChk:checked")).map(c => Number(c.value));
+    const user = JSON.parse(localStorage.getItem("user")) || {
+      name: "Sistema",
+    };
+    const teamIds = Array.from(
+      document.querySelectorAll(".noticeTeamChk:checked")
+    ).map((c) => Number(c.value));
+    const projectIds = Array.from(
+      document.querySelectorAll(".noticeProjectChk:checked")
+    ).map((c) => Number(c.value));
 
     const newNotice = {
       id: Date.now(),
@@ -341,16 +424,14 @@ function showNewNoticeModal() {
       projectIds,
     };
 
-    (window.avisos ||= []);
+    window.avisos ||= [];
     window.avisos.push(newNotice);
     localStorage.setItem("avisos", JSON.stringify(window.avisos));
 
     fecharModal();
     loadAvisosContent();
-
   });
 }
-
 
 function editNotice(noticeId) {
   const notice = (window.avisos || []).find((n) => n.id === noticeId);
@@ -364,102 +445,152 @@ function editNotice(noticeId) {
   createModal(
     "Editar Aviso",
     `
-      <form id="editNoticeForm">
-        <div style="margin-bottom:1rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Título do Aviso</label>
-          <input type="text" id="editNoticeTitle" value="${S_NOTICE(notice.title)}" required
-                 style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-        </div>
-
-        <div style="margin-bottom:1rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Conteúdo</label>
-          <textarea id="editNoticeContent" required
-            style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:120px;resize:vertical;">${S_NOTICE(notice.content)}</textarea>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
-          <div>
-            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Prioridade</label>
-            <select id="editNoticePriority" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-              <option value="baixa" ${notice.priority==="baixa"?"selected":""}>Baixa</option>
-              <option value="media" ${notice.priority==="media"?"selected":""}>Média</option>
-              <option value="alta"  ${notice.priority==="alta" ?"selected":""}>Alta</option>
-            </select>
+      <div style="max-width: 90vw; width: 600px; margin: 0 auto;">
+        <form id="editNoticeForm" style="max-height: 80vh; overflow-y: auto; padding: 0.5rem;">
+          <div style="margin-bottom:1rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Título do Aviso</label>
+            <input type="text" id="editNoticeTitle" value="${S_NOTICE(
+              notice.title
+            )}" required
+                   style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
           </div>
-          <div>
-            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tipo</label>
-            <select id="editNoticeType" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-              <option value="announcement" ${notice.type==="announcement"?"selected":""}>Anúncio</option>
-              <option value="policy" ${notice.type==="policy"?"selected":""}>Política</option>
-              <option value="maintenance" ${notice.type==="maintenance"?"selected":""}>Manutenção</option>
-              <option value="urgent" ${notice.type==="urgent"?"selected":""}>Urgente</option>
-            </select>
+
+          <div style="margin-bottom:1rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Conteúdo</label>
+            <textarea id="editNoticeContent" required
+              style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:120px;resize:vertical;box-sizing: border-box;">${S_NOTICE(
+                notice.content
+              )}</textarea>
           </div>
-        </div>
 
-        <div style="margin-bottom:1rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Data de Expiração</label>
-          <input type="date" id="editNoticeExpires" value="${notice.expiresAt}"
-                 required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-        </div>
+          <div style="display:grid;grid-template-columns:1fr;gap:1rem;margin-bottom:1rem;">
+            <div>
+              <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Prioridade</label>
+              <select id="editNoticePriority" style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
+                <option value="baixa" ${
+                  notice.priority === "baixa" ? "selected" : ""
+                }>Baixa</option>
+                <option value="media" ${
+                  notice.priority === "media" ? "selected" : ""
+                }>Média</option>
+                <option value="alta"  ${
+                  notice.priority === "alta" ? "selected" : ""
+                }>Alta</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Tipo</label>
+              <select id="editNoticeType" style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
+                <option value="announcement" ${
+                  notice.type === "announcement" ? "selected" : ""
+                }>Anúncio</option>
+                <option value="policy" ${
+                  notice.type === "policy" ? "selected" : ""
+                }>Política</option>
+                <option value="maintenance" ${
+                  notice.type === "maintenance" ? "selected" : ""
+                }>Manutenção</option>
+                <option value="urgent" ${
+                  notice.type === "urgent" ? "selected" : ""
+                }>Urgente</option>
+              </select>
+            </div>
+          </div>
 
-        <div style="margin:1rem 0 0.5rem;font-weight:600;">Equipes</div>
-        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
-          <input type="text" id="editNoticeTeamSearch" placeholder="Buscar equipes..." style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-        </div>
-        <div id="editNoticeTeamList" style="max-height:180px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
-          ${
-            teams.length
-              ? teams.map(t => `
-                  <label data-row-team="${t.id}" style="display:flex;align-items:center;gap:0.5rem;">
-                    <input type="checkbox" class="editNoticeTeamChk" value="${t.id}" ${selTeams.has(t.id) ? "checked":""}>
-                    ${S_NOTICE(t.name)}
-                  </label>`).join("")
-              : `<div style="color:#6b7280;">Nenhuma equipe cadastrada.</div>`
-          }
-        </div>
+          <div style="margin-bottom:1rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Data de Expiração</label>
+            <input type="date" id="editNoticeExpires" value="${
+              notice.expiresAt
+            }"
+                   required style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
+          </div>
 
-        <div style="margin:1rem 0 0.5rem;font-weight:600;">Projetos</div>
-        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
-          <input type="text" id="editNoticeProjectSearch" placeholder="Buscar projetos..." style="flex:1;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-        </div>
-        <div id="editNoticeProjectList" style="max-height:180px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
-          ${
-            projects.length
-              ? projects.map(p => `
-                  <label data-row-project="${p.id}" style="display:flex;align-items:center;gap:0.5rem;">
-                    <input type="checkbox" class="editNoticeProjectChk" value="${p.id}" ${selProjects.has(p.id) ? "checked":""}>
-                    ${S_NOTICE(p.name)}
-                  </label>`).join("")
-              : `<div style="color:#6b7280;">Nenhum projeto cadastrado.</div>`
-          }
-        </div>
+          <div style="margin:1rem 0 0.5rem;font-weight:600;">Equipes</div>
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+            <input type="text" id="editNoticeTeamSearch" placeholder="Buscar equipes..." style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
+          </div>
+          <div id="editNoticeTeamList" style="height:100%;width:95%;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+            ${
+              teams.length
+                ? teams
+                    .map(
+                      (t) => `
+                    <label data-row-team="${
+                      t.id
+                    }" style="display:flex;align-items:center;gap:0.5rem;">
+                      <input type="checkbox" class="editNoticeTeamChk" value="${
+                        t.id
+                      }" ${selTeams.has(t.id) ? "checked" : ""}>
+                      ${S_NOTICE(t.name)}
+                    </label>`
+                    )
+                    .join("")
+                : `<div style="color:#6b7280;">Nenhuma equipe cadastrada.</div>`
+            }
+          </div>
 
-        <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
-          <button type="button" onclick="fecharModal()" class="btn btn-outline">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-        </div>
-      </form>
+          <div style="margin:1rem 0 0.5rem;font-weight:600;">Projetos</div>
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+            <input type="text" id="editNoticeProjectSearch" placeholder="Buscar projetos..." style="width:95%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;box-sizing: border-box;">
+          </div>
+          <div id="editNoticeProjectList" style="height:100%;width:95%;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+            ${
+              projects.length
+                ? projects
+                    .map(
+                      (p) => `
+                    <label data-row-project="${
+                      p.id
+                    }" style="display:flex;align-items:center;gap:0.5rem;">
+                      <input type="checkbox" class="editNoticeProjectChk" value="${
+                        p.id
+                      }" ${selProjects.has(p.id) ? "checked" : ""}>
+                      ${S_NOTICE(p.name)}
+                    </label>`
+                    )
+                    .join("")
+                : `<div style="color:#6b7280;">Nenhum projeto cadastrado.</div>`
+            }
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;width:95%;gap:1rem;justify-content:flex-end;margin-top:1rem;">
+            <button type="button" onclick="fecharModal()" class="btn btn-outline" style="flex:1;min-width:120px;">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="flex:1;min-width:120px;">Publicar Aviso</button>
+          </div>
+        </form>
+      </div>
     `
   );
 
-  document.getElementById("editNoticeTeamSearch")?.addEventListener("input", (e) => {
-    const q = e.target.value.trim().toLowerCase();
-    document.querySelectorAll("#editNoticeTeamList [data-row-team]").forEach(row => {
-      const id = Number(row.getAttribute("data-row-team"));
-      const name = (teams.find(t => t.id === id)?.name || "").toLowerCase();
-      row.style.display = name.includes(q) ? "flex" : "none";
+  document
+    .getElementById("editNoticeTeamSearch")
+    ?.addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      document
+        .querySelectorAll("#editNoticeTeamList [data-row-team]")
+        .forEach((row) => {
+          const id = Number(row.getAttribute("data-row-team"));
+          const name = (
+            teams.find((t) => t.id === id)?.name || ""
+          ).toLowerCase();
+          row.style.display = name.includes(q) ? "flex" : "none";
+        });
     });
-  });
 
-  document.getElementById("editNoticeProjectSearch")?.addEventListener("input", (e) => {
-    const q = e.target.value.trim().toLowerCase();
-    document.querySelectorAll("#editNoticeProjectList [data-row-project]").forEach(row => {
-      const id = Number(row.getAttribute("data-row-project"));
-      const name = (projects.find(p => p.id === id)?.name || "").toLowerCase();
-      row.style.display = name.includes(q) ? "flex" : "none";
+  document
+    .getElementById("editNoticeProjectSearch")
+    ?.addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      document
+        .querySelectorAll("#editNoticeProjectList [data-row-project]")
+        .forEach((row) => {
+          const id = Number(row.getAttribute("data-row-project"));
+          const name = (
+            projects.find((p) => p.id === id)?.name || ""
+          ).toLowerCase();
+          row.style.display = name.includes(q) ? "flex" : "none";
+        });
     });
-  });
 
   document.getElementById("editNoticeForm").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -470,8 +601,12 @@ function editNotice(noticeId) {
     notice.type = document.getElementById("editNoticeType").value;
     notice.expiresAt = document.getElementById("editNoticeExpires").value;
 
-    notice.teamIds = Array.from(document.querySelectorAll(".editNoticeTeamChk:checked")).map(c => Number(c.value));
-    notice.projectIds = Array.from(document.querySelectorAll(".editNoticeProjectChk:checked")).map(c => Number(c.value));
+    notice.teamIds = Array.from(
+      document.querySelectorAll(".editNoticeTeamChk:checked")
+    ).map((c) => Number(c.value));
+    notice.projectIds = Array.from(
+      document.querySelectorAll(".editNoticeProjectChk:checked")
+    ).map((c) => Number(c.value));
 
     fecharModal();
     loadAvisosContent();
@@ -479,17 +614,21 @@ function editNotice(noticeId) {
 }
 
 async function deleteNotice(noticeId) {
-  const confirmar = (typeof confirmarModal === "function")
-    ? await confirmarModal({
-        title: "Excluir aviso?",
-        message: "Tem certeza que deseja excluir este aviso? Esta ação não pode ser desfeita.",
-      })
-    : window.confirm("Tem certeza que deseja excluir este aviso? Esta ação não pode ser desfeita.");
+  const confirmar =
+    typeof confirmarModal === "function"
+      ? await confirmarModal({
+          title: "Excluir aviso?",
+          message:
+            "Tem certeza que deseja excluir este aviso? Esta ação não pode be desfeita.",
+        })
+      : window.confirm(
+          "Tem certeza que deseja excluir este aviso? Esta ação não pode ser desfeita."
+        );
 
   if (!confirmar) return;
 
   const lista = Array.isArray(window.avisos) ? window.avisos : [];
-  window.avisos = lista.filter(n => Number(n.id) !== Number(noticeId));
+  window.avisos = lista.filter((n) => Number(n.id) !== Number(noticeId));
   localStorage.setItem("avisos", JSON.stringify(window.avisos));
 
   if (typeof loadAvisosContent === "function") {
