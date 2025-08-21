@@ -213,16 +213,16 @@ function showNewTaskModal() {
     "Criar Nova Tarefa",
     `
     <form id="newTaskForm">
-      <div style="margin-bottom: 1rem;">
+      <div style="margin-bottom: 0.1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Título da Tarefa</label>
         <input type="text" id="taskTitle" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
       </div>
-      <div style="margin-bottom: 1rem;">
+      <div style="margin-bottom: 0.1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Descrição</label>
         <textarea id="taskDescription" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; min-height: 80px; resize: vertical;"></textarea>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.1rem;">
         <div>
           <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Prioridade</label>
           <select id="taskPriority" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
@@ -241,7 +241,7 @@ function showNewTaskModal() {
         </div>
       </div>
 
-      <div style="margin-bottom: 1rem;">
+      <div style="margin-bottom: 0.1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Projeto</label>
         <select id="taskProject" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
           <option value="">Selecione um projeto</option>
@@ -249,7 +249,7 @@ function showNewTaskModal() {
         </select>
       </div>
 
-      <div style="margin-bottom: 1rem;">
+      <div style="margin-bottom: 0.1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Equipe responsável</label>
         <select id="taskTeam" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
           <option value="">(Opcional) Selecione uma equipe</option>
@@ -257,7 +257,7 @@ function showNewTaskModal() {
         </select>
       </div>
 
-      <div style="margin-bottom: 1rem;">
+      <div style="margin-bottom: 0.1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Responsável</label>
         <input type="text" id="taskAssignee" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" placeholder="Nome do responsável">
       </div>
@@ -342,20 +342,20 @@ function editTask(taskId) {
     "Editar Tarefa",
     `
     <form id="editTaskForm">
-      <div style="margin-bottom: 1rem;">
+      <div style="margin-bottom: 0.1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Título da Tarefa</label>
         <input type="text" id="editTaskTitle" value="${
           task.title
         }" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
       </div>
-      <div style="margin-bottom: 1rem;">
+      <div style="margin-bottom: 0.1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Descrição</label>
         <textarea id="editTaskDescription" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; min-height: 80px; resize: vertical;">${
           task.description
         }</textarea>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.1rem;">
         <div>
           <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Prioridade</label>
           <select id="editTaskPriority" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
@@ -392,14 +392,14 @@ function editTask(taskId) {
         </div>
       </div>
 
-      <div style="margin-bottom: 1rem;">
+      <div style="margin-bottom: 0.1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Projeto</label>
         <select id="editTaskProject" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
           ${projectOptions}
         </select>
       </div>
 
-      <div style="margin-bottom: 1rem;">
+      <div style="margin-bottom: 0.1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Equipe responsável</label>
         <select id="editTaskTeam" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
           <option value="">(Opcional) Selecione uma equipe</option>
@@ -407,14 +407,14 @@ function editTask(taskId) {
         </select>
       </div>
 
-      <div style="margin-bottom: 1rem;">
+      <div style="margin-bottom: 0.1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Responsável</label>
         <input type="text" id="editTaskAssignee" value="${
           task.assignee
         }" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
       </div>
 
-      <div style="margin-bottom: 1rem;">
+      <div style="margin-bottom: 0.1rem;">
         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Prazo</label>
         <input type="date" id="editTaskDeadline" value="${
           task.deadline
@@ -458,9 +458,14 @@ function editTask(taskId) {
 
 function deleteTask(taskId) {
   tarefas = tarefas.filter((t) => t.id !== taskId);
+  try {
+    localStorage.setItem("tarefas", JSON.stringify(tarefas));
+    persistTarefasENotificar(); // dispara evento data:tarefas:changed
+  } catch (e) {}
   filterTasks();
   showToast("Tarefa excluída com sucesso!", "success");
 }
+
 
 window.abrirMenuTarefas = (taskId) => {
   const card = document.querySelector(`[data-task-id="${taskId}"]`);
@@ -495,25 +500,22 @@ window.abrirMenuTarefas = (taskId) => {
   menu.style.borderRadius = "0.375rem";
   menu.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
   menu.style.zIndex = "999";
+  menu.addEventListener("click", (e) => e.stopPropagation());
 
-  const onClickOutside = (ev) => {
-    if (!menu) return;
-    if (!menu.contains(ev.target)) closeMenu();
-  };
-  const onEsc = (ev) => {
-    if (ev.key === "Escape") closeMenu();
-  };
+  const onClickOutside = (ev) => { if (menu && !menu.contains(ev.target)) closeMenu(); };
+  const onEsc = (ev) => { if (ev.key === "Escape") closeMenu(); };
   function closeMenu() {
-    if (!menu) return;
     document.removeEventListener("click", onClickOutside);
     document.removeEventListener("keydown", onEsc);
-    if (menu.parentNode) menu.parentNode.removeChild(menu);
-    menu = null;
+    if (menu?.parentNode) menu.parentNode.removeChild(menu);
   }
   menu._close = closeMenu;
 
-  menu.addEventListener("click", (e) => e.stopPropagation());
+  const divider = document.createElement("div");
+  divider.style.height = "1px";
+  divider.style.background = "#e5e7eb";
 
+  // Apagar (já existia)
   const apagarBtn = document.createElement("div");
   apagarBtn.innerHTML = `
     <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;">
@@ -522,13 +524,11 @@ window.abrirMenuTarefas = (taskId) => {
   apagarBtn.style.padding = "0.5rem";
   apagarBtn.style.cursor = "pointer";
   apagarBtn.style.color = "#b91c1c";
-
   apagarBtn.addEventListener("click", async () => {
     closeMenu();
     const confirmar = await confirmarModal({
       title: "Excluir tarefa?",
-      message:
-        "Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.",
+      message: "Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.",
     });
     if (confirmar) {
       if (typeof deleteTask === "function") deleteTask(taskId);
@@ -536,6 +536,7 @@ window.abrirMenuTarefas = (taskId) => {
     }
   });
 
+  menu.appendChild(divider);
   menu.appendChild(apagarBtn);
   menuContainer.appendChild(menu);
 
@@ -544,6 +545,7 @@ window.abrirMenuTarefas = (taskId) => {
     document.addEventListener("keydown", onEsc);
   }, 0);
 };
+
 
 function gerarArrayCardsTarefas(tarefasArray) {
   return tarefasArray
@@ -554,7 +556,7 @@ function gerarArrayCardsTarefas(tarefasArray) {
     }" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-left: 4px solid ${getTaskPriorityColor(
         task.priority
       )}; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); transition: box-shadow 0.2s ease;" onmouseover="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)'" onmouseout="this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1)'">
-      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.1rem;">
         <div style="flex: 1;">
           <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
             <h3 style="font-size: 1.125rem; font-weight: 600; color: #000000;">${
@@ -599,6 +601,7 @@ function gerarArrayCardsTarefas(tarefasArray) {
             </div>
           </div>
         </div>
+
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <select class="task-status-select" data-task-id="${
             task.id
@@ -619,6 +622,17 @@ function gerarArrayCardsTarefas(tarefasArray) {
               task.status === "bloqueada" ? "selected" : ""
             }>Bloqueada</option>
           </select>
+
+          <!-- NOVO: botão Editar direto no card -->
+          <button class="edit-task-btn" data-task-id="${
+            task.id
+          }" title="Editar tarefa" style="background:none;border:none;cursor:pointer;padding:0.25rem;color:#374151;">
+            <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+            </svg>
+          </button>
+
           <div class="task-menu" style="position: relative;">
             <button onclick="abrirMenuTarefas(${
               task.id
