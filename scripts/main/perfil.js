@@ -1,8 +1,14 @@
 /* ===================== CONFIG & STATE ===================== */
-const API_BASE = (window.API_BASE_URL || "http://127.0.0.1:3000").replace(
+const API_BASE = (window.API_BASE_URL || "http://127.0.0.1:3333").replace(
   /\/$/,
   ""
 );
+
+// const API_BASE = (window.API_BASE_URL || "http://localhost:3000").replace(
+//   /\/$/,
+//   ""
+// );
+
 const API_USERS = `${API_BASE}/users`;
 
 const CARGOS_VALIDOS = [
