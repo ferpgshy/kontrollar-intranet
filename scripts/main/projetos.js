@@ -1,37 +1,160 @@
+/* ===== API base ===== */
+const API = window.API_BASE || "http://127.0.0.1:3333";
+
+/* ===== Helpers gerais ===== */
 const S_PROJ = typeof sanitizeHTML === "function"
   ? sanitizeHTML
   : (s) => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
 
-function getPeopleOptions() {
-  const set = new Set();
-  const u = JSON.parse(localStorage.getItem("user") || "{}");
-  if (u?.name) set.add(u.name);
-
-  (window.equipes || []).forEach(e => {
-    (e.members || []).forEach(m => {
-      if (typeof m === "string" && m.trim()) set.add(m.trim());
-      else if (m && typeof m === "object" && m.name) set.add(String(m.name).trim());
-    });
-  });
-
-  (window.tarefas || []).forEach(t => {
-    [t.assignee, t.responsavel, t.atribuidoA].forEach(m => {
-      if (typeof m === "string" && m.trim()) set.add(m.trim());
-      else if (m && typeof m === "object" && m.name) set.add(String(m.name).trim());
-    });
-  });
-
-  (window.projetos || []).forEach(p => {
-    (p.equipe || []).forEach(m => {
-      if (typeof m === "string" && m.trim()) set.add(m.trim());
-      else if (m && typeof m === "object" && m.name) set.add(String(m.name).trim());
-    });
-    if (p.gestor && typeof p.gestor === "string" && p.gestor.trim()) set.add(p.gestor.trim());
-  });
-
-  return Array.from(set).filter(Boolean).sort((a,b) => a.localeCompare(b, 'pt-BR'));
+  // ===== DATA: normaliza yyyy-mm-dd ou ISO para dd/mm/aaaa
+function formatDateBR(input) {
+  if (!input) return "";
+  // Se vier do Postgres como 'YYYY-MM-DD'
+  if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+    const [y, m, d] = String(input).split("-");
+    return `${d}/${m}/${y}`;
+  }
+  // ISO/Date -> formata sem “estourar” fuso
+  const dt = new Date(input);
+  if (isNaN(dt)) return String(input);
+  const dd = String(dt.getUTCDate()).padStart(2, "0");
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
+  const yy = dt.getUTCFullYear();
+  return `${dd}/${mm}/${yy}`;
 }
 
+/* ===== Mapeamentos UI <-> DB =====
+   UI status (selects/cards) usa minúsculo+hífen.
+   DB usa texto com acento/maiúsculas (CHECK/ENUM).
+*/
+const STATUS_UI_TO_DB = {
+  "planejamento": "Planejamento",
+  "em-andamento": "Em Andamento",
+  "em-desenvolvimento": "Em Desenvolvimento",
+  "quase-concluido": "Quase Concluído",
+  "concluido": "Concluído"
+};
+const STATUS_DB_TO_UI = Object.fromEntries(Object.entries(STATUS_UI_TO_DB).map(([k,v]) => [v, k]));
+
+const PRIORITY_UI_TO_DB = { "baixa": "Baixa", "media": "Média", "alta": "Alta" };
+const PRIORITY_DB_TO_UI = { "Baixa": "baixa", "Média": "media", "Alta": "alta" };
+
+/* ===== Cache em memória ===== */
+window.projetos = [];              // lista renderizada
+let _usersCache = [];              // [{id,name,email,cargo}]
+let _statusOptions = [];           // ["Planejamento",...]
+let _priorityOptions = [];         // ["Baixa","Média","Alta"]
+
+/* ===== Requests ===== */
+async function apiGet(path, params) {
+  const url = new URL(API + path, location.origin);
+  if (params) Object.entries(params).forEach(([k,v]) => url.searchParams.set(k,v));
+  const r = await fetch(url, { credentials: "include" });
+  if (!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
+  return r.json();
+}
+async function apiJSON(path, method, body) {
+  const r = await fetch(API + path, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body || {})
+  });
+  if (!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
+  return r.json();
+}
+
+/* ===== Users (gestor/membros) ===== */
+async function loadAllUsers() {
+  // para selects iniciais
+  _usersCache = await apiGet("/users");
+  return _usersCache.map(u => ({
+    id: u.id,
+    name: `${u.nome} ${u.sobrenome}`.trim(),
+    email: u.email,
+    cargo: u.cargo
+  }));
+}
+
+async function searchUsers(q = "", limit = 20) {
+  // busca incremental para lista de membros
+  const data = await apiGet("/users/search", { q, limit });
+  return data.map(u => ({ id: u.id, name: u.name || `${u.nome||""} ${u.sobrenome||""}`.trim(), email: u.email, cargo: u.cargo }));
+}
+function userNameById(id) {
+  const u = _usersCache.find(x => Number(x.id) === Number(id));
+  return u ? `${u.nome} ${u.sobrenome}`.trim() : "—";
+}
+
+/* ===== Options (status/prioridade) ===== */
+async function loadOptions() {
+  try {
+    // se tiver endpoints específicos:
+    _statusOptions = await apiGet("/options/status");       // ["Planejamento", ...]
+    _priorityOptions = await apiGet("/options/priority");   // ["Baixa","Média","Alta"]
+  } catch {
+    // fallback para caso não tenha registrado /options no backend:
+    _statusOptions = Object.values(STATUS_UI_TO_DB);
+    _priorityOptions = Object.values(PRIORITY_UI_TO_DB);
+  }
+}
+
+/* ===== Projects ===== */
+function dbProjectToUI(row) {
+  // row: { id, name, description, status, priority, progress_pct, deadline, manager_id, created_at, updated_at, manager_name? }
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description || "",
+    status: STATUS_DB_TO_UI[row.status] || row.status,      // para selects/cards
+    priority: PRIORITY_DB_TO_UI[row.priority] || (row.priority || "").toLowerCase(),
+    progress: Number(row.progress_pct || 0),
+    deadline: row.deadline,                                  // yyyy-mm-dd
+    gestor_id: row.manager_id,                               // id
+    gestor: row.manager_name || userNameById(row.manager_id),
+    equipe: [],                                              // será preenchida quando abrir detalhes (members)
+    createdAt: row.created_at?.slice?.(0,10) || ""
+  };
+}
+function uiToDbPayload(p) {
+  return {
+    name: p.name,
+    description: p.description || null,
+    status: STATUS_UI_TO_DB[p.status] || "Planejamento",
+    priority: PRIORITY_UI_TO_DB[p.priority] || "Média",
+    progress_pct: Number(p.progress || 0),
+    deadline: p.deadline || null,
+    manager_id: Number(p.gestor_id)
+  };
+}
+
+async function fetchProjects() {
+  const rows = await apiGet("/projects", { limit: 200, offset: 0 });
+  window.projetos = rows.map(dbProjectToUI);
+  renderProjetosGrid();
+}
+async function fetchProjectWithMembers(id) {
+  const data = await apiGet(`/projects/${id}`);
+  const ui = dbProjectToUI(data);
+  ui.equipe = Array.isArray(data.members)
+    ? data.members.map(m => m.name || `${m.id}`) // para chips; abaixo também teremos ids
+    : [];
+  ui.member_ids = Array.isArray(data.members) ? data.members.map(m => Number(m.id)) : [];
+  return ui;
+}
+async function createProjectAndMembers(uiProject, memberIds) {
+  const created = await apiJSON("/projects", "POST", uiToDbPayload(uiProject));
+  if (Array.isArray(memberIds) && memberIds.length) {
+    await apiJSON(`/projects/${created.id}/members`, "PUT", { user_ids: memberIds });
+  }
+  return created.id;
+}
+async function updateProjectAndMembers(id, uiProject, memberIds) {
+  await apiJSON(`/projects/${id}`, "PUT", uiToDbPayload(uiProject));
+  await apiJSON(`/projects/${id}/members`, "PUT", { user_ids: memberIds || [] });
+}
+
+/* ===== UI ===== */
 function carregarConteudoProjetos() {
   const conteudoPagina = document.getElementById("conteudoPagina");
   conteudoPagina.innerHTML = `
@@ -65,18 +188,33 @@ function carregarConteudoProjetos() {
       </div>
     </div>
 
-    <div id="projetosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;">
-      ${gerarCardsProjetos()}
-    </div>
+    <div id="projetosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;"></div>
   `;
 
   setupProjetosPage();
+  // boot: carrega opções + usuários + projetos
+  (async () => {
+    try {
+      await loadOptions();
+      await loadAllUsers();
+      await fetchProjects();
+    } catch (e) {
+      console.error(e);
+      if (typeof showToast === "function") showToast("Falha ao carregar projetos.");
+    }
+  })();
 }
 
 function setupProjetosPage() {
   document.getElementById("newProjectBtn")?.addEventListener("click", mostrarModalProjetoNovo);
   document.getElementById("projectSearch")?.addEventListener("input", filterProjetos);
   document.getElementById("projectStatusFilter")?.addEventListener("change", filterProjetos);
+}
+
+function renderProjetosGrid() {
+  const grid = document.getElementById("projetosGrid");
+  if (!grid) return;
+  grid.innerHTML = gerarArrayProjetosCards(window.projetos || []);
   configAcoesCardProjetos();
 }
 
@@ -103,30 +241,30 @@ function filterProjetos() {
 
 function configAcoesCardProjetos() {
   document.querySelectorAll(".edit-projetos-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       const projectId = Number.parseInt(e.target.closest("[data-projetos-id]").getAttribute("data-projetos-id"));
-      editarProjetos(projectId);
+      await editarProjetos(projectId);
     });
   });
 
   document.querySelectorAll(".view-projetos-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       const projectId = Number.parseInt(e.target.closest("[data-projetos-id]").getAttribute("data-projetos-id"));
-      viewProjectDetails(projectId);
+      await viewProjectDetails(projectId);
     });
   });
 
   document.querySelectorAll(".delete-projetos-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       const projectId = Number.parseInt(e.target.closest("[data-projetos-id]").getAttribute("data-projetos-id"));
-      deletarProjeto(projectId);
+      await deletarProjeto(projectId);
     });
   });
 }
 
-
-function mostrarModalProjetoNovo() {
-  const people = getPeopleOptions();
+/* ===== Modais ===== */
+async function mostrarModalProjetoNovo() {
+  const users = await loadAllUsers();
 
   createModal(
     "Criar Novo Projeto",
@@ -146,17 +284,14 @@ function mostrarModalProjetoNovo() {
         <div>
           <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Status</label>
           <select id="projectStatus" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-            <option value="planejamento">Planejamento</option>
-            <option value="em-andamento">Em Andamento</option>
-            <option value="em-desenvolvimento">Em Desenvolvimento</option>
+            ${Object.entries(STATUS_UI_TO_DB).slice(0,3).map(([ui,label]) =>
+              `<option value="${ui}">${S_PROJ(label)}</option>`).join("")}
           </select>
         </div>
         <div>
           <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Prioridade</label>
           <select id="projectPriority" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-            <option value="baixa">Baixa</option>
-            <option value="media" selected>Média</option>
-            <option value="alta">Alta</option>
+            ${_priorityOptions.map(p => `<option value="${PRIORITY_DB_TO_UI[p]}">${S_PROJ(p)}</option>`).join("")}
           </select>
         </div>
       </div>
@@ -171,7 +306,7 @@ function mostrarModalProjetoNovo() {
           <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Gestor</label>
           <select id="projectManager" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
             <option value="">Selecione</option>
-            ${people.map(n => `<option value="${S_PROJ(n)}">${S_PROJ(n)}</option>`).join("")}
+            ${users.map(u => `<option value="${u.id}">${S_PROJ(`${u.nome} ${u.sobrenome}`)}</option>`).join("")}
           </select>
         </div>
         <div>
@@ -182,13 +317,13 @@ function mostrarModalProjetoNovo() {
 
       <div style="margin-bottom:1rem;">
         <div id="projectMembersList" style="max-height:180px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
-          ${people.length
-            ? people.map(n => `
-                <label data-row-member="${S_PROJ(n)}" style="display:flex;align-items:center;gap:0.5rem;padding:0.25rem 0;">
-                  <input type="checkbox" class="projectMemberChk" value="${S_PROJ(n)}"> ${S_PROJ(n)}
+          ${users.length
+            ? users.map(u => `
+                <label data-row-member="${S_PROJ(`${u.nome} ${u.sobrenome}`)}" style="display:flex;align-items:center;gap:0.5rem;padding:0.25rem 0;">
+                  <input type="checkbox" class="projectMemberChk" value="${u.id}"> ${S_PROJ(`${u.nome} ${u.sobrenome}`)}
                 </label>
               `).join("")
-            : `<div style="color:#6b7280;">Sem nomes sugeridos. Adicione equipes/usuários primeiro.</div>`
+            : `<div style="color:#6b7280;">Sem usuários cadastrados.</div>`
           }
         </div>
       </div>
@@ -204,67 +339,63 @@ function mostrarModalProjetoNovo() {
   setTimeout(() => {
     const search = document.getElementById("projectMemberSearch");
     if (search) {
-      search.addEventListener("input", (e) => {
-        const q = e.target.value.trim().toLowerCase();
-        document.querySelectorAll("#projectMembersList [data-row-member]").forEach(row => {
-          const name = String(row.getAttribute("data-row-member")).toLowerCase();
-          row.style.display = name.includes(q) ? "flex" : "none";
-        });
+      let last = 0;
+      search.addEventListener("input", async (e) => {
+        const now = Date.now();
+        if (now - last < 200) return; // debounce leve
+        last = now;
+        const q = e.target.value.trim();
+        const list = document.getElementById("projectMembersList");
+        const results = await searchUsers(q);
+        list.innerHTML = results.map(u => `
+          <label data-row-member="${S_PROJ(u.name)}" style="display:flex;align-items:center;gap:0.5rem;padding:0.25rem 0;">
+            <input type="checkbox" class="projectMemberChk" value="${u.id}"> ${S_PROJ(u.name)}
+          </label>`).join("");
       });
     }
 
     const form = document.getElementById("newProjectForm");
     if (!form) return;
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const name  = document.getElementById("projectName").value;
+      const description = document.getElementById("projectDescription").value;
+      const status = document.getElementById("projectStatus").value;       // ui
+      const priority = document.getElementById("projectPriority").value;   // ui
+      const deadline = document.getElementById("projectDeadline").value;
+      const gestor_id = Number(document.getElementById("projectManager").value);
+      const memberIds = Array.from(document.querySelectorAll(".projectMemberChk:checked")).map(c => Number(c.value));
 
-      const gestor = document.getElementById("projectManager").value;
-      const membros = Array.from(document.querySelectorAll(".projectMemberChk:checked")).map(c => c.value);
+      if (!gestor_id) { if (typeof showToast==="function") showToast("Selecione um gestor."); return; }
 
-      const novoProjeto = {
-        id: Date.now(),
-        name: document.getElementById("projectName").value,
-        description: document.getElementById("projectDescription").value,
-        status: document.getElementById("projectStatus").value,
-        priority: document.getElementById("projectPriority").value,
-        deadline: document.getElementById("projectDeadline").value,
-        progress: 0,
-        equipe: membros,    
-        gestor: gestor || "", 
-        createdAt: typeof getDataBrasiliaFormatada === "function" ? getDataBrasiliaFormatada() : new Date().toISOString().slice(0,10),
-      };
+      try {
+        const uiProj = { name, description, status, priority, deadline, progress: 0, gestor_id };
+        const newId = await createProjectAndMembers(uiProj, memberIds);
 
-      (window.projetos ||= []).push(novoProjeto);
-      try { localStorage.setItem("projetos", JSON.stringify(window.projetos)); } catch {}
+        if (typeof Notifs?.notify === "function") {
+          Notifs.notify({ title: "Novo projeto", message: `${name} criado`, type: "success",
+            payload: { page: "projetos", projectId: newId },
+            onClick: () => { definirPaginaAtiva("projetos"); carregarConteudoPagina("projetos"); }
+          });
+        } else if (typeof showToast === "function") showToast("Projeto criado!");
 
-      const u = JSON.parse(localStorage.getItem("user") || "{}");
-      const msg = `${novoProjeto.name} criado${novoProjeto.gestor ? ` • Gestor: ${novoProjeto.gestor}` : ""}`;
-      if (window.Notifs && typeof Notifs.notify === "function") {
-        Notifs.notify({
-          title: "Novo projeto",
-          message: msg,
-          type: "success",
-          payload: { page: "projetos", projectId: novoProjeto.id },
-          onClick: () => { definirPaginaAtiva("projetos"); carregarConteudoPagina("projetos"); }
-        });
-      } else if (typeof showToast === "function") {
-        showToast(msg);
+        fecharModal();
+        await fetchProjects();
+      } catch (err) {
+        console.error(err);
+        if (typeof showToast === "function") showToast("Erro ao criar projeto.");
       }
-
-      fecharModal();
-      filterProjetos();
     });
   }, 0);
 }
 
+async function editarProjetos(projectId) {
+  // busca projeto completo (com membros)
+  const p = await fetchProjectWithMembers(projectId);
 
-function editarProjetos(projectId) {
-  const projeto = (window.projetos || []).find(p => p.id === projectId);
-  if (!projeto) return;
-
-  const people = getPeopleOptions();
-  const selected = new Set((projeto.equipe || []).map(String));
+  const users = await loadAllUsers();
+  const selectedIds = new Set(p.member_ids || []);
 
   createModal(
     "Editar Projeto",
@@ -272,43 +403,41 @@ function editarProjetos(projectId) {
     <form id="editProjectForm">
       <div style="margin-bottom:1rem;">
         <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Nome do Projeto</label>
-        <input type="text" id="editProjectName" value="${S_PROJ(projeto.name)}" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        <input type="text" id="editProjectName" value="${S_PROJ(p.name)}" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
       </div>
 
       <div style="margin-bottom:1rem;">
         <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Descrição</label>
-        <textarea id="editProjectDescription" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:80px;resize:vertical;">${S_PROJ(projeto.description || "")}</textarea>
+        <textarea id="editProjectDescription" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;min-height:80px;resize:vertical;">${S_PROJ(p.description || "")}</textarea>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div>
           <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Status</label>
           <select id="editProjectStatus" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-            <option value="planejamento" ${projeto.status==="planejamento"?"selected":""}>Planejamento</option>
-            <option value="em-andamento" ${projeto.status==="em-andamento"?"selected":""}>Em Andamento</option>
-            <option value="em-desenvolvimento" ${projeto.status==="em-desenvolvimento"?"selected":""}>Em Desenvolvimento</option>
-            <option value="quase-concluido" ${projeto.status==="quase-concluido"?"selected":""}>Quase Concluído</option>
-            <option value="concluido" ${projeto.status==="concluido"?"selected":""}>Concluído</option>
+            ${Object.entries(STATUS_UI_TO_DB).map(([ui,label]) =>
+              `<option value="${ui}" ${p.status===ui?"selected":""}>${S_PROJ(label)}</option>`).join("")}
           </select>
         </div>
         <div>
           <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Prioridade</label>
           <select id="editProjectPriority" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
-            <option value="baixa" ${projeto.priority==="baixa"?"selected":""}>Baixa</option>
-            <option value="media" ${projeto.priority==="media"?"selected":""}>Média</option>
-            <option value="alta"  ${projeto.priority==="alta" ?"selected":""}>Alta</option>
+            ${_priorityOptions.map(opt => {
+              const ui = PRIORITY_DB_TO_UI[opt];
+              return `<option value="${ui}" ${p.priority===ui?"selected":""}>${S_PROJ(opt)}</option>`;
+            }).join("")}
           </select>
         </div>
       </div>
 
       <div style="margin-bottom:1rem;">
         <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Progresso (%)</label>
-        <input type="number" id="editProjectProgress" value="${Number(projeto.progress||0)}" min="0" max="100" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        <input type="number" id="editProjectProgress" value="${Number(p.progress||0)}" min="0" max="100" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
       </div>
 
-      <div style="margin-bottom:1rem;">
+      <div style="margin-bottom:1rem%;">
         <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Prazo</label>
-        <input type="date" id="editProjectDeadline" value="${S_PROJ(projeto.deadline || "")}" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
+        <input type="date" id="editProjectDeadline" value="${S_PROJ(p.deadline || "")}" required style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
@@ -316,7 +445,7 @@ function editarProjetos(projectId) {
           <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Gestor</label>
           <select id="editProjectManager" style="width:100%;padding:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;">
             <option value="">Selecione</option>
-            ${people.map(n => `<option value="${S_PROJ(n)}" ${projeto.gestor===n?"selected":""}>${S_PROJ(n)}</option>`).join("")}
+            ${users.map(u => `<option value="${u.id}" ${Number(p.gestor_id)===Number(u.id)?"selected":""}>${S_PROJ(`${u.nome} ${u.sobrenome}`)}</option>`).join("")}
           </select>
         </div>
         <div>
@@ -326,15 +455,15 @@ function editarProjetos(projectId) {
       </div>
 
       <div style="margin-bottom:1rem;">
-        <div id="editProjectMembersList" style="max-height:180px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
-          ${
-            people.length
-              ? people.map(n => `
-                <label data-row-member="${S_PROJ(n)}" style="display:flex;align-items:center;gap:0.5rem;padding:0.25rem 0;">
-                  <input type="checkbox" class="editProjectMemberChk" value="${S_PROJ(n)}" ${selected.has(n) ? "checked" : ""}>
-                  ${S_PROJ(n)}
-                </label>`).join("")
-              : `<div style="color:#6b7280;">Sem nomes sugeridos.</div>`
+        <div id="editProjectMembersList" style="max-height:200px;overflow:auto;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0.5rem;">
+          ${users.length
+            ? users.map(u => `
+                <label data-row-member="${S_PROJ(`${u.nome} ${u.sobrenome}`)}" style="display:flex;align-items:center;gap:0.5rem;padding:0.25rem 0;">
+                  <input type="checkbox" class="editProjectMemberChk" value="${u.id}" ${selectedIds.has(Number(u.id))?"checked":""}>
+                  ${S_PROJ(`${u.nome} ${u.sobrenome}`)}
+                </label>
+              `).join("")
+            : `<div style="color:#6b7280;">Sem usuários cadastrados.</div>`
           }
         </div>
       </div>
@@ -348,38 +477,48 @@ function editarProjetos(projectId) {
   );
 
   setTimeout(() => {
-    document.getElementById("editProjectMemberSearch")?.addEventListener("input", (e) => {
-      const q = e.target.value.trim().toLowerCase();
-      document.querySelectorAll("#editProjectMembersList [data-row-member]").forEach(row => {
-        const name = String(row.getAttribute("data-row-member")).toLowerCase();
-        row.style.display = name.includes(q) ? "flex" : "none";
-      });
+    document.getElementById("editProjectMemberSearch")?.addEventListener("input", async (e) => {
+      const q = e.target.value.trim();
+      const list = document.getElementById("editProjectMembersList");
+      const results = await searchUsers(q);
+      list.innerHTML = results.map(u => `
+        <label data-row-member="${S_PROJ(u.name)}" style="display:flex;align-items:center;gap:0.5rem;padding:0.25rem 0;">
+          <input type="checkbox" class="editProjectMemberChk" value="${u.id}" ${selectedIds.has(Number(u.id))?"checked":""}>
+          ${S_PROJ(u.name)}
+        </label>`).join("");
     });
 
-    document.getElementById("editProjectForm")?.addEventListener("submit", (e) => {
+    document.getElementById("editProjectForm")?.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      projeto.name = document.getElementById("editProjectName").value;
-      projeto.description = document.getElementById("editProjectDescription").value;
-      projeto.status = document.getElementById("editProjectStatus").value;
-      projeto.priority = document.getElementById("editProjectPriority").value;
-      projeto.progress = Number(document.getElementById("editProjectProgress").value || 0);
-      projeto.deadline = document.getElementById("editProjectDeadline").value;
-      projeto.gestor = document.getElementById("editProjectManager").value || "";
+      const up = {
+        name: document.getElementById("editProjectName").value,
+        description: document.getElementById("editProjectDescription").value,
+        status: document.getElementById("editProjectStatus").value,         // ui
+        priority: document.getElementById("editProjectPriority").value,     // ui
+        progress: Number(document.getElementById("editProjectProgress").value || 0),
+        deadline: document.getElementById("editProjectDeadline").value,
+        gestor_id: Number(document.getElementById("editProjectManager").value)
+      };
+      const memberIds = Array.from(document.querySelectorAll(".editProjectMemberChk:checked")).map(c => Number(c.value));
 
-      projeto.equipe = Array.from(document.querySelectorAll(".editProjectMemberChk:checked")).map(c => c.value);
+      if (!up.gestor_id) { if (typeof showToast==="function") showToast("Selecione um gestor."); return; }
 
-      try { localStorage.setItem("projetos", JSON.stringify(window.projetos)); } catch {}
-      fecharModal();
-      filterProjetos();
+      try {
+        await updateProjectAndMembers(projectId, up, memberIds);
+        fecharModal();
+        await fetchProjects();
+        if (typeof showToast === "function") showToast("Projeto atualizado!");
+      } catch (err) {
+        console.error(err);
+        if (typeof showToast === "function") showToast("Erro ao salvar projeto.");
+      }
     });
   }, 0);
 }
 
-
-function viewProjectDetails(projectId) {
-  const projeto = (window.projetos || []).find(p => p.id === projectId);
-  if (!projeto) return;
+async function viewProjectDetails(projectId) {
+  const projeto = await fetchProjectWithMembers(projectId);
 
   const projectTasks = (window.tarefas || []).filter(t => t.projetos === projeto.name);
   const chips = (projeto.equipe || []).map(n => `<span style="background:#eef2ff;color:#3730a3;padding:0.125rem 0.5rem;border-radius:999px;font-size:0.75rem;margin-right:0.25rem;display:inline-block">${S_PROJ(n)}</span>`).join("");
@@ -394,8 +533,8 @@ function viewProjectDetails(projectId) {
         <p style="margin-bottom:0.5rem;"><strong>Status:</strong> ${getStatusLabel(projeto.status)}</p>
         <p style="margin-bottom:0.5rem;"><strong>Prioridade:</strong> ${S_PROJ(projeto.priority || "")}</p>
         <p style="margin-bottom:0.5rem;"><strong>Progresso:</strong> ${Number(projeto.progress || 0)}%</p>
-        <p style="margin-bottom:0.5rem;"><strong>Prazo:</strong> ${typeof formatarDataPtBR === "function" ? formatarDataPtBR(projeto.deadline) : S_PROJ(projeto.deadline || "")}</p>
-        <p style="margin-bottom:0.5rem;"><strong>Gestor:</strong> ${S_PROJ(projeto.gestor || "—")}</p>
+        <p style="margin-bottom:0.5rem;"><strong>Prazo:</strong> ${formatDateBR(projeto.deadline)}</p>
+        <p style="margin-bottom:0.5rem;"><strong>Gestor:</strong> ${S_PROJ(projeto.gestor || userNameById(projeto.gestor_id) || "—")}</p>
         <div style="margin-bottom:0.5rem;"><strong>Membros:</strong> ${(projeto.equipe || []).length}</div>
         <div>${chips || "<span style='color:#6b7280;'>Nenhum membro</span>"}</div>
       </div>
@@ -436,15 +575,18 @@ function viewProjectDetails(projectId) {
   );
 }
 
-
-function deletarProjeto(projectId) {
-  window.projetos = (window.projetos || []).filter(p => p.id !== projectId);
-  try { localStorage.setItem("projetos", JSON.stringify(window.projetos)); } catch {}
-  filterProjetos();
-  if (typeof showToast === "function") showToast("Projeto excluído com sucesso!");
+async function deletarProjeto(projectId) {
+  try {
+    await apiJSON(`/projects/${projectId}`, "DELETE");
+    if (typeof showToast === "function") showToast("Projeto excluído com sucesso!");
+    await fetchProjects();
+  } catch (e) {
+    console.error(e);
+    if (typeof showToast === "function") showToast("Erro ao excluir projeto.");
+  }
 }
 
-
+/* ===== Cards / Helpers visuais ===== */
 function gerarArrayProjetosCards(arr) {
   return (arr || []).map(p => `
     <div data-projetos-id="${p.id}" style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid ${getPriorityBorderColor(p.priority)};border-radius:0.5rem;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.1);transition:box-shadow .2s ease;"
@@ -454,7 +596,7 @@ function gerarArrayProjetosCards(arr) {
           <h3 style="font-size:1.125rem;font-weight:600;color:#000;margin-bottom:0.25rem;">${S_PROJ(p.name)}</h3>
           <div style="display:flex;gap:0.5rem;align-items:center;">
             <span style="padding:0.25rem 0.5rem;background:${getStatusBgColor(getStatusLabel(p.status))};color:${getStatusTextColor(getStatusLabel(p.status))};border-radius:0.25rem;font-size:0.75rem;">${getStatusLabel(p.status)}</span>
-            <span style="font-size:0.8rem;color:#6b7280;">Gestor: ${S_PROJ(p.gestor || "—")}</span>
+            <span style="font-size:0.8rem;color:#6b7280;">Gestor: ${S_PROJ(p.gestor || userNameById(p.gestor_id) || "—")}</span>
           </div>
         </div>
         <div class="projetos-menu" style="position:relative;">
@@ -466,9 +608,9 @@ function gerarArrayProjetosCards(arr) {
 
       <p style="color:#666;font-size:0.875rem;margin-bottom:0.75rem;">${S_PROJ(p.description || "")}</p>
 
-      ${Array.isArray(p.equipe) && p.equipe.length ? `
+      ${(Array.isArray(p.equipe) && p.equipe.length) ? `
         <div style="margin-bottom:0.75rem;">
-          ${(p.equipe).slice(0,6).map(n => `<span style="display:inline-block;margin:0 0.25rem 0.25rem 0;background:#eef2ff;color:#3730a3;padding:0.125rem 0.5rem;border-radius:999px;font-size:0.7rem;">${S_PROJ(n)}</span>`).join("")}
+          ${p.equipe.slice(0,6).map(n => `<span style="display:inline-block;margin:0 0.25rem 0.25rem 0;background:#eef2ff;color:#3730a3;padding:0.125rem 0.5rem;border-radius:999px;font-size:0.7rem;">${S_PROJ(n)}</span>`).join("")}
           ${p.equipe.length > 6 ? `<span style="font-size:0.75rem;color:#6b7280;">+${p.equipe.length - 6}</span>` : ""}
         </div>` : ""
       }
@@ -480,7 +622,7 @@ function gerarArrayProjetosCards(arr) {
         </div>
         <div style="display:flex;align-items:center;gap:0.25rem;">
           <svg style="width:1rem;height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span>${typeof formatarDataPtBR === "function" ? formatarDataPtBR(p.deadline) : S_PROJ(p.deadline || "")}</span>
+          <span>${formatDateBR(p.deadline)}</span>
         </div>
       </div>
 
@@ -515,6 +657,7 @@ function getStatusLabel(status) {
   return labels[status] || status;
 }
 
+/* menu apagar (usa DELETE /projects/:id) */
 window.abrirMenuProjeto = (projectId) => {
   const card = document.querySelector(`[data-projetos-id="${projectId}"]`);
   if (!card) return;
@@ -554,8 +697,7 @@ window.abrirMenuProjeto = (projectId) => {
       message: "Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.",
     });
     if (confirmar) {
-      if (typeof deletarProjeto === "function") deletarProjeto(projectId);
-      else console.warn("deletarProjeto(projectId) não encontrado.");
+      await deletarProjeto(projectId);
     }
   });
 
@@ -567,6 +709,22 @@ window.abrirMenuProjeto = (projectId) => {
   }, 0);
 };
 
-function gerarCardsProjetos() {
-  return gerarArrayProjetosCards(window.projetos || []);
+/* ===== Exports de página ===== */
+function gerarCardsProjetos() { return gerarArrayProjetosCards(window.projetos || []); }
+
+/* ======= Utils de cor (mantidos do teu front) ======= */
+function getPriorityBorderColor(priorityUi) {
+  const map = { baixa:"#34d399", media:"#fbbf24", alta:"#ef4444" };
+  return map[String(priorityUi||"").toLowerCase()] || "#9ca3af";
 }
+/* status colors utilitários que tua UI já tinha */
+function getStatusBgColor(label) { return "#eef2ff"; }
+function getStatusTextColor(label) { return "#3730a3"; }
+
+/* Tarefas (placeholders existentes no teu projeto) */
+function getTaskStatusBgColor(s) { return "#e5e7eb"; }
+function getTaskStatusTextColor(s) { return "#111827"; }
+function getTaskStatusLabel(s) { return s || "—"; }
+
+/* ===== Boot público ===== */
+window.carregarConteudoProjetos = carregarConteudoProjetos;
