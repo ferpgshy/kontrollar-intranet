@@ -74,8 +74,7 @@ async function loadAllUsers() {
     email: u.email,
     cargo: u.cargo
   }));
-}
-
+} 
 async function searchUsers(q = "", limit = 20) {
   // busca incremental para lista de membros
   const data = await apiGet("/users/search", { q, limit });
