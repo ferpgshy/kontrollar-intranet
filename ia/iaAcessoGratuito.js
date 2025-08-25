@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
           messages: [
             {
               role: "system",
-              content: "Você é um assistente simpático da Kontrollar... (mantenha seu prompt original)"
+              content: "Você é um assistente simpático da Kontrollar"
             },
             { role: "user", content: message }
           ]
